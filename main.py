@@ -3,7 +3,7 @@
 """
 Created on Sun Jul 12 15:11:35 2020
 
-@author: admin
+@author: Paul Chaffee
 """
 
 from threading import Lock
