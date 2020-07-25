@@ -196,10 +196,10 @@ def deal_click():
     global hands
     global players_active
     http_ref = request.environ['HTTP_REFERER']
-    print(f'\ndeal_click() got called! url called from is {http_ref}')
+    print(f'\ndeal_click() got called!')
     
     if 'draw' in http_ref:
-        print(f'\n from deal_click(), game is draw poker, draw.stage = {draw.stage}')
+        print(f'\Game is draw poker, boys. draw.stage = {draw.stage}')
         if len(draw.stage) == 0: # re-activate all tonight's players
             players_active = players_tonight.copy()
             emit('clear_msgs',{}, broadcast = True)  # clear the draw cards msg area
@@ -229,7 +229,8 @@ def fold():
     print(f'\nfrom fold(): request.eviron["HTTP_REFERER"]:{request.environ["HTTP_REFERER"]} ')
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'We thus conclude that {requesting_player} wants to fold, so attempting functionality...')
+    print(f'We thus conclude that {requesting_player} ({player_map[requesting_player]})' +
+          ' wants to fold, so I will fold them!...')
     hand_len = len(hands[requesting_player])
     #seven_card_stud.hands[requesting_player] = [seven_card_stud.card_back] * hand_len
     #five_card_stud.hands[requesting_player] = [five_card_stud.card_back] * hand_len
@@ -250,12 +251,15 @@ def fold():
     emit('get_cards', {'cards': cards_player4_pg}, room=room_map['player4'])
     emit('get_cards', {'cards': cards_player5_pg}, room=room_map['player5'])
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
+    emit('who_folded',{'player': player_map[requesting_player] + ' folded.'},
+                       broadcast=True)
 
 @socketio.on('reveal', namespace='/test')
 def reveal_cards():
     global reveal_players_monty
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
+    print(f'\nHey! reveal_cards() got called...')
     
     # REVEAL in Monty means something different from in the other games:
     # here it is the dealer's right to reveal the cards of everyone 
@@ -278,7 +282,8 @@ def reveal_cards():
         print(f'from reveal_cards(), reveal_players_monty = {reveal_players_monty}')
                     
     else:
-        print(f'We thus conclude that {requesting_player} wants to reveal their cards.')
+        print(f'...we thus conclude that {requesting_player} ({player_map[requesting_player]})' +
+              ' wants to reveal their cards.')
         cards_player1_pg[requesting_player] = hands[requesting_player]        
         cards_player2_pg[requesting_player] = hands[requesting_player]
         cards_player3_pg[requesting_player] = hands[requesting_player]

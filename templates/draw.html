@@ -218,8 +218,10 @@
                 else var_card = "cards"
                 $('#log').append('<br>' + $('<div/>').text(msg.player + 
                      + msg.data + ' ' + var_card).html());               
-                if (cb)
-                    cb();
+            });
+            // print to browser when somebody folds
+            socket.on('who_folded', function(msg, cb) {
+                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
             });
 
             // Handler for the "pong" message. When the pong is received, the
