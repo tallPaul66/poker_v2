@@ -123,31 +123,31 @@ def draw_cards_draw(message):
         # 2. register the cards s/he wants drawn in draw.py
         draw.draw_card_idxs['player1'] = hold_statuses
     elif requesting_player == 'player2':
-        for i in range(len(cards_player1_pg['player2'])):
+        for i in range(len(cards_player2_pg['player2'])):
             if hold_statuses[i] == False:                
                 cards_player2_pg['player2'][i] = draw.card_back
         emit('get_cards',  {'cards': cards_player2_pg}, room=room_map['player2']) #'player2')
         draw.draw_card_idxs['player2'] = hold_statuses
     elif requesting_player == 'player3':
-        for i in range(len(cards_player1_pg['player3'])):
+        for i in range(len(cards_player3_pg['player3'])):
             if hold_statuses[i] == False:                
                 cards_player3_pg['player3'][i] = draw.card_back
         emit('get_cards',  {'cards': cards_player3_pg}, room=room_map['player3']) #'player3')
         draw.draw_card_idxs['player3'] = hold_statuses
     elif requesting_player == 'player4':
-        for i in range(len(cards_player1_pg['player4'])):
+        for i in range(len(cards_player4_pg['player4'])):
             if hold_statuses[i] == False:                
                 cards_player4_pg['player4'][i] = draw.card_back
         emit('get_cards',  {'cards': cards_player4_pg}, room=room_map['player4']) #'player4')
         draw.draw_card_idxs['player4'] = hold_statuses
     elif requesting_player == 'player5':
-        for i in range(len(cards_player1_pg['player5'])):
+        for i in range(len(cards_player5_pg['player5'])):
             if hold_statuses[i] == False:                
                 cards_player5_pg['player5'][i] = draw.card_back
         emit('get_cards',  {'cards': cards_player5_pg}, room=room_map['player5']) #'player5')
         draw.draw_card_idxs['player5'] = hold_statuses
     elif requesting_player == 'player6':
-        for i in range(len(cards_player1_pg['player6'])):
+        for i in range(len(cards_player6_pg['player6'])):
             if hold_statuses[i] == False:                
                 cards_player6_pg['player6'][i] = draw.card_back
         emit('get_cards',  {'cards': cards_player6_pg}, room=room_map['player6']) #'player6')
