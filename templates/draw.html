@@ -154,9 +154,15 @@
                 socket.emit('my_broadcast_event', {data: $('#broadcast_data').val()});
                 return false;
             });
-            $('form#join').submit(function(event) {
-                socket.emit('join', {room: $('#join_room').val()});
-                return false;
+            //$('form#join').submit(function(event) {
+            //    socket.emit('join', {room: $('#join_room').val()});
+            //    return false;
+            
+            $('form#connect_btn').submit(function(event) {
+                const url_params = new URLSearchParams(window.location.search);
+                const player_name = url_params.get('player');
+                socket.emit('my_event', {data: 'Client connected!', player: player_name});
+                return false;            
             });
             $('form#leave').submit(function(event) {
                 socket.emit('leave', {room: $('#leave_room').val()});
@@ -268,9 +274,8 @@
 	       <input class="submit_btn1" type="submit" name="btn" value="REVEAL">
         </form>             
     	<!---------------     JOIN button   --------------->    	
-    	<form style='float: left; padding: 5px;' id="join" class="form" method="POST" action='#'>
-            <input type="text" name="join_room" id="join_room" placeholder="Player Name">
-            <input type="submit" value="Enter Player Name">
+    	<form style='float: left; padding: 5px;' id="connect_btn" class="form" method="POST" action='#'>
+            <input type="submit" value="Connect?">
         </form>
       <br>
      </fieldset>   		

@@ -86,17 +86,7 @@ def home():
         game or what stage things are at. I.e., this resets the now-missing
         player's cards to null, which would not have happened if you simply
         remove the player from the lineup (unless everyone clicks New Game).'''
-        #FIXIT:
-        # when starting a new session, clicking "UPDATE CARDS" doesn't do anything,
-        # i.e., doesn't update to blank, showing cards still from previous session
-        
-#        for p in possible_players:
-#            cards_player1_pg[p] = ()
-#            cards_player2_pg[p] = ()
-#            cards_player3_pg[p] = ()
-#            cards_player4_pg[p] = ()
-#            cards_player5_pg[p] = ()
-#            cards_player6_pg[p] = ()
+
 
     return render_template('home.html', async_mode=socketio.async_mode)
 
@@ -118,7 +108,7 @@ def redirect_to_draw():
 def draw_cards_draw(message):
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    #print('hold statuses: ', message['data'])
+    print('hold statuses: ', message['data'])
     hold_statuses = [message['data']['card1'], message['data']['card2'], 
                      message['data']['card3'], message['data']['card4'], 
                      message['data']['card5']]
@@ -167,29 +157,6 @@ def draw_cards_draw(message):
                       {'data': 5-sum(hold_statuses), 
                        'player': player_map[requesting_player] + ' took '},
                        broadcast=True)
-
-@socketio.on('my_event', namespace='/test')
-def test_message(message):
-    client_sid = request.sid
-    if 'player' in message.keys():
-        player = message['player']
-    else:
-        player = ''
-    update_room_map(player = player, client_sid = client_sid)
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('connect_msg',
-         {'data': message['data'], 
-          'player': player,
-          'sid': client_sid})
-
-@socketio.on('join', namespace='/test')
-def join(message):
-    join_room(message['room'])
-    print(f'from join(), message[\'room\'] = {message["room"]}')
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('join_msg',
-         {'data': 'you\'re in room  ' + ', '.join(rooms()),
-          'count': ''})
 
 @socketio.on('deal', namespace='/test')
 def deal_click():  
@@ -345,20 +312,28 @@ def start_new_game():
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
     emit('clear_msgs',{}, broadcast = True)
 
-@socketio.on('disconnect_request', namespace='/test')
-def disconnect_request():
-    @copy_current_request_context
-    def can_disconnect():
-        disconnect()
-
+@socketio.on('my_event', namespace='/test')
+def test_message(message):
+    client_sid = request.sid
+    if 'player' in message.keys():
+        player = message['player']
+    else:
+        player = ''
+    update_room_map(player = player, client_sid = client_sid)
     session['receive_count'] = session.get('receive_count', 0) + 1
-    # for this emit we use a callback function
-    # when the callback function is invoked we know that the message has been
-    # received and it is safe to disconnect
-    emit('my_response',
-         {'data': 'Disconnected!', 'count': session['receive_count']},
-         callback=can_disconnect)
+    emit('connect_msg',
+         {'data': message['data'], 
+          'player': player,
+          'sid': client_sid})
 
+@socketio.on('join', namespace='/test')
+def join(message):
+    join_room(message['room'])
+    print(f'from join(), message[\'room\'] = {message["room"]}')
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('join_msg',
+         {'data': 'you\'re in room  ' + ', '.join(rooms()),
+          'count': ''})
 
 @socketio.on('my_ping', namespace='/test')
 def ping_pong():
@@ -372,10 +347,23 @@ def test_connect():
     with thread_lock:
        if thread is None:
            thread = socketio.start_background_task(background_thread)
-    emit('connect_msg', {'data': 'this is from test_connect()', 
+    emit('connect_msg', {'data': 'From test_connect()', 
                          'sid': request.sid, 'player':'not checking for player'})
 
+@socketio.on('disconnect_request', namespace='/test')
+def disconnect_request():
+    @copy_current_request_context
+    def can_disconnect():
+        disconnect()
 
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    # for this emit we use a callback function
+    # when the callback function is invoked we know that the message has been
+    # received and it is safe to disconnect
+    emit('my_response',
+         {'data': 'Disconnected!', 'count': session['receive_count']},
+         callback=can_disconnect)
+    
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
     print('Client disconnected', request.sid)
