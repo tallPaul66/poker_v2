@@ -314,9 +314,13 @@ def start_new_game():
 
 @socketio.on('my_event', namespace='/test')
 def test_message(message):
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
     client_sid = request.sid
     if 'player' in message.keys():
         player = message['player']
+    elif len(requesting_player) == 7: # assume query string data is working right
+        player = requesting_player
     else:
         player = ''
     update_room_map(player = player, client_sid = client_sid)

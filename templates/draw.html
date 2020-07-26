@@ -159,8 +159,8 @@
             //    return false;
             
             $('form#connect_btn').submit(function(event) {
-                const url_params = new URLSearchParams(window.location.search);
-                const player_name = url_params.get('player');
+                var url_params = new URLSearchParams(window.location.search);
+                var player_name = url_params.get('player');
                 socket.emit('my_event', {data: 'Client connected!', player: player_name});
                 return false;            
             });
