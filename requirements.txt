@@ -3,4 +3,3 @@ flask_sockets
 flask_socketio
 gunicorn
 numpy
-eventlet
