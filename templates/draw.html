@@ -57,7 +57,7 @@
             socket.on('connect_msg', function(msg, cb) {                
                 // but this appends....
                 $('#log').append('<br>' + $('<div/>').text(msg.data + 
-                    ', player: ' + msg.player + ', sid: ' + msg.sid).html());               
+                    ' player: ' + msg.player + ', sid: ' + msg.sid).html());               
                 if (cb)
                     cb();
             });
