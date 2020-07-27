@@ -347,12 +347,16 @@ def ping_pong():
 @socketio.on('connect', namespace='/test')
 def test_connect():
     print('\ntest_connect() got called.')
-    global thread
-    with thread_lock:
-       if thread is None:
-           thread = socketio.start_background_task(background_thread)
-    emit('connect_msg', {'data': 'From test_connect()', 
-                         'sid': request.sid, 'player':'not checking for player'})
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    client_sid = request.sid
+    update_room_map(player = requesting_player, client_sid = client_sid)
+    #global thread
+    #with thread_lock:
+    #   if thread is None:
+    #       thread = socketio.start_background_task(background_thread)
+    emit('connect_msg', {'data': 'Trying...', 
+                         'sid': request.sid, 'player':requesting_player})
 
 @socketio.on('disconnect_request', namespace='/test')
 def disconnect_request():
