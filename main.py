@@ -356,7 +356,8 @@ def test_connect():
     #   if thread is None:
     #       thread = socketio.start_background_task(background_thread)
     emit('connect_msg', {'data': 'Trying...', 
-                         'sid': request.sid, 'player':requesting_player})
+                         'player':requesting_player,
+                         'sid': request.sid})
 
 @socketio.on('disconnect_request', namespace='/test')
 def disconnect_request():
