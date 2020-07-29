@@ -12,6 +12,7 @@ from flask import Flask, render_template, session, request, \
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 import draw
+import five_card_stud
     
 
 #~~~~~~~~~~~~~~~~~~~ Config Stuff ~~~~~~~~~~~~~~~~~
@@ -158,6 +159,20 @@ def draw_cards_draw(message):
                        'player': player_map[requesting_player] + ' took '},
                        broadcast=True)
 
+#~~~~~~~~~~~~~~ FIVE-CARD STUD ~~~~~~~~~~~~~~~~~~~~~~~~~
+@app.route('/five_card_stud', methods = ['GET', 'POST'])
+def five_card_play():     
+    return render_template('five_card_stud.html', names = player_map)
+
+@app.route('/link_to_five_card_stud')
+def redirect_to_five_card_stud():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    print(f'msg from link_to_five_card_stud(): requesting_player is {requesting_player}')
+    return redirect(url_for('five_card_play', player=requesting_player))
+
+#~~~~~~~~~~~~~~ Functions and Handlers ~~~~~~~~~~~~~~~~~~~~~~~~~
+
 @socketio.on('deal', namespace='/test')
 def deal_click():  
     global hands
@@ -177,6 +192,20 @@ def deal_click():
         pg4_tmp = draw.get_display(hands, 'player4')
         pg5_tmp = draw.get_display(hands, 'player5')
         pg6_tmp = draw.get_display(hands, 'player6')
+        
+    if 'five_card_stud' in http_ref:
+        print(f'\Game is 5-card stud, boys. draw.stage = {draw.stage}')
+        if len(five_card_stud.stage) == 0: # re-activate all tonight's players
+            players_active = players_tonight.copy()
+            emit('clear_msgs',{}, broadcast = True)  # clear the draw cards msg area
+        hands = five_card_stud.deal(players_active)
+        pg1_tmp = five_card_stud.get_display(hands, 'player1')
+        pg2_tmp = five_card_stud.get_display(hands, 'player2')
+        pg3_tmp = five_card_stud.get_display(hands, 'player3')
+        pg4_tmp = five_card_stud.get_display(hands, 'player4')
+        pg5_tmp = five_card_stud.get_display(hands, 'player5')
+        pg6_tmp = five_card_stud.get_display(hands, 'player6')
+        
     for key in pg1_tmp.keys():
         cards_player1_pg[key] = pg1_tmp[key]
         cards_player2_pg[key] = pg2_tmp[key]
@@ -200,7 +229,7 @@ def fold():
           ' wants to fold, so I will fold them!...')
     hand_len = len(hands[requesting_player])
     #seven_card_stud.hands[requesting_player] = [seven_card_stud.card_back] * hand_len
-    #five_card_stud.hands[requesting_player] = [five_card_stud.card_back] * hand_len
+    five_card_stud.hands[requesting_player] = [five_card_stud.card_back] * hand_len
     #omaha.hands[requesting_player] = [omaha.card_back] * hand_len
     draw.hands[requesting_player] = [draw.card_back] * hand_len
     #spit.hands[requesting_player] = [spit.card_back] * hand_len
@@ -212,6 +241,7 @@ def fold():
     cards_player4_pg[requesting_player] = [draw.card_back] * hand_len
     cards_player5_pg[requesting_player] = [draw.card_back] * hand_len
     cards_player6_pg[requesting_player] = [draw.card_back] * hand_len
+    
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
     emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])

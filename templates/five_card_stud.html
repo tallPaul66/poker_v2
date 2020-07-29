@@ -184,27 +184,7 @@
                 socket.emit('new_game'); 
                 return false;
             });
-            $('form#draw_cards').submit(function(event) {
-                var card1_Hld_checked = document.getElementById('card1Hld').checked;
-                var card2_Hld_checked = document.getElementById('card2Hld').checked;
-                var card3_Hld_checked = document.getElementById('card3Hld').checked;
-                var card4_Hld_checked = document.getElementById('card4Hld').checked;
-                var card5_Hld_checked = document.getElementById('card5Hld').checked;
-                var card_holds = {card1: card1_Hld_checked, card2: card2_Hld_checked, 
-                                  card3: card3_Hld_checked, card4: card4_Hld_checked, 
-                                  card5: card5_Hld_checked}
-                console.log('card_holds ', card_holds);
-                socket.emit('draw_cards_draw', {data: card_holds}); 
-                
-                // reset the radio buttons to the default Hold checked
-                document.getElementById("card1Hld").checked = true;
-                document.getElementById("card2Hld").checked = true;
-                document.getElementById("card3Hld").checked = true;
-                document.getElementById("card4Hld").checked = true;
-                document.getElementById("card5Hld").checked = true;
-                
-                return false;
-            }); 
+            
             // Interval function that tests message latency by sending a "ping"
             // message. The server then responds with a "pong" message and the
             // round trip time is measured. [Paul: not sure if this helps to not
@@ -216,15 +196,6 @@
                 socket.emit('my_ping');
             }, 1000);
             
-            // print to browser player draw info
-             socket.on('who_drew_what', function(msg, cb) {
-                // the following two lines just get the plural right in the 
-                // msg displayed on the webpage
-                if(msg.data == 1) var_card = "card"
-                else var_card = "cards"
-                $('#log').append('<br>' + $('<div/>').text(msg.player + 
-                     + msg.data + ' ' + var_card).html());               
-            });
             // print to browser when somebody folds
             socket.on('who_folded', function(msg, cb) {
                 $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
@@ -261,7 +232,7 @@
         </form>
         <!-------------------    GAME LINKS   -------------------->
     	    &nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red">Draw</a>
-    	    &nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red">5-Card Stud</a> 
+    	    &nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red">Draw</a>
 	 </fieldset>
 	 </div>
 	<!-------------------    GAME LINKS   -------------------->
@@ -282,7 +253,7 @@
      </fieldset>   		
 	  <h1 style="color:#FFDF00;">When I say "draw,"....</h1>
     <!------------------ The Poker Table ------------------->
-    <hr>
+      <hr>
     <br>	
 	  <table width="500px"  height="50%">
         	<tr>
@@ -303,26 +274,21 @@
               <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
           </th>
           <td></td><td></td><td></td><td></td>
-          <td></td><td></td><td></td><td></td>          
-          <td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td><td></td>     
           <td></td><td></td><td></td>
+          <td></td><td></td><td></td><td></td>
           <th valign=bottom>
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
           </th>
         </tr>
-         <tr>
+        <tr>
           <td><img src="" id="player5_card1" width=80 height=122></td>
 		  <td><img src="" id="player5_card2" width=80 height=122></td>
 		  <td><img src="" id="player5_card3" width=80 height=122></td>
 		  <td><img src="" id="player5_card4" width=80 height=122></td>
 		  <td><img src="" id="player5_card5" width=80 height=122></td>
-		  <td></td>
-		  <td><img src="" id="requesting_p1yr_card1" width=80 height=122></td>
-          <td><img src="" id="requesting_p1yr_card2" width=80 height=122></td>
-          <td><img src="" id="requesting_p1yr_card3" width=80 height=122></td>
-          <td><img src="" id="requesting_p1yr_card4" width=80 height=122></td>
-          <td><img src="" id="requesting_p1yr_card5" width=80 height=122></td>
-		  <td></td>		  
+		  <td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td>		  
           <td><img src="" id="player2_card1" width=80 height=122></td>
 		  <td><img src="" id="player2_card2" width=80 height=122></td>
 		  <td><img src="" id="player2_card3" width=80 height=122></td>
@@ -335,38 +301,16 @@
               <br><br><br>
               <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
           </th>          
-          <td></td><td></td>
-          <td valign=top>          
-            <input type="radio" id="card1Hld" name="card1" value="hold" checked="checked"><label for="card1Hld" style="color:yellow;">Hold</label><br>
-            <input type="radio" id="card1Dis" name="card1" value="discard"><label for="card1Dis" style="color:#DC143C; font-weight:bold;">Discard</label>           
-          </td>
-          <td valign=top>
-            <input type="radio" id="card2Hld" name="card2" value="hold" checked="checked"><label for="card2Hld" style="color:yellow;">Hold</label><br>
-            <input type="radio" id="card2Dis" name="card2" value="discard"><label for="card2Dis" style="color:#DC143C; font-weight:bold;">Discard</label>            
-          </td>
-          <td valign=top>
-            <input type="radio" id="card3Hld" name="card3" value="hold" checked="checked"><label for="card3Hld" style="color:yellow;">Hold</label><br>
-            <input type="radio" id="card3Dis" name="card3" value="discard"><label for="card3Dis" style="color:#DC143C; font-weight:bold;">Discard</label>      
-            <p></p><form id="draw_cards" class="form" method="POST" action='#'>
-                      <input class="submit_btn2" type="submit" name="btn" value="Draw">
-                   </form>
-          </td>
-          <td valign=top>
-            <input type="radio" id="card4Hld" name="card4" value="hold" checked="checked"><label for="card4Hld" style="color:yellow;">Hold</label><br>
-            <input type="radio" id="card4Dis" name="card4" value="discard"><label for="card4Dis" style="color:#DC143C; font-weight:bold;">Discard</label>            
-          </td>
-          <td valign=top>
-            <input type="radio" id="card5Hld" name="card5" value="hold" checked="checked"><label for="card5Hld" style="color:yellow;">Hold</label><br>
-            <input type="radio" id="card5Dis" name="card5" value="discard"><label for="card5Dis" style="color:#DC143C; font-weight:bold;">Discard</label>
-          
-          </td><td></td><td></td>
+          <td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td><td></td>
+          <td></td>
           <th valign=bottom align="right">
               <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
           </th>
           <td></td><td></td><td></td>
         </tr>
         <tr>
-          <td></td><td></td><td></td>          
+          <td></td><td></td><td></td>
           <td><img src="" id="player4_card1" width=80 height=122></td>
 		  <td><img src="" id="player4_card2" width=80 height=122></td>
 		  <td><img src="" id="player4_card3" width=80 height=122></td>
@@ -382,6 +326,6 @@
         </tr>
 	  </table> 	
 	<br>	
-	<div id="log"></div>
+	<div id="log"></div>	
    </body>
 </html>
