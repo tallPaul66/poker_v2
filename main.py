@@ -181,7 +181,7 @@ def deal_click():
     print(f'\ndeal_click() got called!')
     
     if 'draw' in http_ref:
-        print(f'\Game is draw poker, boys. draw.stage = {draw.stage}')
+        print(f'Game is draw poker, boys. draw.stage = {draw.stage}')
         if len(draw.stage) == 0: # re-activate all tonight's players
             players_active = players_tonight.copy()
             emit('clear_msgs',{}, broadcast = True)  # clear the draw cards msg area
