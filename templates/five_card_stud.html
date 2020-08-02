@@ -8,7 +8,7 @@
 		background-repeat: repeat;}
   </style>
   <head>
-    <title>Draw Poker</title>
+    <title>Five-card Stud</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
@@ -61,11 +61,36 @@
                 if (cb)
                     cb();
             });
-            socket.on('clear_msgs', function(msg, cb) {                
-                // but this appends....
+            // function to clear the log of messages on new game
+            socket.on('clear_log', function(msg, cb) {                
                 $('#log').text($('<div/>').text('').html());
                 if (cb)
                     cb();
+            });
+            // function to clear the log of messages on new game
+            socket.on('clear_bet_log', function(msg, cb) {   
+                $('#bet_log').text($('<div/>').text('').html());
+            });
+            // print to browser when somebody folds
+            socket.on('who_folded', function(msg, cb) {
+                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
+            });
+            
+            // print to browser the latest bet
+            socket.on('bet_msg', function(msg, cb) {
+                var player = msg.player
+                var amt = msg.amt
+                $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());               
+            });
+            
+            // print to browser the total pot
+             socket.on('pot_msg', function(msg, cb) {
+                $('#pot_total').text($('<div/>').text('Pot Total ' + msg.amt).html());               
+            });
+            
+            // print to browser the player's stash
+            socket.on('stash_msg', function(msg, cb) {
+                $('#player_stash').text($('<div/>').text(msg.stash).html());            
             });
             socket.on('get_cards', function(msg, cb) {
                 players_cards = msg.cards
@@ -150,24 +175,34 @@
                      Handlers for the different forms in the page.
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
             
-            $('form#broadcast').submit(function(event) {
-                socket.emit('my_broadcast_event', {data: $('#broadcast_data').val()});
-                return false;
-            });
-            //$('form#join').submit(function(event) {
-            //    socket.emit('join', {room: $('#join_room').val()});
-            //    return false;
-            
+            // This doesn't work, as far as I can tell
             $('form#connect_btn').submit(function(event) {
                 var url_params = new URLSearchParams(window.location.search);
                 var player_name = url_params.get('player');
                 socket.emit('my_event', {data: 'Client connected!', player: player_name});
                 return false;            
             });
-            $('form#leave').submit(function(event) {
-                socket.emit('leave', {room: $('#leave_room').val()});
+            
+            $('form#broadcast').submit(function(event) {
+                socket.emit('my_broadcast_event', {data: $('#broadcast_data').val()});
                 return false;
             });
+            
+            // betting form handler
+            $('form#bet').submit(function(event) {
+                socket.emit('bet_receive', {amt: $('#bet_entered').val()});
+                // reset the bet field to 0
+                document.getElementById('bet_entered').value = 0
+                return false;
+            });
+            
+            // Claim_pot form handler
+            $('form#claim_pot').submit(function(event) {
+                socket.emit('claim_pot');
+                // reset the bet field to 0                
+                return false;
+            });
+        
             $('form#deal').submit(function(event) {
                 socket.emit('deal'); 
                 return false;
@@ -195,11 +230,6 @@
                 start_time = (new Date).getTime();
                 socket.emit('my_ping');
             }, 1000);
-            
-            // print to browser when somebody folds
-            socket.on('who_folded', function(msg, cb) {
-                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
-            });
 
             // Handler for the "pong" message. When the pong is received, the
             // time from the ping is stored, and the average of the last 30
@@ -208,20 +238,25 @@
             // bunch of code to get avg latency, and print in browers, which I 
             // don't want...            
             });
-            $('form#close').submit(function(event) {
-                socket.emit('close_room', {room: $('#close_room').val()});
-                return false;
-            });
-            $('form#disconnect').submit(function(event) {
-                socket.emit('disconnect_request');
-                return false;
-            });
+                    
         });
+        // This is for the betting and clear buttons to enter the values
+        // into the betting amount text box
+        function writeNumbers(el) {
+            var txt = document.getElementById("bet_entered");
+            var bet_amt = parseInt(el.innerHTML, 10);
+            if(txt.value==""){ txt.value = 0 + bet_amt}
+            else {txt.value = parseInt(txt.value, 10) + bet_amt;}
+        }
+        function c() {
+            var txt = document.getElementById("bet_entered");
+            txt.value = 0;
+        }
     </script>
   </head>
    <body>
      
-     <!----------------------  New Game Button --------------------> 
+     <!-------------------------------  New Game Button -------------------------------------> 
      <div>  	  
      <fieldset>
         <form style='float: left; padding: 5px;' id= "new_game" class="form" method="POST" action='#'>     
@@ -229,30 +264,26 @@
         </form>
         <form style='float: left; padding: 5px;' id="deal" class="form" method="POST" action='#'>
            <input  class = "deal_btn" type="submit" name="btn" value="D E A L" > 
-        </form>
-        <!-------------------    GAME LINKS   -------------------->
-    	     &nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red">Draw</a>
+        </form>        
+    <!---------------------------------    GAME LINKS   ------------------------------------->
+    	    &nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red">Draw</a>
     	    &nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red">5-Card Stud</a>
+    	    <div id="player_stash"></div>
 	 </fieldset>
-	 </div>
-	<!-------------------    GAME LINKS   -------------------->
+	 </div>     
      
+    <!-----------------------------  Fold and Reveal buttons --------------------------------> 
      <fieldset>
-    <!---------------  Fold and Reveal buttons ---------------> 
         <form style='float: left; padding: 5px;'  id= "fold" class = "form" method="POST" action='#'> 
            <input class="submit_btn1" type="submit" name="btn" value="FOLDY-DOLDY">
         </form>
         <form style='float: left; padding: 5px;' id= "reveal" class = "form" method="POST" action='#'> 
 	       <input class="submit_btn1" type="submit" name="btn" value="REVEAL">
         </form>             
-    	<!---------------     JOIN button   --------------->    	
-    	<form style='float: left; padding: 5px;' id="connect_btn" class="form" method="POST" action='#'>
-            <input type="submit" value="Connect?">
-        </form>
       <br>
      </fieldset>   		
 	  <h1 style="color:#FFDF00;">~ Five Card Stud ~</h1>
-    <!------------------ The Poker Table ------------------->
+    <!------------------------------------- The Poker Table --------------------------------->
       <hr>
     <br>	
 	  <table width="500px"  height="50%">
@@ -287,8 +318,33 @@
 		  <td><img src="" id="player5_card3" width=80 height=122></td>
 		  <td><img src="" id="player5_card4" width=80 height=122></td>
 		  <td><img src="" id="player5_card5" width=80 height=122></td>
-		  <td></td><td></td><td></td><td></td>
-          <td></td><td></td><td></td>		  
+		  <td></td>
+		  <td> </td>
+<!-------------------------------------  Betting ----------------------------------------> 
+		  <th valign=top>
+    		  <button id="bet_1" class="button" type="button" onclick=writeNumbers(this)>1</button>
+    		  <button id="bet_2" class="button" type="button" onclick=writeNumbers(this)>2</button>	
+    		  <button id="bet_5" class="button" type="button" onclick=writeNumbers(this)>5</button>
+    		  <button id="clr_bet" class="button" type="button" onclick=c()>clear</button>
+		  </th>
+		  <th valign=top>
+    		  <form id="bet" method="POST" action='#'>
+                 <input id="bet_entered" type="text" name="bet_entered" style="width: 30px; height: 30px; text-align:center; font-size:25px;" value=0 >
+                 <input type="submit" value="Place Bet">
+              </form>
+              <br>
+                 <div id="pot_total"></div> 
+              <br>
+              <br>
+                 <form style='float: left; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     
+                     <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
+                </form>              
+		  </th>
+		  <th valign=top>
+    		  <div id="bet_log"></div>
+		  </th>
+<!-------------------------------------  /Betting ---------------------------------------> 
+          <td></td><td></td>		  
           <td><img src="" id="player2_card1" width=80 height=122></td>
 		  <td><img src="" id="player2_card2" width=80 height=122></td>
 		  <td><img src="" id="player2_card3" width=80 height=122></td>
@@ -325,7 +381,6 @@
           <td></td><td></td><td></td>
         </tr>
 	  </table> 	
-	<br>	
-	<div id="log"></div>	
+	 <div id="log"></div>
    </body>
 </html>

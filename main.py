@@ -30,7 +30,16 @@ thread_lock = Lock()
 # global variables
 players_tonight = []
 possible_players = ['player1', 'player2', 'player3', 'player4', 'player5', 'player6']
-player_map = {}
+player_name_map = {}
+player_stash_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'', 
+             'player5':'', 'player6':''}
+pot_amount = 0
+
+def pot_update(amt):
+    global pot_amount
+    pot_amount = pot_amount + int(amt)
+    
+stash_default = 100
 # games that require choices on the player's part beyond folding or staying in
 choice_games = ['draw', 'monty', 'spit']
 
@@ -67,19 +76,21 @@ def home():
     if request.method == 'POST':
         players_tonight.clear()
 
-        player_map['player1'] = request.form.get('player1') 
-        player_map['player2'] = request.form.get('player2')
-        player_map['player3'] = request.form.get('player3')
-        player_map['player4'] = request.form.get('player4')
-        player_map['player5'] = request.form.get('player5')
-        player_map['player6'] = request.form.get('player6')
-        for key in player_map.keys():
-            if player_map[key] != '':
+        player_name_map['player1'] = request.form.get('player1') 
+        player_name_map['player2'] = request.form.get('player2')
+        player_name_map['player3'] = request.form.get('player3')
+        player_name_map['player4'] = request.form.get('player4')
+        player_name_map['player5'] = request.form.get('player5')
+        player_name_map['player6'] = request.form.get('player6')
+        for key in player_name_map.keys():
+            if player_name_map[key] != '':
                 players_tonight.append(key)
+                player_stash_map[key] = stash_default
 
         print('Using the text box entries:')
         print(f'from home(): form submitted, players set for tonight: {players_tonight}')
-        print(player_map)
+        print(player_name_map)
+        print(player_stash_map)
         
         ''' we do the below regardless of who is playing tonight. That way, if someone
         is later removed from the night's lineup, when someone calls get_img()
@@ -94,7 +105,7 @@ def home():
 #~~~~~~~~~~~~~~ draw poker ~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/draw', methods = ['GET', 'POST'])
 def draw_play():    
-    return render_template('draw.html', names = player_map)
+    return render_template('draw.html', names = player_name_map)
 
 @app.route('/link_to_draw')
 def redirect_to_draw():
@@ -156,13 +167,13 @@ def draw_cards_draw(message):
     # this broadcasts the message to everybody how many cards the player took
     emit('who_drew_what',
                       {'data': 5-sum(hold_statuses), 
-                       'player': player_map[requesting_player] + ' took '},
+                       'player': player_name_map[requesting_player] + ' took '},
                        broadcast=True)
 
 #~~~~~~~~~~~~~~ FIVE-CARD STUD ~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/five_card_stud', methods = ['GET', 'POST'])
 def five_card_play():     
-    return render_template('five_card_stud.html', names = player_map)
+    return render_template('five_card_stud.html', names = player_name_map)
 
 @app.route('/link_to_five_card_stud')
 def redirect_to_five_card_stud():
@@ -184,7 +195,9 @@ def deal_click():
         print(f'Game is draw poker, boys. draw.stage = {draw.stage}')
         if len(draw.stage) == 0: # re-activate all tonight's players
             players_active = players_tonight.copy()
-            emit('clear_msgs',{}, broadcast = True)  # clear the draw cards msg area
+            emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
+            pot_update(-pot_amount) # if beginning of game, clear pot amount
+            emit('pot_msg', {'amt': pot_amount}, broadcast=True) # broadcast pot update
         hands = draw.deal(players_active)
         pg1_tmp = draw.get_display(hands, 'player1')
         pg2_tmp = draw.get_display(hands, 'player2')
@@ -197,7 +210,9 @@ def deal_click():
         print(f'\Game is 5-card stud, boys. draw.stage = {draw.stage}')
         if len(five_card_stud.stage) == 0: # re-activate all tonight's players
             players_active = players_tonight.copy()
-            emit('clear_msgs',{}, broadcast = True)  # clear the draw cards msg area
+            emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
+            pot_update(-pot_amount) # if beginning of game, clear pot amount
+            emit('pot_msg', {'amt': pot_amount}, broadcast=True) # broadcast pot update
         hands = five_card_stud.deal(players_active)
         pg1_tmp = five_card_stud.get_display(hands, 'player1')
         pg2_tmp = five_card_stud.get_display(hands, 'player2')
@@ -219,13 +234,24 @@ def deal_click():
     emit('get_cards', {'cards': cards_player4_pg}, room=room_map['player4'])
     emit('get_cards', {'cards': cards_player5_pg}, room=room_map['player5'])
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
+    
+    # show everyone their current stash amt
+    emit('stash_msg', {'stash': player_stash_map['player1']}, room=room_map['player1'])
+    emit('stash_msg', {'stash': player_stash_map['player2']}, room=room_map['player2'])
+    emit('stash_msg', {'stash': player_stash_map['player3']}, room=room_map['player3'])
+    emit('stash_msg', {'stash': player_stash_map['player4']}, room=room_map['player4'])
+    emit('stash_msg', {'stash': player_stash_map['player5']}, room=room_map['player5'])
+    emit('stash_msg', {'stash': player_stash_map['player6']}, room=room_map['player6'])
+    
+    # clear everybody's bet log
+    emit('clear_bet_log', broadcast=True)
 
 @socketio.on('fold', namespace='/test')
 def fold():
     print(f'\nfrom fold(): request.eviron["HTTP_REFERER"]:{request.environ["HTTP_REFERER"]} ')
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'We thus conclude that {requesting_player} ({player_map[requesting_player]})' +
+    print(f'We thus conclude that {requesting_player} ({player_name_map[requesting_player]})' +
           ' wants to fold, so I will fold them!...')
     hand_len = len(hands[requesting_player])
     #seven_card_stud.hands[requesting_player] = [seven_card_stud.card_back] * hand_len
@@ -233,7 +259,7 @@ def fold():
     #omaha.hands[requesting_player] = [omaha.card_back] * hand_len
     draw.hands[requesting_player] = [draw.card_back] * hand_len
     #spit.hands[requesting_player] = [spit.card_back] * hand_len
-    players_active.remove(requesting_player)
+    players_active.remove(requesting_player) # should add try/catch here in case player not in list
         
     cards_player1_pg[requesting_player] = [draw.card_back] * hand_len
     cards_player2_pg[requesting_player] = [draw.card_back] * hand_len
@@ -248,7 +274,7 @@ def fold():
     emit('get_cards', {'cards': cards_player4_pg}, room=room_map['player4'])
     emit('get_cards', {'cards': cards_player5_pg}, room=room_map['player5'])
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
-    emit('who_folded',{'player': player_map[requesting_player] + ' folded.'},
+    emit('who_folded',{'player': player_name_map[requesting_player] + ' folded.'},
                        broadcast=True)
 
 @socketio.on('reveal', namespace='/test')
@@ -279,7 +305,7 @@ def reveal_cards():
         print(f'from reveal_cards(), reveal_players_monty = {reveal_players_monty}')
                     
     else:
-        print(f'...we thus conclude that {requesting_player} ({player_map[requesting_player]})' +
+        print(f'...we thus conclude that {requesting_player} ({player_name_map[requesting_player]})' +
               ' wants to reveal their cards.')
         cards_player1_pg[requesting_player] = hands[requesting_player]        
         cards_player2_pg[requesting_player] = hands[requesting_player]
@@ -310,7 +336,8 @@ def reveal_cards():
 def start_new_game():
     print('\n start_new_game() has been called.')
     http_ref = request.environ['HTTP_REFERER']
-    
+    pot_update(-pot_amount) # clear pot amount
+    emit('pot_msg', {'amt': pot_amount}, broadcast=True) # broadcast pot update
     # What game is asking for a new hand:
     if 'draw' in http_ref:        
         draw.new_game(players = players_tonight)     
@@ -324,6 +351,7 @@ def start_new_game():
         monty.new_game(players = players_tonight)
     elif 'spit' in http_ref:
         spit.new_game(players = players_tonight)
+    emit('clear_bet_log', broadcast=True)
         
     ### Have to clear everybody's cards for display when "Update Cards" is called
     ### It's fine if not all these players are active
@@ -340,8 +368,45 @@ def start_new_game():
     emit('get_cards', {'cards': cards_player4_pg}, room=room_map['player4'])
     emit('get_cards', {'cards': cards_player5_pg}, room=room_map['player5'])
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
-    emit('clear_msgs',{}, broadcast = True)
+    
+    emit('clear_log',{}, broadcast = True)
 
+##########################################################################
+### Betting Handlers
+##########################################################################
+@socketio.on('bet_receive', namespace='/test')
+def receive_bet(message):
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    amt = message['amt']
+    pot_update(amt=amt) # update the pot total
+    print(f'{requesting_player} just bet ${amt}!!')
+    
+    # decrement player's stash, and send new stash amount to the player
+    player_stash_map[requesting_player] = player_stash_map[requesting_player] - int(amt)
+    emit('stash_msg', {'stash': player_stash_map[requesting_player]}, 
+         room=room_map[requesting_player])
+    
+    emit('bet_msg',{'player':  player_name_map[requesting_player], 'amt': amt},
+                       broadcast=True) # broadcast latest player's bet
+    emit('pot_msg', {'amt': pot_amount}, broadcast=True) # broadcast pot update
+
+@socketio.on('claim_pot', namespace='/test')
+def claim_pot():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    player_stash_map[requesting_player] = player_stash_map[requesting_player] + int(pot_amount)
+    
+    # show player his/her increased stash
+    emit('stash_msg', {'stash': player_stash_map[requesting_player]}, 
+         room=room_map[requesting_player])
+    
+    pot_update(-pot_amount) # clear pot amount
+    emit('pot_msg', {'amt': pot_amount}, broadcast=True) # broadcast pot update
+
+##########################################################################
+### Connection Handlers
+##########################################################################
 @socketio.on('my_event', namespace='/test')
 def test_message(message):
     http_ref = request.environ['HTTP_REFERER']
@@ -375,11 +440,13 @@ def ping_pong():
 
 
 @socketio.on('connect', namespace='/test')
-def test_connect():
+def connect_success():
     print('\ntest_connect() got called.')
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     client_sid = request.sid
+    # when a client connects, grab it's sid and update the player-sid
+    # map using also requesting_player captured from http_ref
     update_room_map(player = requesting_player, client_sid = client_sid)
     #global thread
     #with thread_lock:

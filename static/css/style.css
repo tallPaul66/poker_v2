@@ -73,7 +73,7 @@ h3 {
 .deal_btn{
 -webkit-appearance: none; /* without this, doesn't work right*/
   height: 3em; 
-  width: 10em;  
+  width: 8em;  
   background: #006400;
   color: white;
   border-style: outset;
@@ -83,7 +83,7 @@ h3 {
 .new_game_btn {
 -webkit-appearance: none; /* without this, doesn't work right*/
   height: 3em; 
-  width: 10em;  
+  width: 8em;  
   background: #A93226;
   color: white;
   border-style: outset;
@@ -91,9 +91,21 @@ h3 {
   font: bold 18px arial, sans-serif;
 }
 
-button { 
+.claim_btn { 
+-webkit-appearance: none; /* without this, doesn't work right*/
   height: 3em; 
-  width: 10em;  
+  width: 5em;  
+  background: #0066A2;
+  color: white;
+  border-style: outset;
+  border-color: #0066A2;
+  font: bold 18px arial, sans-serif;
+} 
+
+.button { 
+-webkit-appearance: none; /* without this, doesn't work right*/
+  height: 3em; 
+  width: 4em;  
   background: #0066A2;
   color: white;
   border-style: outset;
