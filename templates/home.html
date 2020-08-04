@@ -1,26 +1,45 @@
 <!DOCTYPE html>
 <html>
-  <body>
-   <div class="home">
-		<h1>Poker v2!</h1>
-		<p>Let's play!</p>
-	</div>
-<p>Async mode is: <b>{{ async_mode }}</b></p>
-<p>Please assign tonight's players and hit "submit"</p>
-<form method="post">
-<input id="player1" name="player1"  value="Bob"><label for="player1" style="color:#DC143C; font-weight:bold;">Player 1</label>
-<br>
-<input id="player2" name="player2" value="Ken"><label for="player2" style="color:#DC143C; font-weight:bold;">Player 2</label>
-<br>
-<input id="player3" name="player3" value="Chafe"><label for="player3" style="color:#DC143C; font-weight:bold;">Player 3</label>
-<br>
-<input id="player4" name="player4" value="Olie"><label for="player4" style="color:#DC143C; font-weight:bold;">Player 4</label>
-<br>
-<input id="player5" name="player5"><label for="player5" style="color:#DC143C; font-weight:bold;">Player 5</label>
-<br>
-<input id="player6" name="player6"><label for="player6" style="color:#DC143C; font-weight:bold;">Player 6</label>
-<br>
-<input type="submit">
-</form>
-</body>
+    <style>
+    	body{ background-image:url("/static/card_pics/table_top_3.jpg");
+		width: 100%;
+	    height: 100%;
+	    max-height: 100%;
+		background-size:cover;
+		background-repeat: no-repeat;}
+    </style>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    </head>
+    <body>
+       <div class="home">
+		   <h1>Poker v2!</h1>
+		   <p>Let's play!</p>
+	   </div>
+       <p>Async mode is: <b>{{ async_mode }}</b></p>
+       <h2>Please enter the players' names for tonight's game and hit "Submit."</h2>
+       <form method="post">
+            <label for="player1" style="color:#FFDF00; font-weight:bold;">Player 1: &nbsp</label>
+                <input id="player1" name="player1" style = "font-size:20px;" value="Bob">
+            <br>
+            <label for="player2" style="color:#FFDF00; font-weight:bold;">Player 2: &nbsp</label>
+                <input id="player2" name="player2" style = "font-size:20px;" value="Ken">
+            <br>
+            <label for="player3" style="color:#FFDF00; font-weight:bold;">Player 3: &nbsp</label>
+                <input id="player3" name="player3" style = "font-size:20px;" value="Chafe">
+            <br>
+            <label for="player4" style="color:#FFDF00; font-weight:bold;">Player 4: &nbsp</label>
+                <input id="player4" name="player4" style = "font-size:20px;" value="Olie">
+            <br>
+            <label for="player5" style="color:#FFDF00; font-weight:bold;">Player 5: &nbsp</label>
+                <input id="player5" name="player5" style = "font-size:20px;">
+            <br>
+            <label for="player6" style="color:#FFDF00; font-weight:bold;">Player 6: &nbsp</label>
+                <input id="player6" name="player6" style = "font-size:20px;">
+            <br>
+            <br>
+            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+            <input type="submit" class="submit_btn1" name="btn" value="Submit">
+       </form>
+    </body>
 </html>
