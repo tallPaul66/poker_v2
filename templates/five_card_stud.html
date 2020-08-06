@@ -85,7 +85,8 @@
             
             // print to browser the total pot
              socket.on('pot_msg', function(msg, cb) {
-                $('#pot_total').text($('<div/>').text('Pot Total ' + msg.amt).html());               
+                $('#pot_total').text($('<div/>').text('Pot:  ' +  '$' + msg.amt).html());
+                $('#max_bet').text($('<div/>').text('call: ' + '$' + msg.max).html());               
             });
             
             // print to browser the player's stash
@@ -333,7 +334,9 @@
                  <input type="submit" value="Place Bet">
               </form>
               <br>
-                 <div id="pot_total"></div> 
+                 <div id="pot_total"></div>
+                 <br> 
+                 <div id="max_bet"></div>                 
               <br>
               <br>
                  <form style='float: left; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     

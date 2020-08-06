@@ -34,11 +34,17 @@ player_name_map = {}
 player_stash_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'', 
              'player5':'', 'player6':''}
 pot_amount = 0
-
+max_bet = 0
 def pot_update(amt):
+    amt = int(amt)
     global pot_amount
-    pot_amount = pot_amount + int(amt)
+    global max_bet    
+    if amt > max_bet: # increase call amt
+        max_bet = amt
+    pot_amount = pot_amount + amt
     
+    
+
 stash_default = 100
 # games that require choices on the player's part beyond folding or staying in
 choice_games = ['draw', 'monty', 'spit']
@@ -188,16 +194,18 @@ def redirect_to_five_card_stud():
 def deal_click():  
     global hands
     global players_active
+    global max_bet    
     http_ref = request.environ['HTTP_REFERER']
     print(f'\ndeal_click() got called!')
     
     if 'draw' in http_ref:
+        max_bet = 0  # reset the call amount
         print(f'Game is draw poker, boys. draw.stage = {draw.stage}')
         if len(draw.stage) == 0: # re-activate all tonight's players
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
             pot_update(-pot_amount) # if beginning of game, clear pot amount
-            emit('pot_msg', {'amt': pot_amount}, broadcast=True) # broadcast pot update
+            #emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
         hands = draw.deal(players_active)
         pg1_tmp = draw.get_display(hands, 'player1')
         pg2_tmp = draw.get_display(hands, 'player2')
@@ -207,12 +215,13 @@ def deal_click():
         pg6_tmp = draw.get_display(hands, 'player6')
         
     if 'five_card_stud' in http_ref:
-        print(f'\Game is 5-card stud, boys. draw.stage = {draw.stage}')
+        max_bet = 0  # reset the call amount
+        print(f'\Game is 5-card stud, boys. draw.stage = {draw.stage}; max_bet is {max_bet}')
         if len(five_card_stud.stage) == 0: # re-activate all tonight's players
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
             pot_update(-pot_amount) # if beginning of game, clear pot amount
-            emit('pot_msg', {'amt': pot_amount}, broadcast=True) # broadcast pot update
+            #emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
         hands = five_card_stud.deal(players_active)
         pg1_tmp = five_card_stud.get_display(hands, 'player1')
         pg2_tmp = five_card_stud.get_display(hands, 'player2')
@@ -243,6 +252,7 @@ def deal_click():
     emit('stash_msg', {'stash': player_stash_map['player5']}, room=room_map['player5'])
     emit('stash_msg', {'stash': player_stash_map['player6']}, room=room_map['player6'])
     
+    emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
     # clear everybody's bet log
     emit('clear_bet_log', broadcast=True)
 
@@ -332,12 +342,17 @@ def reveal_cards():
     emit('get_cards', {'cards': cards_player5_pg}, room=room_map['player5'])
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
 
+##########################################################################
+### New Game
+##########################################################################
 @socketio.on('new_game', namespace='/test')
 def start_new_game():
+    global max_bet
+    max_bet = 0
     print('\n start_new_game() has been called.')
     http_ref = request.environ['HTTP_REFERER']
     pot_update(-pot_amount) # clear pot amount
-    emit('pot_msg', {'amt': pot_amount}, broadcast=True) # broadcast pot update
+    emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
     # What game is asking for a new hand:
     if 'draw' in http_ref:        
         draw.new_game(players = players_tonight)     
@@ -374,8 +389,10 @@ def start_new_game():
 ##########################################################################
 ### Betting Handlers
 ##########################################################################
+
 @socketio.on('bet_receive', namespace='/test')
 def receive_bet(message):
+    global max_bet
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     amt = message['amt']
@@ -389,10 +406,12 @@ def receive_bet(message):
     
     emit('bet_msg',{'player':  player_name_map[requesting_player], 'amt': amt},
                        broadcast=True) # broadcast latest player's bet
-    emit('pot_msg', {'amt': pot_amount}, broadcast=True) # broadcast pot update
+    emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
 
 @socketio.on('claim_pot', namespace='/test')
 def claim_pot():
+    global max_bet
+    max_bet = 0
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     player_stash_map[requesting_player] = player_stash_map[requesting_player] + int(pot_amount)
@@ -402,7 +421,7 @@ def claim_pot():
          room=room_map[requesting_player])
     
     pot_update(-pot_amount) # clear pot amount
-    emit('pot_msg', {'amt': pot_amount}, broadcast=True) # broadcast pot update
+    emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
 
 ##########################################################################
 ### Connection Handlers
