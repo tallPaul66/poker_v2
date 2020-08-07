@@ -327,25 +327,25 @@
     		  <button id="bet_2" class="button" type="button" onclick=writeNumbers(this)>2</button>	
     		  <button id="bet_5" class="button" type="button" onclick=writeNumbers(this)>5</button>
     		  <button id="clr_bet" class="button" type="button" onclick=c()>clear</button>
-		  </th>
-		  <th valign=top>
+    		  <p></p>
     		  <form id="bet" method="POST" action='#'>
                  <input id="bet_entered" type="text" name="bet_entered" style="width: 30px; height: 30px; text-align:center; font-size:25px;" value=0 >
-                 <input type="submit" value="Place Bet">
+                 <p></p>
+                 <input type="submit" class = "place_bet_btn" value="Place Bet">
               </form>
-              <br>
-                 <div id="pot_total"></div>
-                 <br> 
-                 <div id="max_bet"></div>                 
-              <br>
-              <br>
-                 <form style='float: left; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     
-                     <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
-                </form>              
 		  </th>
-		  <td colspan = "2">
+		  <th colspan = "2" valign=top>
     		  <div id="bet_log"></div>
-		  </td>
+		  </th>
+		  <th valign=top>
+    		   <form style='float: left; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     
+                     <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
+               </form> 
+             <br>
+             <div id="pot_total"></div>
+             <br> 
+             <div id="max_bet"></div>                               
+		  </th>
 <!-------------------------------------  /Betting ---------------------------------------> 
           <td></td><td></td>		  
           <td><img src="" id="player2_card1" width=80 height=122></td>

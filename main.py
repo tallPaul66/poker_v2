@@ -33,8 +33,11 @@ possible_players = ['player1', 'player2', 'player3', 'player4', 'player5', 'play
 player_name_map = {}
 player_stash_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'', 
              'player5':'', 'player6':''}
+round_bets = {'player1':0, 'player2':0, 'player3':0, 'player4':0, 
+             'player5':0, 'player6':0} # keep track of players' bets in a single round
 pot_amount = 0
 max_bet = 0
+
 def pot_update(amt):
     amt = int(amt)
     global pot_amount
@@ -195,6 +198,7 @@ def deal_click():
     global hands
     global players_active
     global max_bet    
+    global round_bets
     http_ref = request.environ['HTTP_REFERER']
     print(f'\ndeal_click() got called!')
     
@@ -205,7 +209,7 @@ def deal_click():
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
             pot_update(-pot_amount) # if beginning of game, clear pot amount
-            #emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
+            round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
         hands = draw.deal(players_active)
         pg1_tmp = draw.get_display(hands, 'player1')
         pg2_tmp = draw.get_display(hands, 'player2')
@@ -221,7 +225,7 @@ def deal_click():
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
             pot_update(-pot_amount) # if beginning of game, clear pot amount
-            #emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
+            round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
         hands = five_card_stud.deal(players_active)
         pg1_tmp = five_card_stud.get_display(hands, 'player1')
         pg2_tmp = five_card_stud.get_display(hands, 'player2')
@@ -348,6 +352,8 @@ def reveal_cards():
 @socketio.on('new_game', namespace='/test')
 def start_new_game():
     global max_bet
+    global round_bets
+    round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     max_bet = 0
     print('\n start_new_game() has been called.')
     http_ref = request.environ['HTTP_REFERER']
@@ -393,10 +399,15 @@ def start_new_game():
 @socketio.on('bet_receive', namespace='/test')
 def receive_bet(message):
     global max_bet
+    global round_bets
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     amt = message['amt']
     pot_update(amt=amt) # update the pot total
+    for key in round_bets.keys():
+        if key == requesting_player:            
+            round_bets[key] += int(amt)
+    max_bet = max(round_bets.values())
     print(f'{requesting_player} just bet ${amt}!!')
     
     # decrement player's stash, and send new stash amount to the player
@@ -406,11 +417,15 @@ def receive_bet(message):
     
     emit('bet_msg',{'player':  player_name_map[requesting_player], 'amt': amt},
                        broadcast=True) # broadcast latest player's bet
-    emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
+    for player in players_active:
+        emit('pot_msg', {'amt': pot_amount, 'max': max_bet - round_bets[player]}, 
+                 room=room_map[player]) # update each player's call amt
+    
 
 @socketio.on('claim_pot', namespace='/test')
 def claim_pot():
     global max_bet
+    global round_bets
     max_bet = 0
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
@@ -419,7 +434,7 @@ def claim_pot():
     # show player his/her increased stash
     emit('stash_msg', {'stash': player_stash_map[requesting_player]}, 
          room=room_map[requesting_player])
-    
+    round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     pot_update(-pot_amount) # clear pot amount
     emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
 

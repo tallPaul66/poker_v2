@@ -91,6 +91,17 @@ h3 {
   font: bold 18px arial, sans-serif;
 }
 
+.place_bet_btn {
+-webkit-appearance: none; /* without this, doesn't work right*/
+  height: 3em; 
+  width: 6em;  
+  background: #A93226;
+  color: white;
+  border-style: outset;
+  border-color: #A93226;
+  font: bold 18px arial, sans-serif;
+}
+
 .claim_btn { 
 -webkit-appearance: none; /* without this, doesn't work right*/
   height: 3em; 
