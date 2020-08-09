@@ -4,12 +4,13 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #FFDF00;
 }
-form {
-    display: inline;
-    display: table;
+
+
+hr.vertical {
+  margin:5px
+  width: 2px;
+  height: 55px;
 }
-
-
 /* doesn't work
 */
 input[type="radio"]:checked + label {
@@ -38,6 +39,16 @@ h3 {
   color: #FFDF00;
 }
 
+.button { 
+-webkit-appearance: none; /* without this, doesn't work right*/
+  height: 3em; 
+  width: 4em;  
+  background: #0066A2;
+  color: white;
+  border-style: outset;
+  border-color: #0066A2;
+  font: bold 18px arial, sans-serif;
+} 
 .submit_btn1 {
  -webkit-appearance: none; /* without this, doesn't work right*/
   height: 3em; 
@@ -105,17 +116,6 @@ h3 {
 .claim_btn { 
 -webkit-appearance: none; /* without this, doesn't work right*/
   height: 3em; 
-  width: 5em;  
-  background: #0066A2;
-  color: white;
-  border-style: outset;
-  border-color: #0066A2;
-  font: bold 18px arial, sans-serif;
-} 
-
-.button { 
--webkit-appearance: none; /* without this, doesn't work right*/
-  height: 3em; 
   width: 4em;  
   background: #0066A2;
   color: white;
@@ -123,6 +123,8 @@ h3 {
   border-color: #0066A2;
   font: bold 18px arial, sans-serif;
 } 
+
+
 /*
  * Formatting the header area
  */
@@ -141,14 +143,6 @@ header {
   grid-template-columns: 100px 50px 100px;
   grid-template-rows: 80px auto 80px; 
   gap: 15px 10px;
-}
-
-div.seven_card {
-  padding: 5px 0 5px 0;
-  background-color: #E6E6FA;
-  -webkit-border-radius: 6px;
-     -moz-border-radius: 6px;
-          border-radius: 6px;
 }
 
 .menu {

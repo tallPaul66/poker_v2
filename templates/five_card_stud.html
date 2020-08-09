@@ -67,7 +67,7 @@
                 if (cb)
                     cb();
             });
-            // function to clear the log of messages on new game
+            // function to clear bet_log of messages on new game
             socket.on('clear_bet_log', function(msg, cb) {   
                 $('#bet_log').text($('<div/>').text('').html());
             });
@@ -91,7 +91,7 @@
             
             // print to browser the player's stash
             socket.on('stash_msg', function(msg, cb) {
-                $('#player_stash').text($('<div/>').text(msg.stash).html());            
+                $('#player_stash').text($('<div/>').text('$' + msg.stash).html());            
             });
             socket.on('get_cards', function(msg, cb) {
                 players_cards = msg.cards
@@ -243,9 +243,9 @@
         });
         // This is for the betting and clear buttons to enter the values
         // into the betting amount text box
-        function writeNumbers(el) {
+        function writeNumbers(x) {
             var txt = document.getElementById("bet_entered");
-            var bet_amt = parseInt(el.innerHTML, 10);
+            var bet_amt = parseInt(x, 10);
             if(txt.value==""){ txt.value = 0 + bet_amt}
             else {txt.value = parseInt(txt.value, 10) + bet_amt;}
         }
@@ -257,32 +257,43 @@
   </head>
    <body>
      
-     <!-------------------------------  New Game Button -------------------------------------> 
-     <div>  	  
+    <!----------------------  Dashboard --------------------> 
+     
      <fieldset>
-        <form style='float: left; padding: 5px;' id= "new_game" class="form" method="POST" action='#'>     
-           <input  class = "new_game_btn" type="submit" name="btn" value="NEW GAME" >
+      <div style="display:flex;  float:left; flex-direction: row; justify-content: left; align-items: center;">  
+        <form style="margin-right:3px; margin-top: 14px;" id= "new_game" class="form" method="POST" action='#'>     
+             <input  class = "new_game_btn" type="submit" name="btn" value="NEW GAME" >
         </form>
-        <form style='float: left; padding: 5px;' id="deal" class="form" method="POST" action='#'>
-           <input  class = "deal_btn" type="submit" name="btn" value="D E A L" > 
-        </form>        
-    <!---------------------------------    GAME LINKS   ------------------------------------->
+        <form style= "margin-right:20px; margin-top: 14px;" id="deal" class="form" method="POST" action='#'>
+             <input  class = "deal_btn" type="submit" name="btn" value="D E A L" > 
+        </form>
+        <hr class="vertical" />
+        <hr class="vertical" />
+        <form style= "margin-left:20px; margin-right:3px; margin-top: 14px;" id= "fold" class = "form" method="POST" action='#'> 
+             <input class="submit_btn1" type="submit" name="btn" value="FOLDY-DOLDY">
+        </form>
+        <form style= "margin-right:20px; margin-top: 14px;" id= "reveal" class = "form" method="POST" action='#'> 
+	         <input class="submit_btn1" type="submit" name="btn" value="REVEAL">
+        </form>            
+        
+        <hr class="vertical" />
+        <hr class="vertical" />
+        <input style= "margin-left:20px;" type="image" src="static/card_pics/white_chip.png" width=55 height=55 name="bet_1" id="bet_1" onclick="writeNumbers(1);"/>
+        <input style= "margin-left:3px;" type="image" src="static/card_pics/red_chip.png" width=55 height=55  name="bet_2" id="bet_2" onclick="writeNumbers(2);"/>
+        <input style= "margin-left:3px;" type="image" src="static/card_pics/blue_chip.png" width=55 height=55  name="bet_5" id="bet_5" onclick="writeNumbers(5);"/>
+   	  
+   		  
+   		<form style="margin-top: 20px; margin-left:20px" id="bet" method="POST" action='#'>
+                 <input id="bet_entered" type="text" name="bet_entered" style="width: 30px; height: 55px; text-align:center; font-size:25px;" value=0 >
+                 <button style="margin-left:2px; margin-right:20px" id="clr_bet" class="button" type="button" onclick=c()>clear</button>
+                 <input syle= "margin-left:10px" type="submit" class = "place_bet_btn" value="Place Bet">
+        </form>
+          &nbsp&nbsp<h1><div id="player_stash"></div></h1>
+      </div>  
+    <!-------------------    GAME LINKS   -------------------->
     	    &nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red">Draw</a>
     	    &nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red">5-Card Stud</a>
-    	    <div id="player_stash"></div>
-	 </fieldset>
-	 </div>     
-     
-    <!-----------------------------  Fold and Reveal buttons --------------------------------> 
-     <fieldset>
-        <form style='float: left; padding: 5px;'  id= "fold" class = "form" method="POST" action='#'> 
-           <input class="submit_btn1" type="submit" name="btn" value="FOLDY-DOLDY">
-        </form>
-        <form style='float: left; padding: 5px;' id= "reveal" class = "form" method="POST" action='#'> 
-	       <input class="submit_btn1" type="submit" name="btn" value="REVEAL">
-        </form>             
-      <br>
-     </fieldset>   		
+    <!-------------------      HEADING    -------------------->
 	  <h1 style="color:#FFDF00;">~ Five Card Stud ~</h1>
     <!------------------------------------- The Poker Table --------------------------------->
       <hr>
@@ -319,35 +330,29 @@
 		  <td><img src="" id="player5_card3" width=80 height=122></td>
 		  <td><img src="" id="player5_card4" width=80 height=122></td>
 		  <td><img src="" id="player5_card5" width=80 height=122></td>
-		  <td></td>
-		  <td> </td>
+		  
 <!-------------------------------------  Betting ----------------------------------------> 
 		  <th valign=top>
-    		  <button id="bet_1" class="button" type="button" onclick=writeNumbers(this)>1</button>
-    		  <button id="bet_2" class="button" type="button" onclick=writeNumbers(this)>2</button>	
-    		  <button id="bet_5" class="button" type="button" onclick=writeNumbers(this)>5</button>
-    		  <button id="clr_bet" class="button" type="button" onclick=c()>clear</button>
-    		  <p></p>
-    		  <form id="bet" method="POST" action='#'>
-                 <input id="bet_entered" type="text" name="bet_entered" style="width: 30px; height: 30px; text-align:center; font-size:25px;" value=0 >
-                 <p></p>
-                 <input type="submit" class = "place_bet_btn" value="Place Bet">
-              </form>
 		  </th>
 		  <th colspan = "2" valign=top>
     		  <div id="bet_log"></div>
 		  </th>
-		  <th valign=top>
-    		   <form style='float: left; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     
-                     <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
-               </form> 
-             <br>
-             <div id="pot_total"></div>
+		  <th valign=bottom>
+		     <br> 
+             <h1><div id="pot_total"></div></h1>
              <br> 
-             <div id="max_bet"></div>                               
+             <div id="max_bet"></div>
+             <br>
+             <form style='float: left; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     
+                     <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
+             </form> 
 		  </th>
-<!-------------------------------------  /Betting ---------------------------------------> 
-          <td></td><td></td>		  
+<!-------------------------------------  /Betting --------------------------------------->
+          <td></td>
+          <th colspan = "2" valign=top>
+    		  <div id="log"></div>
+		  </th>
+		  <td></td>		  
           <td><img src="" id="player2_card1" width=80 height=122></td>
 		  <td><img src="" id="player2_card2" width=80 height=122></td>
 		  <td><img src="" id="player2_card3" width=80 height=122></td>
@@ -383,7 +388,6 @@
 		  <td><img src="" id="player3_card5" width=80 height=122></td>
           <td></td><td></td><td></td>
         </tr>
-	  </table> 	
-	 <div id="log"></div>
+	  </table>
    </body>
 </html>
