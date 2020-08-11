@@ -1,6 +1,6 @@
 <html>
   <style>
-	body{ background-image:url("/static/card_pics/table_top_5.png");
+	body{ background-image:url("/static/card_pics/table_top_14.png");
 		width: 100%;
 	    height: 100%;
 	    max-height: 100%;
@@ -81,7 +81,7 @@
             
             // print to browser the total pot
              socket.on('pot_msg', function(msg, cb) {
-                $('#pot_total').text($('<div/>').text('Pot:  ' +  '$' + msg.amt).html());
+                $('#pot_total').text($('<div/>').text(  '$' + msg.amt).html());
                 $('#max_bet').text($('<div/>').text('call: ' + '$' + msg.max).html());               
             });
             
@@ -285,7 +285,9 @@
   </head>
    <body>
      
-     <!----------------------  Dashboard --------------------> 
+    <!--#################################################################################-->
+    <!--                                      DASHBOARD                                  -->
+    <!--#################################################################################--> 
      
      <fieldset>
       <div style="display:flex;  float:left; flex-direction: row; justify-content: left; align-items: center;">  
@@ -312,7 +314,7 @@
    	  
    		  
    		<form style="margin-top: 20px; margin-left:20px" id="bet" method="POST" action='#'>
-                 <input id="bet_entered" type="text" name="bet_entered" style="width: 30px; height: 55px; text-align:center; font-size:25px;" value=0 >
+                 <input id="bet_entered" type="text" name="bet_entered" style="width: 35px; height: 45px; text-align:center; font-size:25px;" value=0 >
                  <button style="margin-left:2px; margin-right:20px" id="clr_bet" class="button" type="button" onclick=c()>clear</button>
                  <input syle= "margin-left:10px" type="submit" class = "place_bet_btn" value="Place Bet">
         </form>
@@ -324,14 +326,18 @@
 	 </fieldset>
     <!-------------------      HEADING    -------------------->
 	  <h1 style="color:#FFDF00;">When I say "draw,"....</h1>
-    <!-------------------   The Poker Table   ---------------->
+	  
+    <!--#################################################################################-->
+    <!--                                The Poker Table                                  -->
+    <!--#################################################################################-->
+    
     <hr>
     <br>	
 	  <table width="500px"  height="50%">
         <tr>
-          <td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td>
           <td></td>
-          <th valign=middle><h3 style="color:#FFDF00;">{{names["player1"]}}</h3></th>
+          <th valign=middle colspan = "2"><h3 style="color:#FFDF00;">{{names["player1"]}}</h3></th>
           <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card3" width=80 height=122></td>
@@ -341,21 +347,20 @@
           <td></td><td></td>
         </tr>
         <tr>
-          <th valign=bottom>
+          <th valign=bottom colspan = "2">
               <br><br><br>
               <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
           </th>
-          <th colspan = "2" valign=top>
+          <th colspan = "3" valign=top>
     		  <div id="log"></div>
 		  </th>
-          <td></td><td></td>         
-<!-------------------------------------  Betting ----------------------------------------> 
+          <td></td><td></td> 
+    <!--####################################################################-->
+    <!--                                 BETTING                            -->
+    <!--####################################################################-->
 		  <th valign=top>
 		  </th>
-		  <th colspan = "2" valign=top>
-    		  <div id="bet_log"></div>
-		  </th>
-		  <th valign=bottom>
+		  <th valign=top>
 		     <br> 
              <h1><div id="pot_total"></div></h1>
              <br> 
@@ -365,14 +370,19 @@
                      <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
              </form> 
 		  </th>
-<!-------------------------------------  /Betting --------------------------------------->           
+		  <th colspan = "2" valign=top>
+        		  <br>
+        		  <div id="bet_log"></div>
+		  </th>
+    <!--####################################################################-->
+    <!--                                                                    -->
+    <!--####################################################################-->    
           <td></td><td></td><td></td>
-          <td></td><td></td><td></td>
-          <td></td> 
-          <th valign=bottom>
+          <td></td>
+          <th valign=bottom colspan = "2">
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
           </th>
-        </tr>
+         </tr>
          <tr>
           <td><img src="" id="player5_card1" width=80 height=122></td>
 		  <td><img src="" id="player5_card2" width=80 height=122></td>
@@ -393,8 +403,8 @@
 		  <td><img src="" id="player2_card5" width=80 height=122></td>
         </tr>
         <tr>
-          <td></td><td></td><td></td>
-          <th valign=bottom>
+          <td></td><td></td>
+          <th valign=bottom colspan = "2">
               <br><br><br>
               <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
           </th>          
@@ -423,10 +433,10 @@
             <input type="radio" id="card5Dis" name="card5" value="discard"><label for="card5Dis" style="color:#DC143C; font-weight:bold;">Discard</label>
           
           </td><td></td><td></td>
-          <th valign=bottom align="right">
+          <th valign=bottom align="right" colspan = "2">
               <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
           </th>
-          <td></td><td></td><td></td>
+          <td></td><td></td>
         </tr>
         <tr>
           <td></td><td></td><td></td>          

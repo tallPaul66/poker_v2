@@ -70,6 +70,11 @@
             // function to clear bet_log of messages on new game
             socket.on('clear_bet_log', function(msg, cb) {   
                 $('#bet_log').text($('<div/>').text('').html());
+                $('#bet_player1').text($('<div/>').text('').html());
+                $('#bet_player2').text($('<div/>').text('').html());
+                $('#bet_player3').text($('<div/>').text('').html());
+                $('#bet_player4').text($('<div/>').text('').html());
+                $('#bet_player5').text($('<div/>').text('').html());
             });
             // print to browser when somebody folds
             socket.on('who_folded', function(msg, cb) {
@@ -80,12 +85,24 @@
             socket.on('bet_msg', function(msg, cb) {
                 var player = msg.player
                 var amt = msg.amt
-                $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());               
+                $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
+                if(msg.player_by_number == 'player1') {
+                    $('#bet_player1').append('<br>' + $('<div/>').text(" bets " + amt).html());
+                } else if(msg.player_by_number=='player2'){
+                    $('#bet_player2').append('<br>' + $('<div/>').text(" bets " + amt).html());
+                } else if(msg.player_by_number=='player3'){
+                    $('#bet_player3').append('<br>' + $('<div/>').text(" bets " + amt).html());
+                } else if(msg.player_by_number=='player4'){
+                    $('#bet_player4').append('<br>' + $('<div/>').text(" bets " + amt).html());
+                } else if(msg.player_by_number=='player5'){
+                    $('#bet_player5').append('<br>' + $('<div/>').text(" bets " + amt).html());
+                }
+                               
             });
             
             // print to browser the total pot
              socket.on('pot_msg', function(msg, cb) {
-                $('#pot_total').text($('<div/>').text('Pot:  ' +  '$' + msg.amt).html());
+                $('#pot_total').text($('<div/>').text('$' + msg.amt).html());
                 $('#max_bet').text($('<div/>').text('call: ' + '$' + msg.max).html());               
             });
             
@@ -257,7 +274,9 @@
   </head>
    <body>
      
-    <!----------------------  Dashboard --------------------> 
+    <!--#################################################################################-->
+    <!--                                    DASHBOARD                                    -->
+    <!--#################################################################################-->
      
      <fieldset>
       <div style="display:flex;  float:left; flex-direction: row; justify-content: left; align-items: center;">  
@@ -284,7 +303,7 @@
    	  
    		  
    		<form style="margin-top: 20px; margin-left:20px" id="bet" method="POST" action='#'>
-                 <input id="bet_entered" type="text" name="bet_entered" style="width: 30px; height: 55px; text-align:center; font-size:25px;" value=0 >
+                 <input id="bet_entered" type="text" name="bet_entered" style="width: 35px; height: 45px; text-align:center; font-size:25px;" value=0 >
                  <button style="margin-left:2px; margin-right:20px" id="clr_bet" class="button" type="button" onclick=c()>clear</button>
                  <input syle= "margin-left:10px" type="submit" class = "place_bet_btn" value="Place Bet">
         </form>
@@ -294,15 +313,21 @@
     	    &nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red">Draw</a>
     	    &nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red">5-Card Stud</a>
     <!-------------------      HEADING    -------------------->
-	  <h1 style="color:#FFDF00;">~ Five Card Stud ~</h1>
-    <!------------------------------------- The Poker Table --------------------------------->
-      <hr>
+     </fieldset>
+	 <h1 style="color:#FFDF00;">~ Five Card Stud ~</h1>
+    <!--#################################################################################-->
+    <!--                                The Poker Table                                  -->
+    <!--#################################################################################-->
+    
+    <hr>
     <br>	
 	  <table width="500px"  height="50%">
-        	<tr>
-          <td></td><td></td><td></td><td></td>
+        <tr>
+          <td></td><td></td><td></td>
           <td></td>
-          <th valign=middle><h3 style="color:#FFDF00;">{{names["player1"]}}</h3></th>
+          <th valign=middle colspan = "2">
+              <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player1"]}}</h3>              
+          </th>
           <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card3" width=80 height=122></td>
@@ -312,32 +337,19 @@
           <td></td><td></td>
         </tr>
         <tr>
-          <th valign=bottom>
-              <br><br><br>
-              <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
+          <th valign=bottom colspan = "2">
+              <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player5"]}}</h3>              
           </th>
-          <td></td><td></td><td></td><td></td>
-          <td></td><td></td><td></td><td></td>     
-          <td></td><td></td><td></td>
-          <td></td><td></td><td></td><td></td>
-          <th valign=bottom>
-              <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
-          </th>
-        </tr>
-        <tr>
-          <td><img src="" id="player5_card1" width=80 height=122></td>
-		  <td><img src="" id="player5_card2" width=80 height=122></td>
-		  <td><img src="" id="player5_card3" width=80 height=122></td>
-		  <td><img src="" id="player5_card4" width=80 height=122></td>
-		  <td><img src="" id="player5_card5" width=80 height=122></td>
-		  
-<!-------------------------------------  Betting ----------------------------------------> 
+          <th colspan = "3" valign=top>
+    		  <div id="log"></div>
+		  </th>
+          <td></td><td></td> 
+    <!--####################################################################-->
+    <!--                                 BETTING                            -->
+    <!--####################################################################-->
 		  <th valign=top>
 		  </th>
-		  <th colspan = "2" valign=top>
-    		  <div id="bet_log"></div>
-		  </th>
-		  <th valign=bottom>
+		  <th valign=top>
 		     <br> 
              <h1><div id="pot_total"></div></h1>
              <br> 
@@ -347,12 +359,27 @@
                      <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
              </form> 
 		  </th>
-<!-------------------------------------  /Betting --------------------------------------->
-          <td></td>
-          <th colspan = "2" valign=top>
-    		  <div id="log"></div>
+		  <th colspan = "2" valign=top>
+        		  <br>
+        		  <div id="bet_log"></div>
 		  </th>
-		  <td></td>		  
+    <!--####################################################################-->
+    <!--                                                                    -->
+    <!--####################################################################-->    
+          <td></td><td></td><td></td>
+          <td></td>
+          <th valign=bottom colspan = "2">
+              <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player2"]}}</h3>                           
+          </th>
+         </tr>
+         <tr>
+          <td><img src="" id="player5_card1" width=80 height=122></td>
+		  <td><img src="" id="player5_card2" width=80 height=122></td>
+		  <td><img src="" id="player5_card3" width=80 height=122></td>
+		  <td><img src="" id="player5_card4" width=80 height=122></td>
+		  <td><img src="" id="player5_card5" width=80 height=122></td>
+		  <td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td>		  
           <td><img src="" id="player2_card1" width=80 height=122></td>
 		  <td><img src="" id="player2_card2" width=80 height=122></td>
 		  <td><img src="" id="player2_card3" width=80 height=122></td>
@@ -360,21 +387,21 @@
 		  <td><img src="" id="player2_card5" width=80 height=122></td>
         </tr>
         <tr>
-          <td></td><td></td><td></td>
-          <th valign=bottom>
-              <br><br><br>
-              <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
+          <td></td><td></td>
+          <th valign=bottom colspan = "2">
+              <br><br>
+              <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player4"]}}</h3> 
           </th>          
           <td></td><td></td><td></td><td></td>
           <td></td><td></td><td></td><td></td>
           <td></td>
-          <th valign=bottom align="right">
-              <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
+          <th valign=bottom align="right" colspan = "2">
+              <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player3"]}}</h3>               
           </th>
-          <td></td><td></td><td></td>
+          <td></td><td></td>
         </tr>
         <tr>
-          <td></td><td></td><td></td>
+          <td></td><td></td><td></td>          
           <td><img src="" id="player4_card1" width=80 height=122></td>
 		  <td><img src="" id="player4_card2" width=80 height=122></td>
 		  <td><img src="" id="player4_card3" width=80 height=122></td>
@@ -388,6 +415,6 @@
 		  <td><img src="" id="player3_card5" width=80 height=122></td>
           <td></td><td></td><td></td>
         </tr>
-	  </table>
+	  </table> 
    </body>
 </html>
