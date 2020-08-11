@@ -139,7 +139,7 @@ def draw_cards_draw(message):
         for i in range(len(cards_player1_pg['player1'])):
             if hold_statuses[i] == False:                
                 cards_player1_pg['player1'][i] = None
-        emit('get_cards',  {'cards': cards_player1_pg}, room=room_map['player1']) #'player1')
+        emit('get_cards',  {'cards': cards_player1_pg}, room=room_map['player1'])
         
         # 2. register the cards s/he wants drawn in draw.py
         draw.draw_card_idxs['player1'] = hold_statuses
@@ -147,31 +147,31 @@ def draw_cards_draw(message):
         for i in range(len(cards_player2_pg['player2'])):
             if hold_statuses[i] == False:                
                 cards_player2_pg['player2'][i] = None
-        emit('get_cards',  {'cards': cards_player2_pg}, room=room_map['player2']) #'player2')
+        emit('get_cards',  {'cards': cards_player2_pg}, room=room_map['player2'])
         draw.draw_card_idxs['player2'] = hold_statuses
     elif requesting_player == 'player3':
         for i in range(len(cards_player3_pg['player3'])):
             if hold_statuses[i] == False:                
                 cards_player3_pg['player3'][i] = None
-        emit('get_cards',  {'cards': cards_player3_pg}, room=room_map['player3']) #'player3')
+        emit('get_cards',  {'cards': cards_player3_pg}, room=room_map['player3'])
         draw.draw_card_idxs['player3'] = hold_statuses
     elif requesting_player == 'player4':
         for i in range(len(cards_player4_pg['player4'])):
             if hold_statuses[i] == False:                
                 cards_player4_pg['player4'][i] = None
-        emit('get_cards',  {'cards': cards_player4_pg}, room=room_map['player4']) #'player4')
+        emit('get_cards',  {'cards': cards_player4_pg}, room=room_map['player4'])
         draw.draw_card_idxs['player4'] = hold_statuses
     elif requesting_player == 'player5':
         for i in range(len(cards_player5_pg['player5'])):
             if hold_statuses[i] == False:                
                 cards_player5_pg['player5'][i] = None
-        emit('get_cards',  {'cards': cards_player5_pg}, room=room_map['player5']) #'player5')
+        emit('get_cards',  {'cards': cards_player5_pg}, room=room_map['player5'])
         draw.draw_card_idxs['player5'] = hold_statuses
     elif requesting_player == 'player6':
         for i in range(len(cards_player6_pg['player6'])):
             if hold_statuses[i] == False:                
                 cards_player6_pg['player6'][i] = None
-        emit('get_cards',  {'cards': cards_player6_pg}, room=room_map['player6']) #'player6')
+        emit('get_cards',  {'cards': cards_player6_pg}, room=room_map['player6'])
         draw.draw_card_idxs['player6'] = hold_statuses
     # this broadcasts the message to everybody how many cards the player took
     emit('who_drew_what',
