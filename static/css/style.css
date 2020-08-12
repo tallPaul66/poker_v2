@@ -26,7 +26,16 @@ h1 {
     margin-bottom: 0;
 }
 
-
+/* this txt_box didn't work I think, not sure*/
+.txt_box {
+   -webkit-appearance: none; 
+    vertical-align: middle; 
+    width: 35px; 
+    border: 2px outset; 
+    height: 52px; 
+    text-align: center; 
+    font-size: 25px;
+}
 h2 {
   font-size: 1em;
   margin-top: 0;

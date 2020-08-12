@@ -1,6 +1,6 @@
 <html>
   <style>
-	body{ background-image:url("/static/card_pics/table_top_7b.png");
+	body{ background-image:url("/static/card_pics/table_top_14.png");
 		width: 100%;
 	    height: 100%;
 	    max-height: 100%;
@@ -8,7 +8,7 @@
 		background-repeat: no-repeat;}
   </style>
   <head>
-    <title>Five-card Stud</title>
+    <title>Omaha</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
@@ -70,43 +70,22 @@
             // function to clear bet_log of messages on new game
             socket.on('clear_bet_log', function(msg, cb) {   
                 $('#bet_log').text($('<div/>').text('').html());
-                $('#bet_player1').text($('<div/>').text('').html());
-                $('#bet_player2').text($('<div/>').text('').html());
-                $('#bet_player3').text($('<div/>').text('').html());
-                $('#bet_player4').text($('<div/>').text('').html());
-                $('#bet_player5').text($('<div/>').text('').html());
-            });
-            // print to browser when somebody folds
-            socket.on('who_folded', function(msg, cb) {
-                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
             });
             
             // print to browser the latest bet
             socket.on('bet_msg', function(msg, cb) {
                 var player = msg.player
                 var amt = msg.amt
-                $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
-                if(msg.player_by_number == 'player1') {
-                    $('#bet_player1').append('<br>' + $('<div/>').text(" bets " + amt).html());
-                } else if(msg.player_by_number=='player2'){
-                    $('#bet_player2').append('<br>' + $('<div/>').text(" bets " + amt).html());
-                } else if(msg.player_by_number=='player3'){
-                    $('#bet_player3').append('<br>' + $('<div/>').text(" bets " + amt).html());
-                } else if(msg.player_by_number=='player4'){
-                    $('#bet_player4').append('<br>' + $('<div/>').text(" bets " + amt).html());
-                } else if(msg.player_by_number=='player5'){
-                    $('#bet_player5').append('<br>' + $('<div/>').text(" bets " + amt).html());
-                }
-                               
+                $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());               
             });
             
             // print to browser the total pot
              socket.on('pot_msg', function(msg, cb) {
-                $('#pot_total').text($('<div/>').text('$' + msg.amt).html());
+                $('#pot_total').text($('<div/>').text(  '$' + msg.amt).html());
                 $('#max_bet').text($('<div/>').text('call: ' + '$' + msg.max).html());               
             });
             
-             // print to browser the player's stash
+            // print to browser the player's stash
             socket.on('stash_msg', function(msg, cb) {
                 const url_params = new URLSearchParams(window.location.search);
                 const player_name = url_params.get('player');
@@ -122,24 +101,40 @@
                     $('#player5_stash').text($('<div/>').text('$' + msg.stash).html());  
                 }                          
             });
+            
+            // print to browser when somebody folds
+            socket.on('who_folded', function(msg, cb) {
+                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
+            });
             socket.on('get_cards', function(msg, cb) {
                 players_cards = msg.cards
                 players = Object.keys(players_cards)
                 console.log('keys are', players)
                 console.log("player1's cards", players_cards.player1)
                 
+                //these are the cards the player sees in the middle
+                var comm_card1 = players_cards.comm[0]
+                var comm_card2 = players_cards.comm[1]
+                var comm_card3 = players_cards.comm[2]
+                var comm_card4 = players_cards.comm[3]
+                var comm_card5 = players_cards.comm[4]
+                
+                document.getElementById('comm_card1').src = comm_card1;
+                document.getElementById('comm_card2').src = comm_card2;
+                document.getElementById('comm_card3').src = comm_card3;
+                document.getElementById('comm_card4').src = comm_card4;
+                document.getElementById('comm_card5').src = comm_card5;
+                
                 if("player1" in players_cards){
                     var player1_card1 = players_cards.player1[0];
                     var player1_card2 = players_cards.player1[1];
                     var player1_card3 = players_cards.player1[2];
                     var player1_card4 = players_cards.player1[3];
-                    var player1_card5 = players_cards.player1[4];
                     
                     document.getElementById('player1_card1').src = player1_card1;
                     document.getElementById('player1_card2').src = player1_card2;
                     document.getElementById('player1_card3').src = player1_card3;
                     document.getElementById('player1_card4').src = player1_card4;
-                    document.getElementById('player1_card5').src = player1_card5;
                 }
                 
                 if("player2" in players_cards){
@@ -147,26 +142,22 @@
                     var player2_card2 = players_cards.player2[1];
                     var player2_card3 = players_cards.player2[2];
                     var player2_card4 = players_cards.player2[3];
-                    var player2_card5 = players_cards.player2[4];
                     
                     document.getElementById('player2_card1').src = player2_card1;
                     document.getElementById('player2_card2').src = player2_card2;
                     document.getElementById('player2_card3').src = player2_card3;
                     document.getElementById('player2_card4').src = player2_card4;
-                    document.getElementById('player2_card5').src = player2_card5;
                 }
                 if("player3" in players_cards){
                     var player3_card1 = players_cards.player3[0];
                     var player3_card2 = players_cards.player3[1];
                     var player3_card3 = players_cards.player3[2];
                     var player3_card4 = players_cards.player3[3];
-                    var player3_card5 = players_cards.player3[4];
                     
                     document.getElementById('player3_card1').src = player3_card1;
                     document.getElementById('player3_card2').src = player3_card2;
                     document.getElementById('player3_card3').src = player3_card3;
                     document.getElementById('player3_card4').src = player3_card4;
-                    document.getElementById('player3_card5').src = player3_card5;
                 }
                 
                 if("player4" in players_cards){
@@ -174,13 +165,11 @@
                     var player4_card2 = players_cards.player4[1];
                     var player4_card3 = players_cards.player4[2];
                     var player4_card4 = players_cards.player4[3];
-                    var player4_card5 = players_cards.player4[4];
                     
                     document.getElementById('player4_card1').src = player4_card1;
                     document.getElementById('player4_card2').src = player4_card2;
                     document.getElementById('player4_card3').src = player4_card3;
                     document.getElementById('player4_card4').src = player4_card4;
-                    document.getElementById('player4_card5').src = player4_card5;
                 }
                 
                 if("player5" in players_cards){
@@ -188,13 +177,11 @@
                     var player5_card2 = players_cards.player5[1];
                     var player5_card3 = players_cards.player5[2];
                     var player5_card4 = players_cards.player5[3];
-                    var player5_card5 = players_cards.player5[4];
                 
                     document.getElementById('player5_card1').src = player5_card1;
                     document.getElementById('player5_card2').src = player5_card2;
                     document.getElementById('player5_card3').src = player5_card3;
                     document.getElementById('player5_card4').src = player5_card4;
-                    document.getElementById('player5_card5').src = player5_card5;
                 }
                 // below is from Miguel Grinberg's original code; I don't know what it does
                 if (cb)
@@ -205,19 +192,10 @@
                      Handlers for the different forms in the page.
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
             
-            // This doesn't work, as far as I can tell
-            $('form#connect_btn').submit(function(event) {
-                var url_params = new URLSearchParams(window.location.search);
-                var player_name = url_params.get('player');
-                socket.emit('my_event', {data: 'Client connected!', player: player_name});
-                return false;            
-            });
-            
             $('form#broadcast').submit(function(event) {
                 socket.emit('my_broadcast_event', {data: $('#broadcast_data').val()});
                 return false;
             });
-            
             // betting form handler
             $('form#bet').submit(function(event) {
                 socket.emit('bet_receive', {amt: $('#bet_entered').val()});
@@ -232,7 +210,7 @@
                 // reset the bet field to 0                
                 return false;
             });
-        
+            
             $('form#deal').submit(function(event) {
                 socket.emit('deal'); 
                 return false;
@@ -249,7 +227,7 @@
                 socket.emit('new_game'); 
                 return false;
             });
-            
+             
             // Interval function that tests message latency by sending a "ping"
             // message. The server then responds with a "pong" message and the
             // round trip time is measured. [Paul: not sure if this helps to not
@@ -260,7 +238,7 @@
                 start_time = (new Date).getTime();
                 socket.emit('my_ping');
             }, 1000);
-
+            
             // Handler for the "pong" message. When the pong is received, the
             // time from the ping is stored, and the average of the last 30
             // samples is average and displayed.
@@ -268,7 +246,14 @@
             // bunch of code to get avg latency, and print in browers, which I 
             // don't want...            
             });
-                    
+            $('form#close').submit(function(event) {
+                socket.emit('close_room', {room: $('#close_room').val()});
+                return false;
+            });
+            $('form#disconnect').submit(function(event) {
+                socket.emit('disconnect_request');
+                return false;
+            });
         });
         // This is for the betting and clear buttons to enter the values
         // into the betting amount text box
@@ -287,11 +272,11 @@
    <body>
      
     <!--#################################################################################-->
-    <!--                                    DASHBOARD                                    -->
-    <!--#################################################################################-->
+    <!--                                      DASHBOARD                                  -->
+    <!--#################################################################################--> 
      
      <fieldset>
-       <div style="display:flex;  float:left; flex-direction: row; justify-content: left; align-items: center;">  
+      <div style="display:flex;  float:left; flex-direction: row; justify-content: left; align-items: center;">  
         <form style="margin-right:3px; margin-top: 14px;" id= "new_game" class="form" method="POST" action='#'>     
              <input  class = "new_game_btn" type="submit" name="btn" value="NEW GAME" >
         </form>
@@ -323,12 +308,13 @@
 	    <hr class="vertical" />
         <hr class="vertical" />
 	    &nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red; font-size:20px;">Draw</a>
-    	&nbsp&nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red; font-size:20px;">5-Card Stud</a>
-    	&nbsp&nbsp<a href="{{ url_for('redirect_to_omaha') }}"  style="color:red; font-size:20px;">Omaha</a>
-    <!-------------------      HEADING    -------------------->
-       </div>
-     </fieldset>
-	 <h1 style="color:#FFDF00;">~ Five Card Stud ~</h1>
+    	&nbsp&nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red; font-size:20px;">5-Card Stud</a> 
+    	&nbsp&nbsp<a href="{{ url_for('redirect_to_omaha') }}"  style="color:red; font-size:20px;">Omaha</a> 
+      </div>    	 
+	 </fieldset>
+	 
+	 <h1 style="color:#FFDF00;">~ Omaha ~</h1>
+	  
     <!--#################################################################################-->
     <!--                                The Poker Table                                  -->
     <!--#################################################################################-->
@@ -339,22 +325,21 @@
         <tr>
           <td></td><td></td><td></td>
           <td></td>
-          <th valign=middle colspan = "2">              
-              <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player1"]}}</h3>
+          <th valign=middle colspan = "2">                
+              <h3 style="color:#FFDF00;">{{names["player1"]}}</h3>
               <h1><div id="player1_stash"></div></h1>
           </th>
           <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card3" width=80 height=122></td>
-		  <td valign=top><img src="" id="player1_card4" width=80 height=122></td>
-		  <td valign=top><img src="" id="player1_card5" width=80 height=122></td>
+		  <td valign=top><img src="" id="player1_card4" width=80 height=122></td>		  
           <td></td><td></td><td></td><td></td>
-          <td></td><td></td>
+          <td></td><td></td><td></td>
         </tr>
         <tr>
-          <th valign=bottom colspan = "2">              
-              <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player5"]}}</h3>
+          <th valign=bottom colspan = "2">
               <h1><div id="player5_stash"></div></h1>
+              <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
           </th>
           <th colspan = "3" valign=top>
     		  <div style="color:#F0FFFF;" id="log"></div>
@@ -385,7 +370,7 @@
           <td></td><td></td><td></td>
           <td></td>
           <th valign=bottom colspan = "2">              
-              <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player2"]}}</h3>
+              <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
               <h1><div id="player2_stash"></div></h1>
           </th>
          </tr>
@@ -394,29 +379,32 @@
 		  <td><img src="" id="player5_card2" width=80 height=122></td>
 		  <td><img src="" id="player5_card3" width=80 height=122></td>
 		  <td><img src="" id="player5_card4" width=80 height=122></td>
-		  <td><img src="" id="player5_card5" width=80 height=122></td>
-		  <td></td><td></td><td></td><td></td>
-          <td></td><td></td><td></td>		  
+		  <td></td><td></td>
+		  <td><img src="" id="comm_card1" width=80 height=122></td>
+          <td><img src="" id="comm_card2" width=80 height=122></td>
+          <td><img src="" id="comm_card3" width=80 height=122></td>
+          <td><img src="" id="comm_card4" width=80 height=122></td>
+          <td><img src="" id="comm_card5" width=80 height=122></td>
+		  <td></td><td></td>
           <td><img src="" id="player2_card1" width=80 height=122></td>
 		  <td><img src="" id="player2_card2" width=80 height=122></td>
 		  <td><img src="" id="player2_card3" width=80 height=122></td>
-		  <td><img src="" id="player2_card4" width=80 height=122></td>
-		  <td><img src="" id="player2_card5" width=80 height=122></td>
+		  <td><img src="" id="player2_card4" width=80 height=122></td>		  
         </tr>
         <tr>
           <td></td><td></td>
           <th valign=bottom colspan = "2">
-              <br><br>              
-              <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player4"]}}</h3> 
+              <br><br>
+              <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
               <h1><div id="player4_stash"></div></h1>
           </th>          
           <td></td><td></td><td></td><td></td>
           <td></td><td></td><td></td><td></td>
           <td></td>
-          <th valign=bottom align="right" colspan = "2">
-              <br><br>
-              <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player3"]}}</h3>  
-              <h1><div id="player3_stash"></div></h1>             
+          <th valign=bottom align="right" colspan = "2">  
+              <br><br>            
+              <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
+              <h1><div id="player3_stash"></div></h1>
           </th>
           <td></td><td></td>
         </tr>
@@ -426,15 +414,13 @@
 		  <td><img src="" id="player4_card2" width=80 height=122></td>
 		  <td><img src="" id="player4_card3" width=80 height=122></td>
 		  <td><img src="" id="player4_card4" width=80 height=122></td>
-		  <td><img src="" id="player4_card5" width=80 height=122></td>
-		  <td></td>
+		  <td></td><td></td>
 		  <td><img src="" id="player3_card1" width=80 height=122></td>
 		  <td><img src="" id="player3_card2" width=80 height=122></td>
 		  <td><img src="" id="player3_card3" width=80 height=122></td>
 		  <td><img src="" id="player3_card4" width=80 height=122></td>
-		  <td><img src="" id="player3_card5" width=80 height=122></td>
-          <td></td><td></td><td></td>
+		  <td></td><td></td><td></td><td></td>
         </tr>
-	  </table> 
+	  </table> 		
    </body>
 </html>

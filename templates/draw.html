@@ -338,19 +338,21 @@
         <input style= "margin-left:3px;" type="image" src="static/card_pics/blue_chip.png" width=55 height=55  name="bet_5" id="bet_5" onclick="writeNumbers(5);"/>
    	  
    		  
-   		<form style="margin-top: 20px; margin-left:20px" id="bet" method="POST" action='#'>
-                 <input id="bet_entered" type="text" name="bet_entered" style="width: 35px; height: 45px; text-align:center; font-size:25px;" value=0 >
-                 <button style="margin-left:2px; margin-right:20px" id="clr_bet" class="button" type="button" onclick=c()>clear</button>
-                 <input syle= "margin-left:10px" type="submit" class = "place_bet_btn" value="Place Bet">
-        </form>
-        <!-------------------    GAME LINKS   -------------------->
-   	    &nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red">Draw</a>
-   	    &nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red">5-Card Stud</a> 
-      </div>  
-    	 
+   		<form style="margin-top: 14px; margin-left:20px; margin-right:20px;" id="bet" method="POST" action='#'>
+            <input id="bet_entered" type="text" name="bet_entered" style="vertical-align:middle; width: 35px; border: 2px outset; height: 52px; text-align:center; font-size:25px;" value=0>
+            <button style="margin-left:2px; margin-right:10px" id="clr_bet" class="button" type="button" onclick=c()>clear</button>
+            <input syle= "margin-left:10px;" type="submit" class = "place_bet_btn" value="Place Bet">
+        </form>        
+    <!-------------------    GAME LINKS   -------------------->
+	    <hr class="vertical" />
+        <hr class="vertical" />
+	    &nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red; font-size:20px;">Draw</a>
+    	&nbsp&nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red; font-size:20px;">5-Card Stud</a> 
+    	&nbsp&nbsp<a href="{{ url_for('redirect_to_omaha') }}"  style="color:red; font-size:20px;">Omaha</a>
+      </div>    	 
 	 </fieldset>
-    <!-------------------      HEADING    -------------------->
-	  <h1 style="color:#FFDF00;">When I say "draw,"....</h1>
+	 
+	 <h1 style="color:#FFDF00;">When I say "draw,"....</h1>
 	  
     <!--#################################################################################-->
     <!--                                The Poker Table                                  -->
@@ -376,7 +378,6 @@
         </tr>
         <tr>
           <th valign=bottom colspan = "2">
-              <br><br><br>
               <h1><div id="player5_stash"></div></h1>
               <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
           </th>
@@ -434,8 +435,8 @@
         </tr>
         <tr>
           <td></td><td></td>
-          <th valign=bottom colspan = "2">
-              <br><br><br>              
+          <th valign=bottom colspan = "2"> 
+              <br><br>         
               <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
               <h1><div id="player4_stash"></div></h1>
           </th>          
@@ -464,7 +465,8 @@
             <input type="radio" id="card5Dis" name="card5" value="discard"><label for="card5Dis" style="color:#DC143C; font-weight:bold;">Discard</label>
           
           </td><td></td><td></td>
-          <th valign=bottom align="right" colspan = "2">              
+          <th valign=bottom align="right" colspan = "2"> 
+              <br><br>             
               <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
               <h1><div id="player3_stash"></div></h1>
           </th>

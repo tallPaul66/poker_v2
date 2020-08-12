@@ -13,8 +13,8 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 import draw
 import five_card_stud
+import omaha 
 # import seven_card_stud be sure to clear game stage in claim_pot()
-# import omaha be sure to clear game stage in claim_pot()
 # import monty be sure to clear game stage in claim_pot()
 # import spit be sure to clear game stage in claim_pot()
     
@@ -183,7 +183,7 @@ def draw_cards_draw(message):
                        'player': player_name_map[requesting_player] + ' takes '},
                        broadcast=True)
 
-#~~~~~~~~~~~~~~ FIVE-CARD STUD ~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~ FIVE-CARD STUD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/five_card_stud', methods = ['GET', 'POST'])
 def five_card_play():     
     return render_template('five_card_stud.html', names = player_name_map)
@@ -194,6 +194,18 @@ def redirect_to_five_card_stud():
     requesting_player = http_ref[http_ref.find('player=')+7:]
     print(f'msg from link_to_five_card_stud(): requesting_player is {requesting_player}')
     return redirect(url_for('five_card_play', player=requesting_player))
+
+#~~~~~~~~~~~~~~~~~~~ OMAHA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@app.route('/omaha', methods = ['GET', 'POST'])
+def omaha_play():     
+    return render_template('omaha.html', names = player_name_map)
+
+@app.route('/link_to_omaha')
+def redirect_to_omaha():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    print(f'msg from link_to_omaha(): requesting_player is {requesting_player}')
+    return redirect(url_for('omaha_play', player=requesting_player))
 
 #~~~~~~~~~~~~~~ Functions and Handlers ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -236,6 +248,21 @@ def deal_click():
         pg4_tmp = five_card_stud.get_display(hands, 'player4')
         pg5_tmp = five_card_stud.get_display(hands, 'player5')
         pg6_tmp = five_card_stud.get_display(hands, 'player6')
+    
+    if 'omaha' in http_ref:
+        max_bet = 0  # reset the call amount
+        print(f'Game is Omaha, boys. stage = {omaha.stage}; max_bet is {max_bet}')
+        if len(omaha.stage) == 0: # re-activate all tonight's players
+            players_active = players_tonight.copy()
+            emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
+            pot_update(-pot_amount) # if beginning of game, clear pot amount            
+        hands = omaha.deal(players_active)
+        pg1_tmp = omaha.get_display(hands, 'player1')
+        pg2_tmp = omaha.get_display(hands, 'player2')
+        pg3_tmp = omaha.get_display(hands, 'player3')
+        pg4_tmp = omaha.get_display(hands, 'player4')
+        pg5_tmp = omaha.get_display(hands, 'player5')
+        pg6_tmp = omaha.get_display(hands, 'player6')
         
     for key in pg1_tmp.keys():
         cards_player1_pg[key] = pg1_tmp[key]        
@@ -268,7 +295,6 @@ def deal_click():
             cards_player6_pg['requesting_player'] = pg6_tmp['player6']
             cards_player6_pg['player6'] = [None]*5
     
-    print(f'cards_player1_pg: {cards_player1_pg}')
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
     emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
@@ -307,7 +333,7 @@ def fold():
     hand_len = len(hands[requesting_player])
     #seven_card_stud.hands[requesting_player] = [seven_card_stud.card_back] * hand_len
     five_card_stud.hands[requesting_player] = [five_card_stud.card_back] * hand_len
-    #omaha.hands[requesting_player] = [omaha.card_back] * hand_len
+    omaha.hands[requesting_player] = [omaha.card_back] * hand_len
     draw.hands[requesting_player] = [draw.card_back] * hand_len
     #spit.hands[requesting_player] = [spit.card_back] * hand_len
     players_active.remove(requesting_player) # should add try/catch here in case player not in list
@@ -487,6 +513,7 @@ def claim_pot():
     # dealt to completion, so reset stage of all games
     draw.stage.clear()
     five_card_stud.stage.clear()
+    omaha.stage.clear()
     
     # show player his/her increased stash
     emit('stash_msg', {'stash': player_stash_map[requesting_player], 'player': requesting_player}, 
