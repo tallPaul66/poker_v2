@@ -87,13 +87,52 @@
             
             // print to browser the player's stash
             socket.on('stash_msg', function(msg, cb) {
-                $('#player_stash').text($('<div/>').text('$' + msg.stash).html());            
+                const url_params = new URLSearchParams(window.location.search);
+                const player_name = url_params.get('player');
+                if (player_name == 'player1') {
+                    $('#player1_stash').text($('<div/>').text('$' + msg.stash).html());
+                } else if (player_name == 'player2') {
+                    $('#player2_stash').text($('<div/>').text('$' + msg.stash).html());
+                } else if (player_name == 'player3') {
+                    $('#player3_stash').text($('<div/>').text('$' + msg.stash).html());
+                } else if (player_name == 'player4') {
+                    $('#player4_stash').text($('<div/>').text('$' + msg.stash).html());
+                } else if (player_name == 'player5') {
+                    $('#player5_stash').text($('<div/>').text('$' + msg.stash).html());  
+                }                          
+            });
+            
+            // print to browser player draw info
+             socket.on('who_drew_what', function(msg, cb) {
+                // the following two lines just get the plural right in the 
+                // msg displayed on the webpage
+                if(msg.data == 1) var_card = "card"
+                else var_card = "cards"
+                $('#log').append('<br>' + $('<div/>').text(msg.player + 
+                     + msg.data).html());               
+            });
+            // print to browser when somebody folds
+            socket.on('who_folded', function(msg, cb) {
+                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
             });
             socket.on('get_cards', function(msg, cb) {
                 players_cards = msg.cards
                 players = Object.keys(players_cards)
                 console.log('keys are', players)
                 console.log("player1's cards", players_cards.player1)
+                
+                //these are the cards the player sees in the middle
+                var requesting_p1yr_card1 = players_cards.requesting_player[0]
+                var requesting_p1yr_card2 = players_cards.requesting_player[1]
+                var requesting_p1yr_card3 = players_cards.requesting_player[2]
+                var requesting_p1yr_card4 = players_cards.requesting_player[3]
+                var requesting_p1yr_card5 = players_cards.requesting_player[4]
+                
+                document.getElementById('requesting_p1yr_card1').src = requesting_p1yr_card1;
+                document.getElementById('requesting_p1yr_card2').src = requesting_p1yr_card2;
+                document.getElementById('requesting_p1yr_card3').src = requesting_p1yr_card3;
+                document.getElementById('requesting_p1yr_card4').src = requesting_p1yr_card4;
+                document.getElementById('requesting_p1yr_card5').src = requesting_p1yr_card5;
                 
                 if("player1" in players_cards){
                     var player1_card1 = players_cards.player1[0];
@@ -239,20 +278,6 @@
                 socket.emit('my_ping');
             }, 1000);
             
-            // print to browser player draw info
-             socket.on('who_drew_what', function(msg, cb) {
-                // the following two lines just get the plural right in the 
-                // msg displayed on the webpage
-                if(msg.data == 1) var_card = "card"
-                else var_card = "cards"
-                $('#log').append('<br>' + $('<div/>').text(msg.player + 
-                     + msg.data + ' ' + var_card).html());               
-            });
-            // print to browser when somebody folds
-            socket.on('who_folded', function(msg, cb) {
-                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
-            });
-
             // Handler for the "pong" message. When the pong is received, the
             // time from the ping is stored, and the average of the last 30
             // samples is average and displayed.
@@ -318,11 +343,11 @@
                  <button style="margin-left:2px; margin-right:20px" id="clr_bet" class="button" type="button" onclick=c()>clear</button>
                  <input syle= "margin-left:10px" type="submit" class = "place_bet_btn" value="Place Bet">
         </form>
-          &nbsp&nbsp<h1><div id="player_stash"></div></h1>
+        <!-------------------    GAME LINKS   -------------------->
+   	    &nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red">Draw</a>
+   	    &nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red">5-Card Stud</a> 
       </div>  
-    <!-------------------    GAME LINKS   -------------------->
-    	    &nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red">Draw</a>
-    	    &nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red">5-Card Stud</a> 	 
+    	 
 	 </fieldset>
     <!-------------------      HEADING    -------------------->
 	  <h1 style="color:#FFDF00;">When I say "draw,"....</h1>
@@ -337,7 +362,10 @@
         <tr>
           <td></td><td></td><td></td>
           <td></td>
-          <th valign=middle colspan = "2"><h3 style="color:#FFDF00;">{{names["player1"]}}</h3></th>
+          <th valign=middle colspan = "2">                
+              <h3 style="color:#FFDF00;">{{names["player1"]}}</h3>
+              <h1><div id="player1_stash"></div></h1>
+          </th>
           <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card3" width=80 height=122></td>
@@ -349,10 +377,11 @@
         <tr>
           <th valign=bottom colspan = "2">
               <br><br><br>
+              <h1><div id="player5_stash"></div></h1>
               <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
           </th>
           <th colspan = "3" valign=top>
-    		  <div id="log"></div>
+    		  <div style="color:#F0FFFF;" id="log"></div>
 		  </th>
           <td></td><td></td> 
     <!--####################################################################-->
@@ -372,15 +401,16 @@
 		  </th>
 		  <th colspan = "2" valign=top>
         		  <br>
-        		  <div id="bet_log"></div>
+        		  <div style="color:#F0FFFF;" id="bet_log"></div>
 		  </th>
     <!--####################################################################-->
     <!--                                                                    -->
     <!--####################################################################-->    
           <td></td><td></td><td></td>
           <td></td>
-          <th valign=bottom colspan = "2">
+          <th valign=bottom colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
+              <h1><div id="player2_stash"></div></h1>
           </th>
          </tr>
          <tr>
@@ -405,8 +435,9 @@
         <tr>
           <td></td><td></td>
           <th valign=bottom colspan = "2">
-              <br><br><br>
+              <br><br><br>              
               <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
+              <h1><div id="player4_stash"></div></h1>
           </th>          
           <td></td><td></td>
           <td valign=top>          
@@ -433,8 +464,9 @@
             <input type="radio" id="card5Dis" name="card5" value="discard"><label for="card5Dis" style="color:#DC143C; font-weight:bold;">Discard</label>
           
           </td><td></td><td></td>
-          <th valign=bottom align="right" colspan = "2">
+          <th valign=bottom align="right" colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
+              <h1><div id="player3_stash"></div></h1>
           </th>
           <td></td><td></td>
         </tr>

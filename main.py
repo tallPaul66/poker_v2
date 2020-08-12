@@ -13,6 +13,10 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 import draw
 import five_card_stud
+# import seven_card_stud be sure to clear game stage in claim_pot()
+# import omaha be sure to clear game stage in claim_pot()
+# import monty be sure to clear game stage in claim_pot()
+# import spit be sure to clear game stage in claim_pot()
     
 
 #~~~~~~~~~~~~~~~~~~~ Config Stuff ~~~~~~~~~~~~~~~~~
@@ -136,47 +140,47 @@ def draw_cards_draw(message):
     if requesting_player == 'player1':
         # 1. Show card backs to player for cards selected to discard
         # as he/she waits for the dealer to deal the draw
-        for i in range(len(cards_player1_pg['player1'])):
+        for i in range(len(cards_player1_pg['requesting_player'])):
             if hold_statuses[i] == False:                
-                cards_player1_pg['player1'][i] = None
+                cards_player1_pg['requesting_player'][i] = None
         emit('get_cards',  {'cards': cards_player1_pg}, room=room_map['player1'])
         
         # 2. register the cards s/he wants drawn in draw.py
         draw.draw_card_idxs['player1'] = hold_statuses
     elif requesting_player == 'player2':
-        for i in range(len(cards_player2_pg['player2'])):
+        for i in range(len(cards_player2_pg['requesting_player'])):
             if hold_statuses[i] == False:                
-                cards_player2_pg['player2'][i] = None
+                cards_player2_pg['requesting_player'][i] = None
         emit('get_cards',  {'cards': cards_player2_pg}, room=room_map['player2'])
         draw.draw_card_idxs['player2'] = hold_statuses
     elif requesting_player == 'player3':
-        for i in range(len(cards_player3_pg['player3'])):
+        for i in range(len(cards_player3_pg['requesting_player'])):
             if hold_statuses[i] == False:                
-                cards_player3_pg['player3'][i] = None
+                cards_player3_pg['requesting_player'][i] = None
         emit('get_cards',  {'cards': cards_player3_pg}, room=room_map['player3'])
         draw.draw_card_idxs['player3'] = hold_statuses
     elif requesting_player == 'player4':
-        for i in range(len(cards_player4_pg['player4'])):
+        for i in range(len(cards_player4_pg['requesting_player'])):
             if hold_statuses[i] == False:                
-                cards_player4_pg['player4'][i] = None
+                cards_player4_pg['requesting_player'][i] = None
         emit('get_cards',  {'cards': cards_player4_pg}, room=room_map['player4'])
         draw.draw_card_idxs['player4'] = hold_statuses
     elif requesting_player == 'player5':
-        for i in range(len(cards_player5_pg['player5'])):
+        for i in range(len(cards_player5_pg['requesting_player'])):
             if hold_statuses[i] == False:                
-                cards_player5_pg['player5'][i] = None
+                cards_player5_pg['requesting_player'][i] = None
         emit('get_cards',  {'cards': cards_player5_pg}, room=room_map['player5'])
         draw.draw_card_idxs['player5'] = hold_statuses
     elif requesting_player == 'player6':
-        for i in range(len(cards_player6_pg['player6'])):
+        for i in range(len(cards_player6_pg['requesting_player'])):
             if hold_statuses[i] == False:                
-                cards_player6_pg['player6'][i] = None
+                cards_player6_pg['requesting_player'][i] = None
         emit('get_cards',  {'cards': cards_player6_pg}, room=room_map['player6'])
         draw.draw_card_idxs['player6'] = hold_statuses
-    # this broadcasts the message to everybody how many cards the player took
+    # this broadcasts the message to everybody how many cards the requesting player took
     emit('who_drew_what',
                       {'data': 5-sum(hold_statuses), 
-                       'player': player_name_map[requesting_player] + ' took '},
+                       'player': player_name_map[requesting_player] + ' takes '},
                        broadcast=True)
 
 #~~~~~~~~~~~~~~ FIVE-CARD STUD ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -205,7 +209,7 @@ def deal_click():
     
     if 'draw' in http_ref:
         max_bet = 0  # reset the call amount
-        print(f'Game is draw poker, boys. draw.stage = {draw.stage}')
+        print(f'Game is draw poker, boys. stage = {draw.stage}')
         if len(draw.stage) == 0: # re-activate all tonight's players
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
@@ -220,7 +224,7 @@ def deal_click():
         
     if 'five_card_stud' in http_ref:
         max_bet = 0  # reset the call amount
-        print(f'\Game is 5-card stud, boys. draw.stage = {draw.stage}; max_bet is {max_bet}')
+        print(f'\Game is 5-card stud, boys. stage = {five_card_stud.stage}; max_bet is {max_bet}')
         if len(five_card_stud.stage) == 0: # re-activate all tonight's players
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
@@ -234,12 +238,37 @@ def deal_click():
         pg6_tmp = five_card_stud.get_display(hands, 'player6')
         
     for key in pg1_tmp.keys():
-        cards_player1_pg[key] = pg1_tmp[key]
-        cards_player2_pg[key] = pg2_tmp[key]
-        cards_player3_pg[key] = pg3_tmp[key]
-        cards_player4_pg[key] = pg4_tmp[key]
-        cards_player5_pg[key] = pg5_tmp[key]
+        cards_player1_pg[key] = pg1_tmp[key]        
+        cards_player2_pg[key] = pg2_tmp[key]        
+        cards_player3_pg[key] = pg3_tmp[key]        
+        cards_player4_pg[key] = pg4_tmp[key]        
+        cards_player5_pg[key] = pg5_tmp[key]        
         cards_player6_pg[key] = pg6_tmp[key]
+        
+    # for draw and spit in the ocean, each player sees his cards in the middle,
+    # to faciliate the draw UI approach. I'm also changing the cards in his
+    # normal position on the table to blanks so it's not confusing.
+    if 'draw' in http_ref:
+        if 'player1' in pg1_tmp.keys():
+            cards_player1_pg['requesting_player'] = pg1_tmp['player1']
+            cards_player1_pg['player1'] = [None]*5
+        if 'player2' in pg2_tmp.keys():
+            cards_player2_pg['requesting_player'] = pg2_tmp['player2']
+            cards_player2_pg['player2'] = [None]*5
+        if 'player3' in pg3_tmp.keys():
+            cards_player3_pg['requesting_player'] = pg3_tmp['player3']
+            cards_player3_pg['player3'] = [None]*5
+        if 'player4' in pg4_tmp.keys():
+            cards_player4_pg['requesting_player'] = pg4_tmp['player4']
+            cards_player4_pg['player4'] = [None]*5
+        if 'player5' in pg5_tmp.keys():
+            cards_player5_pg['requesting_player'] = pg5_tmp['player5']
+            cards_player5_pg['player5'] = [None]*5
+        if 'player5' in pg5_tmp.keys():
+            cards_player6_pg['requesting_player'] = pg6_tmp['player6']
+            cards_player6_pg['player6'] = [None]*5
+    
+    print(f'cards_player1_pg: {cards_player1_pg}')
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
     emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
@@ -248,17 +277,26 @@ def deal_click():
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
     
     # show everyone their current stash amt
-    emit('stash_msg', {'stash': player_stash_map['player1']}, room=room_map['player1'])
-    emit('stash_msg', {'stash': player_stash_map['player2']}, room=room_map['player2'])
-    emit('stash_msg', {'stash': player_stash_map['player3']}, room=room_map['player3'])
-    emit('stash_msg', {'stash': player_stash_map['player4']}, room=room_map['player4'])
-    emit('stash_msg', {'stash': player_stash_map['player5']}, room=room_map['player5'])
-    emit('stash_msg', {'stash': player_stash_map['player6']}, room=room_map['player6'])
+    emit('stash_msg', {'stash': player_stash_map['player1'], 'player': 'player1'}, 
+         room=room_map['player1'])
+    emit('stash_msg', {'stash': player_stash_map['player2'], 'player': 'player2'}, 
+         room=room_map['player2'])
+    emit('stash_msg', {'stash': player_stash_map['player3'], 'player': 'player3'}, 
+         room=room_map['player3'])
+    emit('stash_msg', {'stash': player_stash_map['player4'], 'player': 'player4'}, 
+         room=room_map['player4'])
+    emit('stash_msg', {'stash': player_stash_map['player5'], 'player': 'player5'}, 
+         room=room_map['player5'])
+    emit('stash_msg', {'stash': player_stash_map['player6'], 'player': 'player6'}, 
+         room=room_map['player6'])
     
     emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
     # clear everybody's bet log
     emit('clear_bet_log', broadcast=True)
 
+##########################################################################
+### FOLD and REVEAL
+##########################################################################
 @socketio.on('fold', namespace='/test')
 def fold():
     print(f'\nfrom fold(): request.eviron["HTTP_REFERER"]:{request.environ["HTTP_REFERER"]} ')
@@ -280,6 +318,20 @@ def fold():
     cards_player4_pg[requesting_player] = [draw.card_back] * hand_len
     cards_player5_pg[requesting_player] = [draw.card_back] * hand_len
     cards_player6_pg[requesting_player] = [draw.card_back] * hand_len
+    
+    if 'draw' in http_ref:  # for draw we'll just blank out the display in the center
+        if requesting_player == 'player1':
+            cards_player1_pg['requesting_player'] = [None] * 5
+        if requesting_player == 'player2':
+            cards_player2_pg['requesting_player'] = [None] * 5
+        if requesting_player == 'player3':
+            cards_player3_pg['requesting_player'] = [None] * 5
+        if requesting_player == 'player4':
+            cards_player4_pg['requesting_player'] = [None] * 5
+        if requesting_player == 'player5':
+            cards_player5_pg['requesting_player'] = [None] * 5
+        if requesting_player == 'player6':
+            cards_player6_pg['requesting_player'] = [None] * 5
     
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
@@ -407,11 +459,11 @@ def receive_bet(message):
         if key == requesting_player:            
             round_bets[key] += int(amt)
     max_bet = max(round_bets.values()) #the max that anyone has betted in a round is the call amount
-    print(f'{requesting_player} just bet ${amt}!!')
+    print(f'{requesting_player} just bet ${amt}.')
     
     # decrement player's stash, and send new stash amount to the player
     player_stash_map[requesting_player] = player_stash_map[requesting_player] - int(amt)
-    emit('stash_msg', {'stash': player_stash_map[requesting_player]}, 
+    emit('stash_msg', {'stash': player_stash_map[requesting_player], 'player': requesting_player}, 
          room=room_map[requesting_player])
     
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
@@ -431,8 +483,13 @@ def claim_pot():
     requesting_player = http_ref[http_ref.find('player=')+7:]
     player_stash_map[requesting_player] = player_stash_map[requesting_player] + int(pot_amount)
     
+    # if a pot is claimed the game is over, even if whether or not the game has been
+    # dealt to completion, so reset stage of all games
+    draw.stage.clear()
+    five_card_stud.stage.clear()
+    
     # show player his/her increased stash
-    emit('stash_msg', {'stash': player_stash_map[requesting_player]}, 
+    emit('stash_msg', {'stash': player_stash_map[requesting_player], 'player': requesting_player}, 
          room=room_map[requesting_player])
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     pot_update(-pot_amount) # clear pot amount
