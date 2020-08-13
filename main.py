@@ -521,6 +521,8 @@ def claim_pot():
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     pot_update(-pot_amount) # clear pot amount
     emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
+    print(f'player_stash_map: {player_stash_map}')
+    print(f'player_name_map: {player_name_map}')
 
 ##########################################################################
 ### Connection Handlers
