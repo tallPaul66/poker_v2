@@ -367,6 +367,10 @@ def fold():
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
     emit('who_folded',{'player': player_name_map[requesting_player] + ' folded.'},
                        broadcast=True)
+    # include the player folds msg in the bet log also
+    emit('bet_msg',{'player':  player_name_map[requesting_player], 
+                    'player_by_number':requesting_player, 'fold': True},
+                       broadcast=True) # broadcast latest player's bet
 
 @socketio.on('reveal', namespace='/test')
 def reveal_cards():
@@ -493,7 +497,7 @@ def receive_bet(message):
          room=room_map[requesting_player])
     
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
-                    'player_by_number':requesting_player, 'amt': amt},
+                    'player_by_number':requesting_player, 'amt': amt, 'fold': 'no'},
                        broadcast=True) # broadcast latest player's bet
     for player in players_active:
         emit('pot_msg', {'amt': pot_amount, 'max': max_bet - round_bets[player]}, 

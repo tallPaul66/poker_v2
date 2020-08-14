@@ -85,19 +85,11 @@
             socket.on('bet_msg', function(msg, cb) {
                 var player = msg.player
                 var amt = msg.amt
-                $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
-                if(msg.player_by_number == 'player1') {
-                    $('#bet_player1').append('<br>' + $('<div/>').text(" bets " + amt).html());
-                } else if(msg.player_by_number=='player2'){
-                    $('#bet_player2').append('<br>' + $('<div/>').text(" bets " + amt).html());
-                } else if(msg.player_by_number=='player3'){
-                    $('#bet_player3').append('<br>' + $('<div/>').text(" bets " + amt).html());
-                } else if(msg.player_by_number=='player4'){
-                    $('#bet_player4').append('<br>' + $('<div/>').text(" bets " + amt).html());
-                } else if(msg.player_by_number=='player5'){
-                    $('#bet_player5').append('<br>' + $('<div/>').text(" bets " + amt).html());
-                }
-                               
+                if(msg.fold=="no"){
+                    $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
+                } else {
+                    $('#bet_log').append('<br>' + $('<div/>').text(player + " folds").html());
+                }                               
             });
             
             // print to browser the total pot

@@ -76,7 +76,11 @@
             socket.on('bet_msg', function(msg, cb) {
                 var player = msg.player
                 var amt = msg.amt
-                $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());               
+                if(msg.fold=="no"){
+                    $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
+                } else {
+                    $('#bet_log').append('<br>' + $('<div/>').text(player + " folds").html());
+                }                               
             });
             
             // print to browser the total pot
