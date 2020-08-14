@@ -236,7 +236,7 @@ def deal_click():
         
     if 'five_card_stud' in http_ref:
         max_bet = 0  # reset the call amount
-        print(f'\Game is 5-card stud, boys. stage = {five_card_stud.stage}; max_bet is {max_bet}')
+        print(f'Game is 5-card stud, boys. stage = {five_card_stud.stage}; max_bet is {max_bet}')
         if len(five_card_stud.stage) == 0: # re-activate all tonight's players
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area

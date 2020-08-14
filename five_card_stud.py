@@ -42,7 +42,6 @@ def deal(players):
     stage_len = len(stage)
     if stage_len == 0:
         new_game(players)
-        print(f'from five_card_stud.deal(), players = {players}, hands = {hands}')
         for p in players:
             for i in range(2):
                 hands[p].append(deck.pop())
