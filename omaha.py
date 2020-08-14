@@ -11,10 +11,10 @@ import new_deck
 
 hands = {}
 card_back = new_deck.card_back
-card_plc_holder_imgs = ['card_pics/card_place_holder_img.png',
-                        'card_pics/card_place_holder_img2_sm2.png',
-                        'card_pics/card_place_holder_img3.jpg',
-                        'card_pics/card_place_holder_img4_test4.png']
+card_plc_holder_imgs = ['static/card_pics/card_place_holder_img.png',
+                        'static/card_pics/card_place_holder_img2_sm2.png',
+                        'static/card_pics/card_place_holder_img3.jpg',
+                        'static/card_pics/card_place_holder_img4_test4.png']
 cd_plc_holder_img = card_plc_holder_imgs[3]
 stage = []
 
