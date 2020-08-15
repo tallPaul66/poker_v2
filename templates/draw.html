@@ -73,7 +73,7 @@
             });
             
             // print to browser the latest bet
-           socket.on('bet_msg', function(msg, cb) {
+            socket.on('bet_msg', function(msg, cb) {
                 var player = msg.player
                 var amt = msg.amt
                 if(msg.fold=="no"){
@@ -85,7 +85,7 @@
             
             // print to browser the total pot
              socket.on('pot_msg', function(msg, cb) {
-                $('#pot_total').text($('<div/>').text(  '$' + msg.amt).html());
+                $('#pot_total').text($('<div/>').text('$' + msg.amt).html());
                 $('#max_bet').text($('<div/>').text('call: ' + '$' + msg.max).html());               
             });
             
@@ -106,6 +106,17 @@
                 }                          
             });
             
+            // print to browser when somebody folds
+            socket.on('who_folded', function(msg, cb) {
+                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
+            });
+            
+            // print to browser an error when someone tries to take more money out of 
+            // the pot than they've put in on a given round.
+            socket.on('hand_in_till', function(msg, cb) {
+                $('#log').append('<br>' + $('<div/>').text(msg.err).html());               
+            });  
+            
             // print to browser player draw info
              socket.on('who_drew_what', function(msg, cb) {
                 // the following two lines just get the plural right in the 
@@ -115,10 +126,7 @@
                 $('#log').append('<br>' + $('<div/>').text(msg.player + 
                      + msg.data).html());               
             });
-            // print to browser when somebody folds
-            socket.on('who_folded', function(msg, cb) {
-                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
-            });
+            
             socket.on('get_cards', function(msg, cb) {
                 players_cards = msg.cards
                 players = Object.keys(players_cards)

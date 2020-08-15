@@ -70,15 +70,6 @@
             // function to clear bet_log of messages on new game
             socket.on('clear_bet_log', function(msg, cb) {   
                 $('#bet_log').text($('<div/>').text('').html());
-                $('#bet_player1').text($('<div/>').text('').html());
-                $('#bet_player2').text($('<div/>').text('').html());
-                $('#bet_player3').text($('<div/>').text('').html());
-                $('#bet_player4').text($('<div/>').text('').html());
-                $('#bet_player5').text($('<div/>').text('').html());
-            });
-            // print to browser when somebody folds
-            socket.on('who_folded', function(msg, cb) {
-                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
             });
             
             // print to browser the latest bet
@@ -91,14 +82,14 @@
                     $('#bet_log').append('<br>' + $('<div/>').text(player + " folds").html());
                 }                               
             });
-            
+                        
             // print to browser the total pot
              socket.on('pot_msg', function(msg, cb) {
                 $('#pot_total').text($('<div/>').text('$' + msg.amt).html());
                 $('#max_bet').text($('<div/>').text('call: ' + '$' + msg.max).html());               
             });
             
-             // print to browser the player's stash
+            // print to browser the player's stash
             socket.on('stash_msg', function(msg, cb) {
                 const url_params = new URLSearchParams(window.location.search);
                 const player_name = url_params.get('player');
@@ -114,6 +105,18 @@
                     $('#player5_stash').text($('<div/>').text('$' + msg.stash).html());  
                 }                          
             });
+            
+            // print to browser when somebody folds
+            socket.on('who_folded', function(msg, cb) {
+                $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
+            });            
+                       
+            // print to browser an error when someone tries to take more money out of 
+            // the pot than they've put in on a given round.
+            socket.on('hand_in_till', function(msg, cb) {
+                $('#log').append('<br>' + $('<div/>').text(msg.err).html());               
+            });            
+            
             socket.on('get_cards', function(msg, cb) {
                 players_cards = msg.cards
                 players = Object.keys(players_cards)

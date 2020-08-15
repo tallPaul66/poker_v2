@@ -7,6 +7,7 @@ Created on Sun Jul 12 15:11:35 2020
 """
 
 from threading import Lock
+import eventlet
 from flask import Flask, render_template, session, request, \
     copy_current_request_context, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
@@ -27,7 +28,20 @@ async_mode = None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
+
+
+# throws error
+#eventlet.server(eventlet.listen(('', 5000)), app, log_output=False)
+
+
+### and these do nothing
+#import logging
+#logging.getLogger('socketio').setLevel(logging.ERROR)
+#logging.getLogger('engineio').setLevel(logging.ERROR)
+#logging.getLogger('geventwebsocket.handler').setLevel(logging.ERROR)
+###
 socketio = SocketIO(app, async_mode=async_mode, ping_interval=10000, ping_timeout=25000) #,ping_interval=10, ping_timeout=60)
+
 thread = None
 thread_lock = Lock()
 #~~~~~~~~~~~~~~~~~~~ Config Stuff ~~~~~~~~~~~~~~~~~
@@ -81,6 +95,7 @@ def background_thread():
                       {'data': 'Server generated msg', 'count': count},
                       namespace='/test')
 
+print('what the fuck')
 @app.route('/', methods=['GET', 'POST'])
 def home(): 
     # This method gets called any time someone clicks the submit
@@ -99,9 +114,8 @@ def home():
             if player_name_map[key] != '':
                 players_tonight.append(key)
                 player_stash_map[key] = stash_default
-
-        print('Using the text box entries:')
-        print(f'from home(): form submitted, players set for tonight: {players_tonight}')
+        
+        print(f'from home(), form submitted, players set for tonight: {players_tonight}')
         print(player_name_map)
         print(player_stash_map)
         
@@ -483,11 +497,22 @@ def receive_bet(message):
     global round_bets
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    amt = message['amt']
+    amt = int(message['amt'])
+    
+    # first let's validate bet to ensure player is not entering a negative amt
+    # that is larger magnitude that what he's bet. Negative amounts are allowed to 
+    # correct input errors, but not to get "free money."
+    player_tot_bet = round_bets[requesting_player]
+    if amt < 0 and abs(amt) > player_tot_bet:
+        print(f'{requesting_player} just tried to take out more from the pot than he put in: {amt}')
+        emit('hand_in_till', {'err': 'error code 212: Your hand in till. Can\'t take out more than you put in'},
+             room=room_map[requesting_player])
+        return None
+    
     pot_update(amt=amt) # update the pot total
     for key in round_bets.keys():
         if key == requesting_player:            
-            round_bets[key] += int(amt)
+            round_bets[key] += amt
     max_bet = max(round_bets.values()) #the max that anyone has betted in a round is the call amount
     print(f'{requesting_player} just bet ${amt}.')
     
@@ -603,6 +628,6 @@ def test_disconnect():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0') #, debug=True) # debug=True doesn't work
+    socketio.run(app, host='0.0.0.0', debug=False) # debug=True doesn't work
 
     
