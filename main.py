@@ -7,7 +7,7 @@ Created on Sun Jul 12 15:11:35 2020
 """
 
 from threading import Lock
-import eventlet
+# import eventlet
 from flask import Flask, render_template, session, request, \
     copy_current_request_context, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
