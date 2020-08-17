@@ -83,12 +83,17 @@
                 }                               
             });
             
+            // global variable to keep track of amount in pot   
+            pot_value = 0
             // print to browser the total pot
              socket.on('pot_msg', function(msg, cb) {
                 $('#pot_total').text($('<div/>').text('$' + msg.amt).html());
-                $('#max_bet').text($('<div/>').text('call: ' + '$' + msg.max).html());               
+                $('#max_bet').text($('<div/>').text('call: ' + '$' + msg.max).html()); 
+                pot_value = msg.amt // global variable for use when user tries to click a link
+                console.log('pot_value', pot_value)                
+
             });
-            
+
             // print to browser the player's stash
             socket.on('stash_msg', function(msg, cb) {
                 const url_params = new URLSearchParams(window.location.search);
@@ -116,6 +121,11 @@
             socket.on('hand_in_till', function(msg, cb) {
                 $('#log').append('<br>' + $('<div/>').text(msg.err).html());               
             });  
+            
+            // alert message if money still in the pot and user tries to start a new game
+            socket.on('money_left_alert', function(msg, cb) {
+                window.alert("There's a non-0 amount in the pot. Someone should collect it");
+            });
             
             // print to browser player draw info
              socket.on('who_drew_what', function(msg, cb) {
@@ -318,6 +328,39 @@
             var txt = document.getElementById("bet_entered");
             txt.value = 0;
         }
+        
+        // This function is for when the user tries to click a link to another game but
+        // there is a non-zero amount in the pot. Without forcing someone to take the pot
+        // before navigating away, the total money entropy for the evening changes (total 
+        // player buy-in sum does not match the total amount in circulation, and money is 
+        // basically "lost.")
+        
+        function check_pot(game) {
+            if(pot_value != 0){
+                window.alert("There's still money in the pot. Links won't work until it's claimed.");
+            } 
+            else if (game=='draw'){
+                 window.location.href = "{{ url_for('redirect_to_draw') }}";
+            } 
+            else if (game=='fcs'){
+                 window.location.href = "{{ url_for('redirect_to_five_card_stud') }}";
+            } 
+            //else if (game=='scs'){
+            //     window.location.href = "";
+            //} 
+            //else if (game=='spit'){
+            //     window.location.href = "";
+            //} 
+            else if (game=='omaha'){
+                 window.location.href = "{{ url_for('redirect_to_omaha') }}";
+            //} 
+            //else if (game=='monty'){
+            //     window.location.href = "";
+            } 
+            else {
+                window.alert("from check_pot() function: Something wrong with the link.");
+            }
+        }
     </script>
   </head>
    <body>
@@ -344,11 +387,10 @@
         </form>            
         
         <hr class="vertical" />
-        <hr class="vertical" />
+        <hr class="vertical" />        
         <input style= "margin-left:20px;" type="image" src="static/card_pics/white_chip.png" width=55 height=55 name="bet_1" id="bet_1" onclick="writeNumbers(1);"/>
         <input style= "margin-left:3px;" type="image" src="static/card_pics/red_chip.png" width=55 height=55  name="bet_2" id="bet_2" onclick="writeNumbers(2);"/>
         <input style= "margin-left:3px;" type="image" src="static/card_pics/blue_chip.png" width=55 height=55  name="bet_5" id="bet_5" onclick="writeNumbers(5);"/>
-   	  
    		  
    		<form style="margin-top: 14px; margin-left:20px; margin-right:20px;" id="bet" method="POST" action='#'>
             <input id="bet_entered" type="text" name="bet_entered" style="vertical-align:middle; width: 35px; border: 2px outset; height: 52px; text-align:center; font-size:25px;" value=0>
@@ -358,9 +400,9 @@
     <!-------------------    GAME LINKS   -------------------->
 	    <hr class="vertical" />
         <hr class="vertical" />
-	    &nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_draw') }}"  style="color:red; font-size:20px;">Draw</a>
-    	&nbsp&nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}"  style="color:red; font-size:20px;">5-Card Stud</a> 
-    	&nbsp&nbsp<a href="{{ url_for('redirect_to_omaha') }}"  style="color:red; font-size:20px;">Omaha</a>
+	    &nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_draw') }}" onclick="check_pot('draw'); return false;" style="color:red; font-size:20px;">Draw</a>
+	    &nbsp&nbsp<a href="{{ url_for('redirect_to_omaha') }}" onclick="check_pot('omaha'); return false;" style="color:red; font-size:20px;">Omaha</a> 
+    	&nbsp&nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}" onclick="check_pot('fcs'); return false;" style="color:red; font-size:20px;">5-Card Stud</a> 
       </div>    	 
 	 </fieldset>
 	 

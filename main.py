@@ -7,7 +7,6 @@ Created on Sun Jul 12 15:11:35 2020
 """
 
 from threading import Lock
-# import eventlet
 from flask import Flask, render_template, session, request, \
     copy_current_request_context, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
@@ -129,7 +128,7 @@ def home():
 
     return render_template('home.html', async_mode=socketio.async_mode)
 
-#~~~~~~~~~~~~~~ draw poker ~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Draw   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/draw', methods = ['GET', 'POST'])
 def draw_play():    
     return render_template('draw.html', names = player_name_map)
@@ -197,7 +196,7 @@ def draw_cards_draw(message):
                        'player': player_name_map[requesting_player] + ' takes '},
                        broadcast=True)
 
-#~~~~~~~~~~~~~~ FIVE-CARD STUD ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    5-card stud   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/five_card_stud', methods = ['GET', 'POST'])
 def five_card_play():     
     return render_template('five_card_stud.html', names = player_name_map)
@@ -209,7 +208,7 @@ def redirect_to_five_card_stud():
     print(f'msg from link_to_five_card_stud(): requesting_player is {requesting_player}')
     return redirect(url_for('five_card_play', player=requesting_player))
 
-#~~~~~~~~~~~~~~~~~~~ OMAHA ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     omaha     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/omaha', methods = ['GET', 'POST'])
 def omaha_play():     
     return render_template('omaha.html', names = player_name_map)
@@ -221,7 +220,69 @@ def redirect_to_omaha():
     print(f'msg from link_to_omaha(): requesting_player is {requesting_player}')
     return redirect(url_for('omaha_play', player=requesting_player))
 
-#~~~~~~~~~~~~~~ Functions and Handlers ~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     7-card stud     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@app.route('/seven_card', methods = ['GET', 'POST'])
+def seven_card_play():   
+    return render_template('seven_card.html', names = player_name_map)
+
+#@app.route('/link_to_seven_card')
+#def redirect_to_seven_card():
+#     http_ref = request.environ['HTTP_REFERER']
+#     requesting_player = http_ref[http_ref.find('player=')+7:]
+#     print(f'msg from redirect_to_seven_card(): requesting_player is {requesting_player}')
+#     return redirect(url_for('seven_card_play', player=requesting_player))
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  spit in the ocean  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@app.route('/spit', methods = ['GET', 'POST'])
+def spit_play():
+    return render_template('spit_in_the_ocean.html', names = player_name_map)
+
+@app.route('/link_to_spit')
+def redirect_to_spit():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    print(f'msg from link_to_spit(): requesting_player is {requesting_player}')
+    return redirect(url_for('spit_play', player=requesting_player))
+
+    
+#def reveal_spit():
+#    print('\nfrom reveal_spit() fn:')
+#    cards_player1_pg['spit'] = hands['spit']
+#    cards_player2_pg['spit'] = hands['spit']
+#    cards_player3_pg['spit'] = hands['spit']
+#    cards_player4_pg['spit'] = hands['spit']
+#    cards_player5_pg['spit'] = hands['spit']
+#    cards_player6_pg['spit'] = hands['spit']
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    monty    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@app.route('/monty', methods = ['GET', 'POST'])
+def monty_play():    
+    return render_template('monty.html', names = player_name_map)
+
+@app.route('/link_to_monty')
+def redirect_to_monty():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    print(f'msg from link_to_monty(): requesting_player is {requesting_player}')
+    return redirect(url_for('monty_play', player=requesting_player))
+
+#def monty_hold():
+#    print('\nfrom monty_hold() fn:')
+#    http_ref = request.environ['HTTP_REFERER']
+#    requesting_player = http_ref[http_ref.find('player=')+7:]
+#    print(f' request.environ["HTTP_REFERER] is: {http_ref}')
+#    print(f'requesting_player {requesting_player} wants to hold.')
+#    monty.hold_dict[requesting_player] = 'hold'  
+  
+#def reveal_monty():
+#    print('\nfrom reveal_monty() fn:')
+#    cards_player1_pg['monty'] = hands['monty']
+#    cards_player2_pg['monty'] = hands['monty']
+#    cards_player3_pg['monty'] = hands['monty']
+#    cards_player4_pg['monty'] = hands['monty']
+#    cards_player5_pg['monty'] = hands['monty']
+#    cards_player6_pg['monty'] = hands['monty']
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functions and Handlers~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @socketio.on('deal', namespace='/test')
 def deal_click():  
@@ -237,6 +298,9 @@ def deal_click():
         max_bet = 0  # reset the call amount
         print(f'Game is draw poker, boys. stage = {draw.stage}')
         if len(draw.stage) == 0: # re-activate all tonight's players
+            if pot_amount > 0: # disallow staring new game 
+                emit('money_left_alert', {}, broadcast=True) 
+                return None
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
             pot_update(-pot_amount) # if beginning of game, clear pot amount
@@ -251,8 +315,11 @@ def deal_click():
     if 'five_card_stud' in http_ref:
         max_bet = 0  # reset the call amount
         print(f'Game is 5-card stud, boys. stage = {five_card_stud.stage}; max_bet is {max_bet}')
-        if len(five_card_stud.stage) == 0: # re-activate all tonight's players
-            players_active = players_tonight.copy()
+        if len(five_card_stud.stage) == 0: 
+            if pot_amount > 0: # disallow staring new game 
+                emit('money_left_alert', {}, broadcast=True) 
+                return None
+            players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
             pot_update(-pot_amount) # if beginning of game, clear pot amount            
         hands = five_card_stud.deal(players_active)
@@ -267,6 +334,9 @@ def deal_click():
         max_bet = 0  # reset the call amount
         print(f'Game is Omaha, boys. stage = {omaha.stage}; max_bet is {max_bet}')
         if len(omaha.stage) == 0: # re-activate all tonight's players
+            if pot_amount > 0: # disallow staring new game 
+                emit('money_left_alert', {}, broadcast=True) 
+                return None
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
             pot_update(-pot_amount) # if beginning of game, clear pot amount            
@@ -448,6 +518,9 @@ def reveal_cards():
 def start_new_game():
     global max_bet
     global round_bets
+    if pot_amount > 0: # disallow staring new game 
+        emit('money_left_alert', {}, broadcast=True) 
+        return None
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     max_bet = 0
     print('\n start_new_game() has been called.')
