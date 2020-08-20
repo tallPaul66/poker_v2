@@ -4,7 +4,7 @@
 		width: 100%;
 	    height: 100%;
 	    max-height: 100%;
-		background-size:cover;
+		background-size: 100% 100%;;
 		background-repeat: no-repeat;}
   </style>
   <head>
@@ -77,7 +77,11 @@
                 var player = msg.player
                 var amt = msg.amt
                 if(msg.fold=="no"){
-                    $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
+                    if(amt==0){
+                        $('#bet_log').append('<br>' + $('<div/>').text(player + " checks").html());
+                    } else {
+                        $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
+                    }
                 } else {
                     $('#bet_log').append('<br>' + $('<div/>').text(player + " folds").html());
                 }                               
@@ -124,7 +128,7 @@
             
             // alert message if money still in the pot and user tries to start a new game
             socket.on('money_left_alert', function(msg, cb) {
-                window.alert("There's a non-0 amount in the pot. Someone should collect it");
+                window.alert("There's a non-0 amount in the pot. Someone must claim it before a new game can be started.");
             });
             
             socket.on('get_cards', function(msg, cb) {

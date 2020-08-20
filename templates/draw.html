@@ -4,7 +4,7 @@
 		width: 100%;
 	    height: 100%;
 	    max-height: 100%;
-		background-size:cover;
+		background-size: 100% 100%;;
 		background-repeat: no-repeat;}
   </style>
   <head>
@@ -77,7 +77,11 @@
                 var player = msg.player
                 var amt = msg.amt
                 if(msg.fold=="no"){
-                    $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
+                    if(amt==0){
+                        $('#bet_log').append('<br>' + $('<div/>').text(player + " checks").html());
+                    } else {
+                        $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
+                    }
                 } else {
                     $('#bet_log').append('<br>' + $('<div/>').text(player + " folds").html());
                 }                               
@@ -108,7 +112,9 @@
                     $('#player4_stash').text($('<div/>').text('$' + msg.stash).html());
                 } else if (player_name == 'player5') {
                     $('#player5_stash').text($('<div/>').text('$' + msg.stash).html());  
-                }                          
+                }
+                var player1_stash_img = "static/card_pics/black_chip_stack.png" 
+                document.getElementById('player1_stash_img').src = player1_stash_img              
             });
             
             // print to browser when somebody folds
@@ -124,7 +130,7 @@
             
             // alert message if money still in the pot and user tries to start a new game
             socket.on('money_left_alert', function(msg, cb) {
-                window.alert("There's a non-0 amount in the pot. Someone should collect it");
+                window.alert("There's a non-0 amount in the pot. Someone must claim it before a new game can be started.");
             });
             
             // print to browser player draw info
@@ -421,6 +427,7 @@
           <th valign=middle colspan = "2">                
               <h3 style="color:#FFDF00;">{{names["player1"]}}</h3>
               <h1><div id="player1_stash"></div></h1>
+              <img src="" id="player1_stash_img" width=40 height=40>
           </th>
           <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>

@@ -130,7 +130,10 @@ def home():
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Draw   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/draw', methods = ['GET', 'POST'])
-def draw_play():    
+def draw_play():
+    # makes sure that the game starts from scratch if it was 
+    # left in a state stage != []
+    draw.stage.clear()
     return render_template('draw.html', names = player_name_map)
 
 @app.route('/link_to_draw')
@@ -198,7 +201,10 @@ def draw_cards_draw(message):
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    5-card stud   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/five_card_stud', methods = ['GET', 'POST'])
-def five_card_play():     
+def five_card_play():
+    # makes sure that the game starts from scratch if it was 
+    # left in a state stage != []
+    five_card_stud.stage.clear()    
     return render_template('five_card_stud.html', names = player_name_map)
 
 @app.route('/link_to_five_card_stud')
@@ -210,7 +216,10 @@ def redirect_to_five_card_stud():
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     omaha     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/omaha', methods = ['GET', 'POST'])
-def omaha_play():     
+def omaha_play():
+    # makes sure that the game starts from scratch if it was 
+    # left in a state stage != []
+    omaha.stage.clear()
     return render_template('omaha.html', names = player_name_map)
 
 @app.route('/link_to_omaha')
@@ -291,17 +300,18 @@ def deal_click():
     global max_bet    
     global round_bets
     http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
     print(f'\ndeal_click() got called!')
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     
     if 'draw' in http_ref:
         max_bet = 0  # reset the call amount
         print(f'Game is draw poker, boys. stage = {draw.stage}')
-        if len(draw.stage) == 0: # re-activate all tonight's players
+        if len(draw.stage) == 0: 
             if pot_amount > 0: # disallow staring new game 
-                emit('money_left_alert', {}, broadcast=True) 
+                emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
-            players_active = players_tonight.copy()
+            players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
             pot_update(-pot_amount) # if beginning of game, clear pot amount
         hands = draw.deal(players_active)
@@ -317,7 +327,7 @@ def deal_click():
         print(f'Game is 5-card stud, boys. stage = {five_card_stud.stage}; max_bet is {max_bet}')
         if len(five_card_stud.stage) == 0: 
             if pot_amount > 0: # disallow staring new game 
-                emit('money_left_alert', {}, broadcast=True) 
+                emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
@@ -335,7 +345,7 @@ def deal_click():
         print(f'Game is Omaha, boys. stage = {omaha.stage}; max_bet is {max_bet}')
         if len(omaha.stage) == 0: # re-activate all tonight's players
             if pot_amount > 0: # disallow staring new game 
-                emit('money_left_alert', {}, broadcast=True) 
+                emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
@@ -461,7 +471,7 @@ def reveal_cards():
     global reveal_players_monty
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'\nHey! reveal_cards() got called...')
+    print(f'\nreveal_cards() got called...')
     
     # REVEAL in Monty means something different from in the other games:
     # here it is the dealer's right to reveal the cards of everyone 
@@ -518,8 +528,10 @@ def reveal_cards():
 def start_new_game():
     global max_bet
     global round_bets
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
     if pot_amount > 0: # disallow staring new game 
-        emit('money_left_alert', {}, broadcast=True) 
+        emit('money_left_alert', {}, room=room_map[requesting_player]) 
         return None
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     max_bet = 0
@@ -583,9 +595,7 @@ def receive_bet(message):
         return None
     
     pot_update(amt=amt) # update the pot total
-    for key in round_bets.keys():
-        if key == requesting_player:            
-            round_bets[key] += amt
+    round_bets[requesting_player] += amt
     max_bet = max(round_bets.values()) #the max that anyone has betted in a round is the call amount
     print(f'{requesting_player} just bet ${amt}.')
     
