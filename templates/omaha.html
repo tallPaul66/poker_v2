@@ -97,21 +97,142 @@
                 console.log('pot_value', pot_value)                
             });
             
-            // print to browser the player's stash
+            // print to browser the player's stash. This also loads a chip stash image,
+            // the file depending on how large each player's stash is.
             socket.on('stash_msg', function(msg, cb) {
                 const url_params = new URLSearchParams(window.location.search);
                 const player_name = url_params.get('player');
+                var stash_map = msg.stash_map
+                var buy_in = msg.buy_in
+                // This prints each player's exact stash amount that only he/she can see.
                 if (player_name == 'player1') {
-                    $('#player1_stash').text($('<div/>').text('$' + msg.stash).html());
+                    $('#player1_stash').text($('<div/>').text('$' + stash_map.player1).html());
                 } else if (player_name == 'player2') {
-                    $('#player2_stash').text($('<div/>').text('$' + msg.stash).html());
+                    $('#player2_stash').text($('<div/>').text('$' + stash_map.player2).html());
                 } else if (player_name == 'player3') {
-                    $('#player3_stash').text($('<div/>').text('$' + msg.stash).html());
+                    $('#player3_stash').text($('<div/>').text('$' + stash_map.player3).html());
                 } else if (player_name == 'player4') {
-                    $('#player4_stash').text($('<div/>').text('$' + msg.stash).html());
+                    $('#player4_stash').text($('<div/>').text('$' + stash_map.player4).html());
                 } else if (player_name == 'player5') {
-                    $('#player5_stash').text($('<div/>').text('$' + msg.stash).html());  
-                }                          
+                    $('#player5_stash').text($('<div/>').text('$' + stash_map.player5).html());  
+                }
+                var players = Object.keys(stash_map)
+                var chips_img1 = "static/card_pics/chips--6_stack_small.png";
+                var chips_img2 = "static/card_pics/chips--6_stack_minus_2_small.png" ;
+                var chips_img3 = "static/card_pics/chips--6_stack_minus_4_small.png";
+                var chips_img4 = "static/card_pics/chips--6_stack_minus_6_small.png";
+                var chips_img5 = "static/card_pics/chips--6_stack_minus_7_small.png";
+                var chips_img6 = "static/card_pics/chips--6_stack_minus_8_small.png";
+                for (i=0; i<players.length; i++){
+                    player = players[i]                  
+                    switch(player){
+                        case "player1":
+                            switch(true){
+                                case stash_map[player] > 1.2*buy_in:                                    
+                                    document.getElementById('player1_stash_img').src = chips_img1;
+                                    break;
+                                case stash_map[player] > buy_in:
+                                    document.getElementById('player1_stash_img').src = chips_img2
+                                    break;
+                                case stash_map[player] > 0.8*buy_in:                                    
+                                    document.getElementById('player1_stash_img').src = chips_img3
+                                    break;
+                                case stash_map[player] > 0.6*buy_in:
+                                    document.getElementById('player1_stash_img').src = chips_img4
+                                    break;
+                                case stash_map[player] > 0.4*buy_in:
+                                    document.getElementById('player1_stash_img').src = chips_img5
+                                    break;
+                                default:
+                                    document.getElementById('player1_stash_img').src = chips_img6
+                                    break;
+                            }
+                        case "player2":
+                            switch(true){
+                                case stash_map[player] > 1.2*buy_in:
+                                    document.getElementById('player2_stash_img').src = chips_img1;
+                                    break;
+                                case stash_map[player] > buy_in:
+                                    document.getElementById('player2_stash_img').src = chips_img2
+                                    break;
+                                case stash_map[player] > 0.8*buy_in:
+                                    document.getElementById('player2_stash_img').src = chips_img3
+                                    break;
+                                case stash_map[player] > 0.6*buy_in:
+                                    document.getElementById('player2_stash_img').src = chips_img4
+                                    break;
+                                case stash_map[player] > 0.4*buy_in:
+                                    document.getElementById('player2_stash_img').src = chips_img5
+                                    break;
+                                default:
+                                    document.getElementById('player2_stash_img').src = chips_img6
+                                    break;
+                            }
+                        case "player3":
+                            switch(true){
+                                case stash_map[player] > 1.2*buy_in:
+                                    document.getElementById('player3_stash_img').src = chips_img1;
+                                    break;
+                                case stash_map[player] > buy_in:
+                                    document.getElementById('player3_stash_img').src = chips_img2
+                                    break;
+                                case stash_map[player] > 0.8*buy_in:
+                                    document.getElementById('player3_stash_img').src = chips_img3
+                                    break;
+                                case stash_map[player] > 0.6*buy_in:
+                                    document.getElementById('player3_stash_img').src = chips_img4
+                                    break;
+                                case stash_map[player] > 0.4*buy_in:
+                                    document.getElementById('player3_stash_img').src = chips_img5
+                                    break;
+                                default:
+                                    document.getElementById('player3_stash_img').src = chips_img6
+                                    break;
+                            }
+                        case "player4":
+                            switch(true){
+                                case stash_map[player] > 1.2*buy_in:
+                                    document.getElementById('player4_stash_img').src = chips_img1;
+                                    break;
+                                case stash_map[player] > buy_in:
+                                    document.getElementById('player4_stash_img').src = chips_img2
+                                    break;
+                                case stash_map[player] > 0.8*buy_in:
+                                    document.getElementById('player4_stash_img').src = chips_img3
+                                    break;
+                                case stash_map[player] > 0.6*buy_in:
+                                    document.getElementById('player4_stash_img').src = chips_img4
+                                    break;
+                                case stash_map[player] > 0.4*buy_in:
+                                    document.getElementById('player4_stash_img').src = chips_img5
+                                    break;
+                                default:
+                                    document.getElementById('player4_stash_img').src = chips_img6
+                                    break;
+                            }
+                        case "player5":
+                            switch(true){
+                                case stash_map[player] > 1.2*buy_in:
+                                    document.getElementById('player5_stash_img').src = chips_img1;
+                                    break;
+                                case stash_map[player] > buy_in:
+                                    document.getElementById('player5_stash_img').src = chips_img2
+                                    break;
+                                case stash_map[player] > 0.8*buy_in:
+                                    document.getElementById('player5_stash_img').src = chips_img3
+                                    break;
+                                case stash_map[player] > 0.6*buy_in:
+                                    document.getElementById('player5_stash_img').src = chips_img4
+                                    break;
+                                case stash_map[player] > 0.4*buy_in:
+                                    document.getElementById('player5_stash_img').src = chips_img5
+                                    break;
+                                default:
+                                    document.getElementById('player5_stash_img').src = chips_img6
+                                    break;
+                            }
+                    }
+                }        
             });
             
             // print to browser when somebody folds
@@ -352,9 +473,9 @@
         
         <hr class="vertical" />
         <hr class="vertical" />
-        <input style= "margin-left:20px;" type="image" src="static/card_pics/white_chip.png" width=55 height=55 name="bet_1" id="bet_1" onclick="writeNumbers(1);"/>
-        <input style= "margin-left:3px;" type="image" src="static/card_pics/red_chip.png" width=55 height=55  name="bet_2" id="bet_2" onclick="writeNumbers(2);"/>
-        <input style= "margin-left:3px;" type="image" src="static/card_pics/blue_chip.png" width=55 height=55  name="bet_5" id="bet_5" onclick="writeNumbers(5);"/>
+        <input style= "margin-left:20px;" type="image" src="static/card_pics/white_chip_small.png" width=55 height=55 name="bet_1" id="bet_1" onclick="writeNumbers(1);"/>
+        <input style= "margin-left:3px;" type="image" src="static/card_pics/red_chip_small.png" width=55 height=55  name="bet_2" id="bet_2" onclick="writeNumbers(2);"/>
+        <input style= "margin-left:3px;" type="image" src="static/card_pics/blue_chip_small.png" width=55 height=55  name="bet_5" id="bet_5" onclick="writeNumbers(5);"/>
    		  
    		<form style="margin-top: 14px; margin-left:20px; margin-right:20px;" id="bet" method="POST" action='#'>
             <input id="bet_entered" type="text" name="bet_entered" style="vertical-align:middle; width: 35px; border: 2px outset; height: 52px; text-align:center; font-size:25px;" value=0>
@@ -384,6 +505,7 @@
           <th valign=middle colspan = "2">                
               <h3 style="color:#FFDF00;">{{names["player1"]}}</h3>
               <h1><div id="player1_stash"></div></h1>
+              <img src="" id="player1_stash_img" width=80 height=80>
           </th>
           <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>
@@ -393,9 +515,10 @@
           <td></td><td></td><td></td>
         </tr>
         <tr>
-          <th valign=bottom colspan = "2">
-              <h1><div id="player5_stash"></div></h1>
+          <th valign=bottom colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
+              <h1><div id="player5_stash"></div></h1>
+              <img src="" id="player5_stash_img" width=80 height=80>
           </th>
           <th colspan = "3" valign=top>
     		  <div style="color:#F0FFFF;" id="log"></div>
@@ -428,6 +551,7 @@
           <th valign=bottom colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
               <h1><div id="player2_stash"></div></h1>
+              <img src="" id="player2_stash_img" width=80 height=80>
           </th>
          </tr>
          <tr>
@@ -453,6 +577,7 @@
               <br><br>
               <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
               <h1><div id="player4_stash"></div></h1>
+              <img src="" id="player4_stash_img" width=80 height=80>
           </th>          
           <td></td><td></td><td></td><td></td>
           <td></td><td></td><td></td><td></td>
@@ -461,6 +586,7 @@
               <br><br>            
               <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
               <h1><div id="player3_stash"></div></h1>
+              <img src="" id="player3_stash_img" width=80 height=80>
           </th>
           <td></td><td></td>
         </tr>

@@ -397,18 +397,8 @@ def deal_click():
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
     
     # show everyone their current stash amt
-    emit('stash_msg', {'stash': player_stash_map['player1'], 'player': 'player1'}, 
-         room=room_map['player1'])
-    emit('stash_msg', {'stash': player_stash_map['player2'], 'player': 'player2'}, 
-         room=room_map['player2'])
-    emit('stash_msg', {'stash': player_stash_map['player3'], 'player': 'player3'}, 
-         room=room_map['player3'])
-    emit('stash_msg', {'stash': player_stash_map['player4'], 'player': 'player4'}, 
-         room=room_map['player4'])
-    emit('stash_msg', {'stash': player_stash_map['player5'], 'player': 'player5'}, 
-         room=room_map['player5'])
-    emit('stash_msg', {'stash': player_stash_map['player6'], 'player': 'player6'}, 
-         room=room_map['player6'])
+    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
+         broadcast=True)    
     
     emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
     # clear everybody's bet log
@@ -601,7 +591,7 @@ def receive_bet(message):
     
     # decrement player's stash, and send new stash amount to the player
     player_stash_map[requesting_player] = player_stash_map[requesting_player] - int(amt)
-    emit('stash_msg', {'stash': player_stash_map[requesting_player], 'player': requesting_player}, 
+    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
          room=room_map[requesting_player])
     
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
@@ -627,9 +617,10 @@ def claim_pot():
     five_card_stud.stage.clear()
     omaha.stage.clear()
     
-    # show player his/her increased stash
-    emit('stash_msg', {'stash': player_stash_map[requesting_player], 'player': requesting_player}, 
-         room=room_map[requesting_player])
+    # show everyone the winner's increased stash
+    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
+         broqdcast = True)
+    
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     pot_update(-pot_amount) # clear pot amount
     emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
