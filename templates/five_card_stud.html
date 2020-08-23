@@ -358,8 +358,10 @@
             
             // Claim_pot form handler
             $('form#claim_pot').submit(function(event) {
-                socket.emit('claim_pot');
-                // reset the bet field to 0                
+            // just in case someone clicks the 'claim' button by accident                
+                if (window.confirm("Confirm you mean to claim the pot.")) { 
+                    socket.emit('claim_pot');
+                }              
                 return false;
             });
         
