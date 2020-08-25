@@ -373,7 +373,7 @@
             // Claim_pot form handler
             $('form#claim_pot').submit(function(event) {
             // just in case someone clicks the 'claim' button by accident                
-                if (window.confirm("Confirm you mean to claim the pot.")) { 
+                if (window.confirm("Confirm that you mean to claim the pot.")) { 
                     socket.emit('claim_pot');
                 }              
                 return false;
