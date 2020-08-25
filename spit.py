@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu May 14 02:50:24 2020
+Created on Sun May 31 14:10:22 2020
 
 @author: chaffee
 """
@@ -18,9 +18,11 @@ card_plc_holder_imgs = ['card_pics/card_place_holder_img.png',
                         'card_pics/card_place_holder_img4_test4.png']
 cd_plc_holder_img = card_plc_holder_imgs[3]
 stage = []
+show_spit = False
 
-def new_game(players, community_game = False):
+def new_game(players, community_game = True):
     global deck 
+    global show_spit
     # generate a new, shuffled deck    
     deck = new_deck.make_deck()
     
@@ -33,29 +35,48 @@ def new_game(players, community_game = False):
     hands.clear()
     draw_card_idxs.clear()
     stage.clear()
+    show_spit = False
     for p in players_current_hand:
-        hands[p] = []    
+        hands[p] = []
+    hands['spit'] = []
 
 def deal(players):
+    global show_spit
+    print(f'from spit.deal(players), stage is now {stage}')
     stage_len = len(stage)
     if stage_len == 0:
         new_game(players)
         for key in players:
-            for i in range(5):
-                hands[key].append(deck.pop())
-        stage.append(2)
-        return hands 
-    else:
+            if key != 'spit':
+                for i in range(5):
+                    hands[key].append(deck.pop())
+        hands['spit'].append(deck.pop())                
+        stage.append('draw')
+        return hands
+    elif stage[0]=='draw':
         for key in players:
             if key in draw_card_idxs.keys():
                 for i in range(5):
                     if draw_card_idxs[key][i] == False:
-                        hands[key][i] = deck.pop()        
+                        hands[key][i] = deck.pop()      
         stage.clear()
-        return hands 
-
+        stage.append('reveal_spit')
+        return hands
+    else:
+        stage.clear()
+        show_spit = True
+        return hands
+#    else:
+#        stage.clear()
+#        new_game(players)
+        #for p in players:
+        #    hands[p] = []
+#        return hands
+        
 
 def get_display(hands_tuple, whose_pg):
+    global show_spit
+    print(f'from spit.get_display(...), stage is now {stage}')
     display_hands = {}
     # convert fucking tuples back to fucking lists...
     hands_list = hands_tuple.copy()
@@ -67,6 +88,11 @@ def get_display(hands_tuple, whose_pg):
     for key in hands_list.keys():
         cards = hands_list[key]
         if key != whose_pg:
-            cards = [card_back] * 5
-        display_hands[key] = cards
+            if key != 'spit':
+                cards = [card_back] * 5
+            else:
+                cards = [card_back]
+        display_hands[key] = cards    
+    if show_spit:        
+        display_hands['spit'] = hands['spit']
     return display_hands

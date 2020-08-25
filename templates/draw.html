@@ -475,9 +475,9 @@
             //else if (game=='scs'){
             //     window.location.href = "";
             //} 
-            //else if (game=='spit'){
-            //     window.location.href = "";
-            //} 
+            else if (game=='spit'){
+                 window.location.href = "{{ url_for('redirect_to_spit') }}";
+            } 
             else if (game=='omaha'){
                  window.location.href = "{{ url_for('redirect_to_omaha') }}";
             //} 
@@ -485,7 +485,7 @@
             //     window.location.href = "";
             } 
             else {
-                window.alert("from check_pot() function: Something wrong with the link.");
+                window.alert("from check_pot() function: The game selected is not associated with any link.");
             }
         }
     </script>
@@ -530,6 +530,7 @@
 	    &nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_draw') }}" onclick="check_pot('draw'); return false;" style="color:red; font-size:20px;">Draw</a>
 	    &nbsp&nbsp<a href="{{ url_for('redirect_to_omaha') }}" onclick="check_pot('omaha'); return false;" style="color:red; font-size:20px;">Omaha</a> 
     	&nbsp&nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}" onclick="check_pot('fcs'); return false;" style="color:red; font-size:20px;">5-Card Stud</a> 
+    	&nbsp&nbsp<a href="{{ url_for('redirect_to_spit') }}" onclick="check_pot('spit'); return false;" style="color:red; font-size:20px;">Spit</a> 
       </div>    	 
 	 </fieldset>
 	 

@@ -14,9 +14,9 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, \
 import draw
 import five_card_stud
 import omaha 
-# import seven_card_stud be sure to clear game stage in claim_pot()
-# import monty be sure to clear game stage in claim_pot()
-# import spit be sure to clear game stage in claim_pot()
+# import seven_card_stud be sure to clear game stage in claim_pot(), add line in fold()
+# import monty be sure to clear game stage in claim_pot(), add line in fold()
+import spit 
     
 
 #~~~~~~~~~~~~~~~~~~~ Config Stuff ~~~~~~~~~~~~~~~~~
@@ -128,7 +128,10 @@ def home():
 
     return render_template('home.html', async_mode=socketio.async_mode)
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Draw   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+##########################################################################
+### GAMES
+##########################################################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Draw   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/draw', methods = ['GET', 'POST'])
 def draw_play():
     # makes sure that the game starts from scratch if it was 
@@ -199,6 +202,85 @@ def draw_cards_draw(message):
                        'player': player_name_map[requesting_player] + ' takes '},
                        broadcast=True)
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Spit   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   
+#def reveal_spit():
+#    print('\nfrom reveal_spit() fn:')
+#    cards_player1_pg['spit'] = hands['spit']
+#    cards_player2_pg['spit'] = hands['spit']
+#    cards_player3_pg['spit'] = hands['spit']
+#    cards_player4_pg['spit'] = hands['spit']
+#    cards_player5_pg['spit'] = hands['spit']
+#    cards_player6_pg['spit'] = hands['spit']
+
+@app.route('/spit', methods = ['GET', 'POST'])
+def spit_play():
+    # makes sure that the game starts from scratch if it was 
+    # left in a state stage != []
+    spit.stage.clear()
+    return render_template('spit_in_the_ocean.html', names = player_name_map)
+
+@app.route('/link_to_spit')
+def redirect_to_spit():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]  
+    print('redirect_to_spit is working has been called')
+    return redirect(url_for('spit_play', player=requesting_player))
+
+@socketio.on('draw_cards_spit', namespace='/test')
+def draw_cards_spit(message):
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    print('hold statuses: ', message['data'])
+    hold_statuses = [message['data']['card1'], message['data']['card2'], 
+                     message['data']['card3'], message['data']['card4'], 
+                     message['data']['card5']]
+    if requesting_player == 'player1':
+        # 1. Show card backs to player for cards selected to discard
+        # as he/she waits for the dealer to deal the draw
+        for i in range(len(cards_player1_pg['requesting_player'])):
+            if hold_statuses[i] == False:                
+                cards_player1_pg['requesting_player'][i] = None
+        emit('get_cards',  {'cards': cards_player1_pg}, room=room_map['player1'])
+        
+        # 2. register the cards s/he wants drawn in draw.py
+        spit.draw_card_idxs['player1'] = hold_statuses
+    elif requesting_player == 'player2':
+        for i in range(len(cards_player2_pg['requesting_player'])):
+            if hold_statuses[i] == False:                
+                cards_player2_pg['requesting_player'][i] = None
+        emit('get_cards',  {'cards': cards_player2_pg}, room=room_map['player2'])
+        spit.draw_card_idxs['player2'] = hold_statuses
+    elif requesting_player == 'player3':
+        for i in range(len(cards_player3_pg['requesting_player'])):
+            if hold_statuses[i] == False:                
+                cards_player3_pg['requesting_player'][i] = None
+        emit('get_cards',  {'cards': cards_player3_pg}, room=room_map['player3'])
+        spit.draw_card_idxs['player3'] = hold_statuses
+    elif requesting_player == 'player4':
+        for i in range(len(cards_player4_pg['requesting_player'])):
+            if hold_statuses[i] == False:                
+                cards_player4_pg['requesting_player'][i] = None
+        emit('get_cards',  {'cards': cards_player4_pg}, room=room_map['player4'])
+        spit.draw_card_idxs['player4'] = hold_statuses
+    elif requesting_player == 'player5':
+        for i in range(len(cards_player5_pg['requesting_player'])):
+            if hold_statuses[i] == False:                
+                cards_player5_pg['requesting_player'][i] = None
+        emit('get_cards',  {'cards': cards_player5_pg}, room=room_map['player5'])
+        spit.draw_card_idxs['player5'] = hold_statuses
+    elif requesting_player == 'player6':
+        for i in range(len(cards_player6_pg['requesting_player'])):
+            if hold_statuses[i] == False:                
+                cards_player6_pg['requesting_player'][i] = None
+        emit('get_cards',  {'cards': cards_player6_pg}, room=room_map['player6'])
+        spit.draw_card_idxs['player6'] = hold_statuses
+    # this broadcasts the message to everybody how many cards the requesting player took
+    emit('who_drew_what',
+                      {'data': 5-sum(hold_statuses), 
+                       'player': player_name_map[requesting_player] + ' takes '},
+                       broadcast=True)
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    5-card stud   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/five_card_stud', methods = ['GET', 'POST'])
 def five_card_play():
@@ -241,29 +323,7 @@ def seven_card_play():
 #     print(f'msg from redirect_to_seven_card(): requesting_player is {requesting_player}')
 #     return redirect(url_for('seven_card_play', player=requesting_player))
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  spit in the ocean  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@app.route('/spit', methods = ['GET', 'POST'])
-def spit_play():
-    return render_template('spit_in_the_ocean.html', names = player_name_map)
-
-@app.route('/link_to_spit')
-def redirect_to_spit():
-    http_ref = request.environ['HTTP_REFERER']
-    requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'msg from link_to_spit(): requesting_player is {requesting_player}')
-    return redirect(url_for('spit_play', player=requesting_player))
-
-    
-#def reveal_spit():
-#    print('\nfrom reveal_spit() fn:')
-#    cards_player1_pg['spit'] = hands['spit']
-#    cards_player2_pg['spit'] = hands['spit']
-#    cards_player3_pg['spit'] = hands['spit']
-#    cards_player4_pg['spit'] = hands['spit']
-#    cards_player5_pg['spit'] = hands['spit']
-#    cards_player6_pg['spit'] = hands['spit']
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    monty    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    monty    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/monty', methods = ['GET', 'POST'])
 def monty_play():    
     return render_template('monty.html', names = player_name_map)
@@ -291,7 +351,10 @@ def redirect_to_monty():
 #    cards_player4_pg['monty'] = hands['monty']
 #    cards_player5_pg['monty'] = hands['monty']
 #    cards_player6_pg['monty'] = hands['monty']
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functions and Handlers~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+##########################################################################
+### DEAL
+##########################################################################
 
 @socketio.on('deal', namespace='/test')
 def deal_click():  
@@ -303,9 +366,9 @@ def deal_click():
     requesting_player = http_ref[http_ref.find('player=')+7:]
     print(f'\ndeal_click() got called!')
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
+    max_bet = 0  # reset the call amount
     
     if 'draw' in http_ref:
-        max_bet = 0  # reset the call amount
         print(f'Game is draw poker, boys. stage = {draw.stage}')
         if len(draw.stage) == 0: 
             if pot_amount > 0: # disallow staring new game 
@@ -315,15 +378,31 @@ def deal_click():
             emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
             pot_update(-pot_amount) # if beginning of game, clear pot amount
         hands = draw.deal(players_active)
-        pg1_tmp = draw.get_display(hands, 'player1')
+        pg1_tmp = draw.get_display(hands, 'player1')              
         pg2_tmp = draw.get_display(hands, 'player2')
         pg3_tmp = draw.get_display(hands, 'player3')
         pg4_tmp = draw.get_display(hands, 'player4')
         pg5_tmp = draw.get_display(hands, 'player5')
         pg6_tmp = draw.get_display(hands, 'player6')
+    
+    if 'spit' in http_ref:
+        print(f'Game is spit in the ocean, boys. stage = {spit.stage}')
+        if len(spit.stage) == 0: 
+            if pot_amount > 0: # disallow staring new game 
+                emit('money_left_alert', {}, room=room_map[requesting_player]) 
+                return None
+            players_active = players_tonight.copy() # re-activate all tonight's players
+            emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
+            pot_update(-pot_amount) # if beginning of game, clear pot amount
+        hands = spit.deal(players_active)
+        pg1_tmp = spit.get_display(hands, 'player1')
+        pg2_tmp = spit.get_display(hands, 'player2')
+        pg3_tmp = spit.get_display(hands, 'player3')
+        pg4_tmp = spit.get_display(hands, 'player4')
+        pg5_tmp = spit.get_display(hands, 'player5')
+        pg6_tmp = spit.get_display(hands, 'player6')
         
     if 'five_card_stud' in http_ref:
-        max_bet = 0  # reset the call amount
         print(f'Game is 5-card stud, boys. stage = {five_card_stud.stage}; max_bet is {max_bet}')
         if len(five_card_stud.stage) == 0: 
             if pot_amount > 0: # disallow staring new game 
@@ -340,8 +419,7 @@ def deal_click():
         pg5_tmp = five_card_stud.get_display(hands, 'player5')
         pg6_tmp = five_card_stud.get_display(hands, 'player6')
     
-    if 'omaha' in http_ref:
-        max_bet = 0  # reset the call amount
+    if 'omaha' in http_ref:        
         print(f'Game is Omaha, boys. stage = {omaha.stage}; max_bet is {max_bet}')
         if len(omaha.stage) == 0: # re-activate all tonight's players
             if pot_amount > 0: # disallow staring new game 
@@ -369,26 +447,25 @@ def deal_click():
     # for draw and spit in the ocean, each player sees his cards in the middle,
     # to faciliate the draw UI approach. I'm also changing the cards in his
     # normal position on the table to blanks so it's not confusing.
-    if 'draw' in http_ref:
-        if 'player1' in pg1_tmp.keys():
+    if 'draw' in http_ref or 'spit' in http_ref:
+        if 'player1' in players_active:
             cards_player1_pg['requesting_player'] = pg1_tmp['player1']
             cards_player1_pg['player1'] = [None]*5
-        if 'player2' in pg2_tmp.keys():
+        if 'player2' in players_active:
             cards_player2_pg['requesting_player'] = pg2_tmp['player2']
             cards_player2_pg['player2'] = [None]*5
-        if 'player3' in pg3_tmp.keys():
+        if 'player3' in players_active:
             cards_player3_pg['requesting_player'] = pg3_tmp['player3']
             cards_player3_pg['player3'] = [None]*5
-        if 'player4' in pg4_tmp.keys():
+        if 'player4' in players_active:
             cards_player4_pg['requesting_player'] = pg4_tmp['player4']
             cards_player4_pg['player4'] = [None]*5
-        if 'player5' in pg5_tmp.keys():
+        if 'player5' in players_active:
             cards_player5_pg['requesting_player'] = pg5_tmp['player5']
             cards_player5_pg['player5'] = [None]*5
-        if 'player5' in pg5_tmp.keys():
+        if 'player6' in players_active:
             cards_player6_pg['requesting_player'] = pg6_tmp['player6']
             cards_player6_pg['player6'] = [None]*5
-    
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
     emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
@@ -419,7 +496,8 @@ def fold():
     five_card_stud.hands[requesting_player] = [five_card_stud.card_back] * hand_len
     omaha.hands[requesting_player] = [omaha.card_back] * hand_len
     draw.hands[requesting_player] = [draw.card_back] * hand_len
-    #spit.hands[requesting_player] = [spit.card_back] * hand_len
+    spit.hands[requesting_player] = [spit.card_back] * hand_len
+    
     players_active.remove(requesting_player) # should add try/catch here in case player not in list
         
     cards_player1_pg[requesting_player] = [draw.card_back] * hand_len
@@ -429,7 +507,7 @@ def fold():
     cards_player5_pg[requesting_player] = [draw.card_back] * hand_len
     cards_player6_pg[requesting_player] = [draw.card_back] * hand_len
     
-    if 'draw' in http_ref:  # for draw we'll just blank out the display in the center
+    if 'draw' in http_ref or 'spit' in http_ref:  # for draw and spit we'll just blank out the display in the center
         if requesting_player == 'player1':
             cards_player1_pg['requesting_player'] = [None] * 5
         if requesting_player == 'player2':
@@ -527,11 +605,19 @@ def start_new_game():
     max_bet = 0
     print('\n start_new_game() has been called.')
     http_ref = request.environ['HTTP_REFERER']
-    pot_update(-pot_amount) # clear pot amount
+    #no need to clear pot amount anymore, since if it's > 0, cannot have gotten this far
     emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
+
+    for key in cards_player1_pg.keys():
+        cards_player1_pg[key] = []
+        cards_player2_pg[key] = []
+        cards_player3_pg[key] = []
+        cards_player4_pg[key] = []
+        cards_player5_pg[key] = []
+        cards_player6_pg[key] = []
     # What game is asking for a new hand:
     if 'draw' in http_ref:        
-        draw.new_game(players = players_tonight)     
+        draw.new_game(players = players_tonight)    
     elif 'five_card_stud' in http_ref:
         five_card_stud.new_game(players = players_tonight)
     elif 'seven_card' in http_ref:
@@ -542,17 +628,19 @@ def start_new_game():
         monty.new_game(players = players_tonight)
     elif 'spit' in http_ref:
         spit.new_game(players = players_tonight)
+        cards_player1_pg['spit'] = None
+        cards_player2_pg['spit'] = None       
+        cards_player3_pg['spit'] = None
+        cards_player4_pg['spit'] = None
+        cards_player5_pg['spit'] = None 
+        cards_player6_pg['spit'] = None
+
     emit('clear_bet_log', broadcast=True)
         
-    ### Have to clear everybody's cards for display when "Update Cards" is called
+    ### Have to clear everybody's cards for display
     ### It's fine if not all these players are active
-    for key in cards_player1_pg.keys():
-        cards_player1_pg[key] = ()
-        cards_player2_pg[key] = ()
-        cards_player3_pg[key] = ()
-        cards_player4_pg[key] = ()
-        cards_player5_pg[key] = ()
-        cards_player6_pg[key] = ()
+    print('here are the keys in cards_player1_pg: ',  cards_player1_pg.keys())
+   
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
     emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
@@ -611,11 +699,12 @@ def claim_pot():
     requesting_player = http_ref[http_ref.find('player=')+7:]
     player_stash_map[requesting_player] = player_stash_map[requesting_player] + int(pot_amount)
     
-    # if a pot is claimed the game is over, even if whether or not the game has been
+    # if a pot is claimed the game is over, whether or not the game has been
     # dealt to completion, so reset stage of all games
     draw.stage.clear()
     five_card_stud.stage.clear()
     omaha.stage.clear()
+    spit.stage.clear()
     
     # show everyone the winner's increased stash
     emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
