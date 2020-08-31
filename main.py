@@ -45,7 +45,9 @@ thread = None
 thread_lock = Lock()
 #~~~~~~~~~~~~~~~~~~~ Config Stuff ~~~~~~~~~~~~~~~~~
 # global variables
+pot_claimed = True
 players_tonight = []
+players_active = []
 possible_players = ['player1', 'player2', 'player3', 'player4', 'player5', 'player6']
 player_name_map = {}
 player_stash_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'', 
@@ -96,7 +98,8 @@ def background_thread():
 
 print('what the fuck')
 @app.route('/', methods=['GET', 'POST'])
-def home(): 
+def home():
+    global players_active
     # This method gets called any time someone clicks the submit
     # button on the home pg.    
     
@@ -114,6 +117,7 @@ def home():
                 players_tonight.append(key)
                 player_stash_map[key] = stash_default
         
+        players_active = players_tonight.copy()
         print(f'from home(), form submitted, players set for tonight: {players_tonight}')
         print(player_name_map)
         print(player_stash_map)
@@ -362,6 +366,7 @@ def deal_click():
     global players_active
     global max_bet    
     global round_bets
+    global pot_claimed
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     print(f'\ndeal_click() got called!')
@@ -370,13 +375,16 @@ def deal_click():
     
     if 'draw' in http_ref:
         print(f'Game is draw poker, boys. stage = {draw.stage}')
-        if len(draw.stage) == 0: 
-            if pot_amount > 0: # disallow staring new game 
+        if len(draw.stage) == 0:             
+            # the three lines below prevent players from accidentally starting a new game
+            # without someone's claiming the previous pot. 
+            if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
+            pot_claimed = False
             players_active = players_tonight.copy() # re-activate all tonight's players
-            emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
-            pot_update(-pot_amount) # if beginning of game, clear pot amount
+            emit('clear_log',{}, broadcast = True)  # clear the msg area
+            # pot_update(-pot_amount) # if beginning of game, clear pot amount. Nope--removes antes also
         hands = draw.deal(players_active)
         pg1_tmp = draw.get_display(hands, 'player1')              
         pg2_tmp = draw.get_display(hands, 'player2')
@@ -388,12 +396,13 @@ def deal_click():
     if 'spit' in http_ref:
         print(f'Game is spit in the ocean, boys. stage = {spit.stage}')
         if len(spit.stage) == 0: 
-            if pot_amount > 0: # disallow staring new game 
+            if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
+            pot_claimed = False
             players_active = players_tonight.copy() # re-activate all tonight's players
-            emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
-            pot_update(-pot_amount) # if beginning of game, clear pot amount
+            emit('clear_log',{}, broadcast = True)  # clear the msg area
+            #pot_update(-pot_amount) # if beginning of game, clear pot amount
         hands = spit.deal(players_active)
         pg1_tmp = spit.get_display(hands, 'player1')
         pg2_tmp = spit.get_display(hands, 'player2')
@@ -405,12 +414,13 @@ def deal_click():
     if 'five_card_stud' in http_ref:
         print(f'Game is 5-card stud, boys. stage = {five_card_stud.stage}; max_bet is {max_bet}')
         if len(five_card_stud.stage) == 0: 
-            if pot_amount > 0: # disallow staring new game 
+            if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
+            pot_claimed = False
             players_active = players_tonight.copy() # re-activate all tonight's players
-            emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
-            pot_update(-pot_amount) # if beginning of game, clear pot amount            
+            emit('clear_log',{}, broadcast = True)  # clear the msg area
+            #pot_update(-pot_amount) # if beginning of game, clear pot amount            
         hands = five_card_stud.deal(players_active)
         pg1_tmp = five_card_stud.get_display(hands, 'player1')
         pg2_tmp = five_card_stud.get_display(hands, 'player2')
@@ -422,12 +432,13 @@ def deal_click():
     if 'omaha' in http_ref:        
         print(f'Game is Omaha, boys. stage = {omaha.stage}; max_bet is {max_bet}')
         if len(omaha.stage) == 0: # re-activate all tonight's players
-            if pot_amount > 0: # disallow staring new game 
+            if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
+            pot_claimed = False
             players_active = players_tonight.copy()
-            emit('clear_log',{}, broadcast = True)  # clear the draw cards msg area
-            pot_update(-pot_amount) # if beginning of game, clear pot amount            
+            emit('clear_log',{}, broadcast = True)  # clear the msg area
+            #pot_update(-pot_amount) # if beginning of game, clear pot amount            
         hands = omaha.deal(players_active)
         pg1_tmp = omaha.get_display(hands, 'player1')
         pg2_tmp = omaha.get_display(hands, 'player2')
@@ -477,7 +488,7 @@ def deal_click():
     emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
          broadcast=True)    
     
-    emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
+    emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) # broadcast pot update
     # clear everybody's bet log
     emit('clear_bet_log', broadcast=True)
 
@@ -598,7 +609,7 @@ def start_new_game():
     global round_bets
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    if pot_amount > 0: # disallow staring new game 
+    if pot_amount > 0 and pot_claimed==False: # disallow staring new game 
         emit('money_left_alert', {}, room=room_map[requesting_player]) 
         return None
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
@@ -606,7 +617,7 @@ def start_new_game():
     print('\n start_new_game() has been called.')
     http_ref = request.environ['HTTP_REFERER']
     #no need to clear pot amount anymore, since if it's > 0, cannot have gotten this far
-    emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
+    emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) # broadcast pot update
 
     for key in cards_player1_pg.keys():
         cards_player1_pg[key] = []
@@ -628,6 +639,7 @@ def start_new_game():
         monty.new_game(players = players_tonight)
     elif 'spit' in http_ref:
         spit.new_game(players = players_tonight)
+        
         cards_player1_pg['spit'] = None
         cards_player2_pg['spit'] = None       
         cards_player3_pg['spit'] = None
@@ -658,6 +670,7 @@ def start_new_game():
 def receive_bet(message):
     global max_bet
     global round_bets
+    global players_active
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     amt = int(message['amt'])
@@ -680,13 +693,13 @@ def receive_bet(message):
     # decrement player's stash, and send new stash amount to the player
     player_stash_map[requesting_player] = player_stash_map[requesting_player] - int(amt)
     emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
-         room=room_map[requesting_player])
+         broadcast=True)
     
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
                     'player_by_number':requesting_player, 'amt': amt, 'fold': 'no'},
                        broadcast=True) # broadcast latest player's bet
     for player in players_active:
-        emit('pot_msg', {'amt': pot_amount, 'max': max_bet - round_bets[player]}, 
+        emit('pot_msg', {'amt': pot_amount, 'call': max_bet - round_bets[player]}, 
                  room=room_map[player]) # update each player's call amt
     
 
@@ -694,7 +707,9 @@ def receive_bet(message):
 def claim_pot():
     global max_bet
     global round_bets
+    global pot_claimed
     max_bet = 0
+    pot_claimed = True
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     player_stash_map[requesting_player] = player_stash_map[requesting_player] + int(pot_amount)
@@ -705,14 +720,13 @@ def claim_pot():
     five_card_stud.stage.clear()
     omaha.stage.clear()
     spit.stage.clear()
-    
-    # show everyone the winner's increased stash
-    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
-         broqdcast = True)
-    
+        
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     pot_update(-pot_amount) # clear pot amount
-    emit('pot_msg', {'amt': pot_amount, 'max': max_bet}, broadcast=True) # broadcast pot update
+     # show everyone the winner's increased stash
+    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
+         broqdcast = True)
+    emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) # broadcast pot update
     
     # the following are for logging purposes: will print to online log files and can then
     # retrieve at the end of the evening or later to get the player stashes

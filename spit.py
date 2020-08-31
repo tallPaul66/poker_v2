@@ -66,17 +66,10 @@ def deal(players):
         stage.clear()
         show_spit = True
         return hands
-#    else:
-#        stage.clear()
-#        new_game(players)
-        #for p in players:
-        #    hands[p] = []
-#        return hands
         
 
 def get_display(hands_tuple, whose_pg):
     global show_spit
-    print(f'from spit.get_display(...), stage is now {stage}')
     display_hands = {}
     # convert fucking tuples back to fucking lists...
     hands_list = hands_tuple.copy()

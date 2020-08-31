@@ -92,10 +92,9 @@
             // print to browser the total pot
              socket.on('pot_msg', function(msg, cb) {
                 $('#pot_total').text($('<div/>').text('$' + msg.amt).html());
-                $('#max_bet').text($('<div/>').text('call: ' + '$' + msg.max).html()); 
+                $('#call_amt').text($('<div/>').text('call: ' + '$' + msg.call).html()); 
                 pot_value = msg.amt // global variable for use when user tries to click a link
-                console.log('pot_value', pot_value)                
-
+                console.log('pot_value', pot_value)
             });
 
             // print to browser the player's stash. This also loads a chip stash image,
@@ -118,6 +117,7 @@
                     $('#player5_stash').text($('<div/>').text('$' + stash_map.player5).html());  
                 }
                 var players = Object.keys(stash_map)
+                var chips_img0 = "static/card_pics/chips--6_stack_plus_2_small.png";
                 var chips_img1 = "static/card_pics/chips--6_stack_small.png";
                 var chips_img2 = "static/card_pics/chips--6_stack_minus_2_small.png" ;
                 var chips_img3 = "static/card_pics/chips--6_stack_minus_4_small.png";
@@ -129,6 +129,9 @@
                     switch(player){
                         case "player1":
                             switch(true){
+                                case stash_map[player] > 1.4*buy_in:
+                                    document.getElementById('player1_stash_img').src = chips_img0;
+                                    break;
                                 case stash_map[player] > 1.2*buy_in:                                    
                                     document.getElementById('player1_stash_img').src = chips_img1;
                                     break;
@@ -150,6 +153,9 @@
                             }
                         case "player2":
                             switch(true){
+                                case stash_map[player] > 1.4*buy_in:
+                                    document.getElementById('player2_stash_img').src = chips_img0;
+                                    break;
                                 case stash_map[player] > 1.2*buy_in:
                                     document.getElementById('player2_stash_img').src = chips_img1;
                                     break;
@@ -171,6 +177,9 @@
                             }
                         case "player3":
                             switch(true){
+                                case stash_map[player] > 1.4*buy_in:
+                                    document.getElementById('player3_stash_img').src = chips_img0;
+                                    break;
                                 case stash_map[player] > 1.2*buy_in:
                                     document.getElementById('player3_stash_img').src = chips_img1;
                                     break;
@@ -192,6 +201,9 @@
                             }
                         case "player4":
                             switch(true){
+                                case stash_map[player] > 1.4*buy_in:
+                                    document.getElementById('player4_stash_img').src = chips_img0;
+                                    break;
                                 case stash_map[player] > 1.2*buy_in:
                                     document.getElementById('player4_stash_img').src = chips_img1;
                                     break;
@@ -213,6 +225,9 @@
                             }
                         case "player5":
                             switch(true){
+                                case stash_map[player] > 1.4*buy_in:
+                                    document.getElementById('player5_stash_img').src = chips_img0;
+                                    break;
                                 case stash_map[player] > 1.2*buy_in:
                                     document.getElementById('player5_stash_img').src = chips_img1;
                                     break;
@@ -544,7 +559,6 @@
     <!--                                The Poker Table                                  -->
     <!--#################################################################################-->
     
-    <hr>
     <br>	
 	  <table width="500px"  height="50%">
         <tr>
@@ -584,7 +598,7 @@
 		     <br> 
              <h1><div id="pot_total"></div></h1>
              <br> 
-             <div id="max_bet"></div>
+             <div id="call_amt"></div>
              <br>
              <form style='float: left; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     
                      <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
