@@ -54,23 +54,6 @@ player_stash_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'',
              'player5':'', 'player6':''}
 round_bets = {'player1':0, 'player2':0, 'player3':0, 'player4':0, 
              'player5':0, 'player6':0} # keep track of players' bets in a single round
-pot_amount = 0
-max_bet = 0
-
-def pot_update(amt):
-    amt = int(amt)
-    global pot_amount
-    global max_bet    
-    if amt > max_bet: # increase call amt
-        max_bet = amt
-    pot_amount = pot_amount + amt
-    
-    
-
-stash_default = 100
-# games that require choices on the player's part beyond folding or staying in
-choice_games = ['draw', 'monty', 'spit']
-
 # declaring these global variables here so they're available 
 # in case someone clicks the New Game button before any hands 
 # are dealt for the evening.
@@ -83,6 +66,22 @@ cards_player6_pg = {}
 
 room_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'', 
              'player5':'', 'player6':''}
+pot_amount = 0
+max_bet = 0
+buy_in = 100
+
+# games that require choices on the player's part beyond folding or staying in
+choice_games = ['draw', 'monty', 'spit']
+
+def pot_update(amt):
+    amt = int(amt)
+    global pot_amount
+    global max_bet    
+    if amt > max_bet: # increase call amt
+        max_bet = amt
+    pot_amount = pot_amount + amt
+
+
 def update_room_map(player, client_sid):
     room_map[player] = client_sid
     
@@ -115,7 +114,7 @@ def home():
         for key in player_name_map.keys():
             if player_name_map[key] != '':
                 players_tonight.append(key)
-                player_stash_map[key] = stash_default
+                player_stash_map[key] = buy_in
         
         players_active = players_tonight.copy()
         print(f'from home(), form submitted, players set for tonight: {players_tonight}')
@@ -485,7 +484,7 @@ def deal_click():
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
     
     # show everyone their current stash amt
-    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
+    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': buy_in}, 
          broadcast=True)    
     
     emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) # broadcast pot update
@@ -692,7 +691,7 @@ def receive_bet(message):
     
     # decrement player's stash, and send new stash amount to the player
     player_stash_map[requesting_player] = player_stash_map[requesting_player] - int(amt)
-    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
+    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': buy_in}, 
          broadcast=True)
     
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
@@ -724,8 +723,8 @@ def claim_pot():
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     pot_update(-pot_amount) # clear pot amount
      # show everyone the winner's increased stash
-    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': stash_default}, 
-         broqdcast = True)
+    emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': buy_in}, 
+         broadcast=True)
     emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) # broadcast pot update
     
     # the following are for logging purposes: will print to online log files and can then
