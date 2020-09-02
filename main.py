@@ -669,11 +669,9 @@ def start_new_game():
 def receive_bet(message):
     global max_bet
     global round_bets
-    global players_active
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     amt = int(message['amt'])
-    
     # first let's validate bet to ensure player is not entering a negative amt
     # that is larger magnitude that what he's bet. Negative amounts are allowed to 
     # correct input errors, but not to get "free money."
@@ -697,6 +695,7 @@ def receive_bet(message):
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
                     'player_by_number':requesting_player, 'amt': amt, 'fold': 'no'},
                        broadcast=True) # broadcast latest player's bet
+    print('from receive_bet(), players_acitve: ', players_active)
     for player in players_active:
         emit('pot_msg', {'amt': pot_amount, 'call': max_bet - round_bets[player]}, 
                  room=room_map[player]) # update each player's call amt
@@ -707,6 +706,7 @@ def claim_pot():
     global max_bet
     global round_bets
     global pot_claimed
+    global players_active
     max_bet = 0
     pot_claimed = True
     http_ref = request.environ['HTTP_REFERER']
@@ -727,6 +727,10 @@ def claim_pot():
          broadcast=True)
     emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) # broadcast pot update
     
+    # Without doing this here, if an ante is entered in the next game,
+    # pre-deal, players who folded in previous game won't see the pot amt when
+    # they ante. Not crucial, but it will feel a little weird to them not to see the pot.
+    players_active = players_tonight.copy()
     # the following are for logging purposes: will print to online log files and can then
     # retrieve at the end of the evening or later to get the player stashes
     print(f'player_stash_map: {player_stash_map}')
