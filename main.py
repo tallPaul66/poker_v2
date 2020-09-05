@@ -695,7 +695,6 @@ def receive_bet(message):
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
                     'player_by_number':requesting_player, 'amt': amt, 'fold': 'no'},
                        broadcast=True) # broadcast latest player's bet
-    print('from receive_bet(), players_acitve: ', players_active)
     for player in players_active:
         emit('pot_msg', {'amt': pot_amount, 'call': max_bet - round_bets[player]}, 
                  room=room_map[player]) # update each player's call amt

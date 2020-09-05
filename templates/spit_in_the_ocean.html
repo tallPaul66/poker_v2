@@ -124,6 +124,7 @@
                 var chips_img4 = "static/card_pics/chips--6_stack_minus_6_small.png";
                 var chips_img5 = "static/card_pics/chips--6_stack_minus_7_small.png";
                 var chips_img6 = "static/card_pics/chips--6_stack_minus_8_small.png";
+                var chips_default = "static/card_pics/card_place_holder_img2_sm2.png";
                 for (i=0; i<players.length; i++){
                     player = players[i]                  
                     switch(player){
@@ -147,8 +148,11 @@
                                 case stash_map[player] > 0.4*buy_in:
                                     document.getElementById('player1_stash_img').src = chips_img5
                                     break;
-                                default:
+                                case stash_map[player] > 0.2*buy_in:
                                     document.getElementById('player1_stash_img').src = chips_img6
+                                    break;
+                                default:
+                                    document.getElementById('player1_stash_img').src = chips_default
                                     break;
                             }
                         case "player2":
@@ -171,8 +175,11 @@
                                 case stash_map[player] > 0.4*buy_in:
                                     document.getElementById('player2_stash_img').src = chips_img5
                                     break;
-                                default:
+                                case stash_map[player] > 0.2*buy_in:
                                     document.getElementById('player2_stash_img').src = chips_img6
+                                    break;
+                                default:
+                                    document.getElementById('player2_stash_img').src = chips_default
                                     break;
                             }
                         case "player3":
@@ -195,8 +202,11 @@
                                 case stash_map[player] > 0.4*buy_in:
                                     document.getElementById('player3_stash_img').src = chips_img5
                                     break;
-                                default:
+                                case stash_map[player] > 0.2*buy_in:
                                     document.getElementById('player3_stash_img').src = chips_img6
+                                    break;
+                                default:
+                                    document.getElementById('player3_stash_img').src = chips_default
                                     break;
                             }
                         case "player4":
@@ -219,8 +229,11 @@
                                 case stash_map[player] > 0.4*buy_in:
                                     document.getElementById('player4_stash_img').src = chips_img5
                                     break;
-                                default:
+                                case stash_map[player] > 0.2*buy_in:
                                     document.getElementById('player4_stash_img').src = chips_img6
+                                    break;
+                                default:
+                                    document.getElementById('player4_stash_img').src = chips_default
                                     break;
                             }
                         case "player5":
@@ -243,8 +256,11 @@
                                 case stash_map[player] > 0.4*buy_in:
                                     document.getElementById('player5_stash_img').src = chips_img5
                                     break;
-                                default:
+                                case stash_map[player] > 0.2*buy_in:
                                     document.getElementById('player5_stash_img').src = chips_img6
+                                    break;
+                                default:
+                                    document.getElementById('player5_stash_img').src = chips_default
                                     break;
                             }
                     }
@@ -392,7 +408,7 @@
             // Claim_pot form handler
             $('form#claim_pot').submit(function(event) {
             // just in case someone clicks the 'claim' button by accident                
-                if (window.confirm("Confirm that you mean to claim the pot.")) { 
+                if (window.confirm("You won, pardner? Click 'OK' to claim the pot and acknowlege that you have tiny balls and penis.")) { 
                     socket.emit('claim_pot');
                 }              
                 return false;
