@@ -15,7 +15,7 @@ import draw
 import five_card_stud
 import omaha 
 # import seven_card_stud be sure to clear game stage in claim_pot(), add line in fold()
-# import monty be sure to clear game stage in claim_pot(), add line in fold()
+import monty #be sure to clear game stage in claim_pot(), add line in fold()
 import spit 
     
 
@@ -326,9 +326,10 @@ def seven_card_play():
 #     print(f'msg from redirect_to_seven_card(): requesting_player is {requesting_player}')
 #     return redirect(url_for('seven_card_play', player=requesting_player))
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    monty    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Monty   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/monty', methods = ['GET', 'POST'])
-def monty_play():    
+def monty_play():   
+    monty.stage.clear()
     return render_template('monty.html', names = player_name_map)
 
 @app.route('/link_to_monty')
@@ -338,22 +339,21 @@ def redirect_to_monty():
     print(f'msg from link_to_monty(): requesting_player is {requesting_player}')
     return redirect(url_for('monty_play', player=requesting_player))
 
-#def monty_hold():
-#    print('\nfrom monty_hold() fn:')
-#    http_ref = request.environ['HTTP_REFERER']
-#    requesting_player = http_ref[http_ref.find('player=')+7:]
-#    print(f' request.environ["HTTP_REFERER] is: {http_ref}')
-#    print(f'requesting_player {requesting_player} wants to hold.')
-#    monty.hold_dict[requesting_player] = 'hold'  
-  
-#def reveal_monty():
-#    print('\nfrom reveal_monty() fn:')
-#    cards_player1_pg['monty'] = hands['monty']
-#    cards_player2_pg['monty'] = hands['monty']
-#    cards_player3_pg['monty'] = hands['monty']
-#    cards_player4_pg['monty'] = hands['monty']
-#    cards_player5_pg['monty'] = hands['monty']
-#    cards_player6_pg['monty'] = hands['monty']
+@socketio.on('reveal_monty', namespace='/test')
+def reveal_monty():
+    print('\nfrom monty_reveal_monty(): monty\' hand: ', hands['monty'])
+    emit('show_monty',  {'cards': hands['monty']}, broadcast=True)
+
+@socketio.on('monty_drop', namespace='/test')
+def monty_drop():
+    print('\nfrom monty_drop() fn:')
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    print(f'requesting_player {requesting_player} wants to drop.')
+    monty.drop_dict[requesting_player] = 'drop'
+    monty_fold_hand = [monty.card_back] * 3
+    emit('monty_drop', {'cards': monty_fold_hand}, room=room_map[requesting_player])
+
 
 ##########################################################################
 ### DEAL
@@ -372,6 +372,32 @@ def deal_click():
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     max_bet = 0  # reset the call amount
     
+    if 'monty' in http_ref:
+        print(f'Game is Monty, boys. stage = {monty.stage}')
+        if len(draw.stage) == 0:             
+            # the three lines below prevent players from accidentally starting a new game
+            # without someone's claiming the previous pot. 
+            
+            # but for Monty, this won't work. Here we just enforce taking of the pot
+            # when either new game is clicked or when trying to link to another game,
+            # but do not enforce pot claiming before deal() is clicked even if len(stage)==0
+            # since it always is for Monty.
+            
+            #if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
+            #    emit('money_left_alert', {}, room=room_map[requesting_player]) 
+            #    return None
+            pot_claimed = False
+            players_active = players_tonight.copy() # re-activate all tonight's players
+            emit('clear_log',{}, broadcast = True)  # clear the msg area
+            # pot_update(-pot_amount) # if beginning of game, clear pot amount. Nope--removes antes also
+        hands = monty.deal(players_active)
+        pg1_tmp = monty.get_display(hands, 'player1')              
+        pg2_tmp = monty.get_display(hands, 'player2')
+        pg3_tmp = monty.get_display(hands, 'player3')
+        pg4_tmp = monty.get_display(hands, 'player4')
+        pg5_tmp = monty.get_display(hands, 'player5')
+        pg6_tmp = monty.get_display(hands, 'player6')
+        
     if 'draw' in http_ref:
         print(f'Game is draw poker, boys. stage = {draw.stage}')
         if len(draw.stage) == 0:             
@@ -555,7 +581,6 @@ def reveal_cards():
     # here it is the dealer's right to reveal the cards of everyone 
     # who holds, to everyone playing.
     if 'monty' in http_ref:
-        reveal_players_monty = 1 # set the flag, for use in get_img()
         print('"REVEAL" for all holders in Monty has been invoked')
         print(f'contents of monty.hold_dict: {monty.hold_dict}')
         for player in monty.hold_dict.keys(): 
@@ -718,6 +743,7 @@ def claim_pot():
     five_card_stud.stage.clear()
     omaha.stage.clear()
     spit.stage.clear()
+    monty.stage.clear()
         
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     pot_update(-pot_amount) # clear pot amount
