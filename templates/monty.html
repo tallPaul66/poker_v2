@@ -1,6 +1,6 @@
 <html>
   <style>
-	body{ background-image:url("/static/card_pics/table_top_14.png");
+	body{ background-image:url("/static/card_pics/table_top_4.jpg");
 		width: 100%;
 	    height: 100%;
 	    max-height: 100%;
@@ -96,6 +96,12 @@
                 pot_value = msg.amt // global variable for use when user tries to click a link
                 console.log('pot_value', pot_value)                
 
+            });
+            // special function just for Monty. If everybody drops, put a message in
+            // the bet_log so the dealer knows to hit "DEAL" again.
+            socket.on('all_dropped_msg', function(msg, cb) {
+                $('#bet_log').append('<br>' + $('<div/>').text("Everybody dropped. Ante again, chicken shits!").html());
+                console.log('all_dropped_msg received a msg from server.')
             });
 
             // print to browser the player's stash. This also loads a chip stash image,
@@ -292,7 +298,6 @@
             });
             
             socket.on('monty_drop', function(msg, cb){
-                console.log('monty_drop msg', msg)
                 const url_params = new URLSearchParams(window.location.search);
                 const player_name = url_params.get('player');
                 var plyr_card1 = player_name + '_card1'
@@ -505,13 +510,7 @@
         </form>   
         <hr class="vertical" />
         <hr class="vertical" />
-        <form style= "margin-left:20px; margin-right:3px; margin-top: 14px;" id= "fold" class = "form" method="POST" action='#'> 
-             <input class="submit_btn1" type="submit" name="btn" value="FOLDY-DOLDY">
-        </form>      
-        
-        <hr class="vertical" />
-        <hr class="vertical" />        
-        
+                
         <input style= "margin-left:20px;" type="image" src="static/card_pics/white_chip_small.png" width=55 height=55 name="bet_1" id="bet_1" onclick="writeNumbers(1);"/>
         <input style= "margin-left:3px;" type="image" src="static/card_pics/red_chip_small.png" width=55 height=55  name="bet_2" id="bet_2" onclick="writeNumbers(2);"/>
         <input style= "margin-left:3px;" type="image" src="static/card_pics/blue_chip_small.png" width=55 height=55  name="bet_5" id="bet_5" onclick="writeNumbers(5);"/>
@@ -532,7 +531,7 @@
       </div>    	 
 	 </fieldset>
 	 
-	 <h1 style="color:#FFDF00;">~ Monty, or A Night of Careful Betting ~</h1>
+	 <h1 style="color:#FFDF00;">~ Monty, or There Goes A Night of Careful Betting ~</h1>
 	  
     <!--#################################################################################-->
     <!--                                The Poker Table                                  -->
@@ -558,11 +557,7 @@
 		  <th valign=middle><h3 style="color:#FFDF00;">Monty</h3></th>          
         </tr>
         <tr>
-          <th valign=bottom colspan = "2">
-              <h1><div id="player5_stash"></div></h1>
-              <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
-              <img src="" id="player5_stash_img" width=80 height=80>
-          </th>
+          <td></td> 
           <th colspan = "3" valign=top>
     		  <div style="color:#F0FFFF;" id="log"></div>
 		  </th>
@@ -570,8 +565,7 @@
     <!--####################################################################-->
     <!--                                 BETTING                            -->
     <!--####################################################################-->
-		  <th valign=top>
-		  </th>
+		  <td></td>
 		  <th valign=top>
 		     <br> 
              <h1><div id="pot_total"></div></h1>
@@ -582,58 +576,55 @@
                      <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
              </form> 
 		  </th>
-		  <th colspan = "2" valign=top>
-        		  <br>
-        		  <div style="color:#F0FFFF;" id="bet_log"></div>
+		  <th colspan = "4" valign=top>
+       		  <div style="color:#F0FFFF;" id="bet_log"></div>
 		  </th>
     <!--####################################################################-->
     <!--                                                                    -->
     <!--####################################################################-->    
-          <td></td><td></td><td></td>
-          <td></td>
-          <th valign=bottom colspan = "2">              
-              <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
-              <h1><div id="player2_stash"></div></h1>
-              <img src="" id="player2_stash_img" width=80 height=80>
-          </th>
+          <td></td><td></td><td></td><td></td>
+          <td></td>         
          </tr>
          <tr>
+         <th valign=middle colspan = "2">
+              <h1><div id="player5_stash"></div></h1>
+              <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
+              <img src="" id="player5_stash_img" width=80 height=80>
+          </th>
           <td><img src="" id="player5_card1" width=80 height=122></td>
 		  <td><img src="" id="player5_card2" width=80 height=122></td>
 		  <td><img src="" id="player5_card3" width=80 height=122></td>
 		  <td></td><td></td><td></td><td></td>
-          <td></td><td></td><td></td><td></td>
-          <td></td>		  
+          <td></td><td></td><td></td><td></td>	  
           <td><img src="" id="player2_card1" width=80 height=122></td>
 		  <td><img src="" id="player2_card2" width=80 height=122></td>
 		  <td><img src="" id="player2_card3" width=80 height=122></td>
-		  <td></td><td></td>
+		  <th valign=middle colspan = "2">              
+              <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
+              <h1><div id="player2_stash"></div></h1>
+              <img src="" id="player2_stash_img" width=80 height=80>
+          </th>
+          <td></td>
         </tr>
         <tr>
-          <td></td><td></td>
-          <th valign=bottom colspan = "2"> 
-              <br><br>         
-              <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
-              <h1><div id="player4_stash"></div></h1>
-              <img src="" id="player4_stash_img" width=80 height=80>
-          </th>          
-          <td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td><td></td>                    
+          <td></td><td></td><td></td>
           <td valign=top>
             <p></p><form id="drop_cards" class="form" method="POST" action='#'>
                       <input class="submit_btn2" type="submit" name="btn" value="DROP">
                    </form>
           </td>
-          <td></td><td></td><td></td><td></td>
-          <th valign=bottom align="right" colspan = "2"> 
-              <br><br>             
-              <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
-              <h1><div id="player3_stash"></div></h1>
-              <img src="" id="player3_stash_img" width=80 height=80>
-          </th>
-          <td></td><td></td>
+          <td></td><td></td><td></td><td></td>          
+          <td></td><td></td><td></td>
         </tr>
         <tr>
-          <td></td><td></td><td></td>          
+          <td></td><td></td>
+          <th valign=middle colspan = "2"> 
+              <br><br>         
+              <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
+              <h1><div id="player4_stash"></div></h1>
+              <img src="" id="player4_stash_img" width=80 height=80>
+          </th>          
           <td><img src="" id="player4_card1" width=80 height=122></td>
 		  <td><img src="" id="player4_card2" width=80 height=122></td>
 		  <td><img src="" id="player4_card3" width=80 height=122></td>
@@ -641,8 +632,13 @@
 		  <td><img src="" id="player3_card1" width=80 height=122></td>
 		  <td><img src="" id="player3_card2" width=80 height=122></td>
 		  <td><img src="" id="player3_card3" width=80 height=122></td>
-		  <td></td><td></td>
-          <td></td><td></td><td></td>
+		  <th valign=middle colspan = "2"> 
+              <br><br>             
+              <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
+              <h1><div id="player3_stash"></div></h1>
+              <img src="" id="player3_stash_img" width=80 height=80>
+          </th>
+          <td></td><td></td><td></td><td></td>
         </tr>
 	  </table> 		
    </body>

@@ -336,12 +336,10 @@ def monty_play():
 def redirect_to_monty():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'msg from link_to_monty(): requesting_player is {requesting_player}')
     return redirect(url_for('monty_play', player=requesting_player))
 
 @socketio.on('reveal_monty', namespace='/test')
 def reveal_monty():
-    print('\nfrom monty_reveal_monty(): monty\' hand: ', hands['monty'])
     emit('show_monty',  {'cards': hands['monty']}, broadcast=True)
 
 @socketio.on('monty_drop', namespace='/test')
@@ -374,7 +372,13 @@ def deal_click():
     
     if 'monty' in http_ref:
         print(f'Game is Monty, boys. stage = {monty.stage}')
-        if len(draw.stage) == 0:             
+        if len(draw.stage) == 0:
+            # this is for the case when all players in monty drop. If that's the case
+            # you'll see at the end of the deal_click() function we'll send a message.
+            drops = 0
+            for player in monty.drop_dict.keys():
+                if monty.drop_dict[player] == 'drop':
+                    drops += 1
             # the three lines below prevent players from accidentally starting a new game
             # without someone's claiming the previous pot. 
             
@@ -516,6 +520,12 @@ def deal_click():
     emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) # broadcast pot update
     # clear everybody's bet log
     emit('clear_bet_log', broadcast=True)
+    if 'monty' in http_ref:        
+        # If everybody, drops, emit a message so they know to ante again, and dealer knows to deal again.        
+        if len(players_active) == drops:
+             emit('all_dropped_msg', broadcast=True)
+             # clear the drop_dict
+             monty.drop_dict.clear()
 
 ##########################################################################
 ### FOLD and REVEAL
