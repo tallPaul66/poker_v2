@@ -1,6 +1,6 @@
 <html>
   <style>
-	body{ background-image:url("/static/card_pics/table_top_8.jpg");
+	body{ background-image:url("/static/card_pics/table_top_20b.jpg");
 		width: 100%;
 	    height: 100%;
 	    max-height: 100%;
@@ -513,21 +513,25 @@
    		  
    		<form style="margin-top: 14px; margin-left:20px; margin-right:20px;" id="bet" method="POST" action='#'>
             <input id="bet_entered" type="text" name="bet_entered" style="vertical-align:middle; width: 35px; border: 2px outset; height: 52px; text-align:center; font-size:25px;" value=0>
-            <button style="margin-left:2px; margin-right:10px" id="clr_bet" class="button" type="button" onclick=c()>clear</button>
-            <input syle= "margin-left:10px;" type="submit" class = "place_bet_btn" value="Place Bet">
+            <button style="margin-left:2px; margin-right:10px" id="clr_bet" class="button" type="button" onclick=c()>CLEAR</button>
+            <input syle= "margin-left:10px;" type="submit" class = "place_bet_btn" value="PLACE BET">
         </form>        
     <!-------------------    GAME LINKS   -------------------->
-	    <hr class="vertical" />
-        <hr class="vertical" />
-	    &nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_draw') }}" onclick="check_pot('draw'); return false;" style="color:red; font-size:20px;">Draw</a>
-	    &nbsp&nbsp<a href="{{ url_for('redirect_to_omaha') }}" onclick="check_pot('omaha'); return false;" style="color:red; font-size:20px;">Omaha</a> 
-    	&nbsp&nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}" onclick="check_pot('fcs'); return false;" style="color:red; font-size:20px;">5-Card Stud</a> 
-    	&nbsp&nbsp<a href="{{ url_for('redirect_to_spit') }}" onclick="check_pot('spit'); return false;" style="color:red; font-size:20px;">Spit</a> 
-    	&nbsp&nbsp<a href="{{ url_for('redirect_to_monty') }}" onclick="check_pot('monty'); return false;" style="color:red; font-size:20px;">Monty</a> 
-      </div>    	 
-	 </fieldset>	 
-	 <h1 style="color:#FFDF00;">~ OMAHA ~</h1>
-	  
+	       <hr class="vertical" />
+           <hr class="vertical" />
+        </div>        
+        <div style="text-align: center; vertical-align:middle">
+      	    &nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_draw') }}" onclick="check_pot('draw'); return false;" style="color:red; font-size:20px;">Draw</a>
+    	    &nbsp&nbsp<a href="{{ url_for('redirect_to_omaha') }}" onclick="check_pot('omaha'); return false;" style="color:red; font-size:20px;">Omaha</a> 
+        	&nbsp&nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}" onclick="check_pot('fcs'); return false;" style="color:red; font-size:20px;">5-Card Stud</a> 
+        	&nbsp&nbsp<a href="{{ url_for('redirect_to_spit') }}" onclick="check_pot('spit'); return false;" style="color:red; font-size:20px;">Spit</a> 
+            <br><br>
+    		&nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_monty') }}" onclick="check_pot('monty'); return false;" style="color:red; font-size:20px;">Monty</a> 
+        </div>    	 
+	 </fieldset>
+	 <br>
+	 <h1 style="color:#FFDF00; text-align: center;">When I say "DRAW,"....</h1>
+     <br><br><br>
     <!--#################################################################################-->
     <!--                                The Poker Table                                  -->
     <!--#################################################################################-->
@@ -562,26 +566,24 @@
     <!--####################################################################-->
     <!--                                 BETTING                            -->
     <!--####################################################################-->
-		  <th valign=top>
-		  </th>
-		  <th valign=top>
+		  <th colspan="2" valign=top>
 		     <br> 
              <h1><div id="pot_total"></div></h1>
              <br> 
-             <div id="call_amt"></div>
+             <div  id="call_amt"></div>
              <br>
-             <form style='float: left; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     
+             <form style='float: center; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     
                      <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
              </form> 
 		  </th>
-		  <th colspan = "2" valign=top>
+		  <th colspan = "3" valign=top  align=right>
         		  <br>
         		  <div style="color:#F0FFFF;" id="bet_log"></div>
 		  </th>
     <!--####################################################################-->
     <!--                                                                    -->
     <!--####################################################################-->    
-          <td></td><td></td><td></td>
+          <td></td><td></td>
           <td></td>
           <th valign=bottom colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>

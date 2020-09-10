@@ -31,7 +31,7 @@ a:hover {
 
 h1 {
     font-family: Didot;
-	text-align: center;
+	
 	color: #FFDF00;
     margin-top: 0;
     margin-bottom: 0;
@@ -68,12 +68,12 @@ h3 {
 .button { 
 -webkit-appearance: none; /* without this, doesn't work right*/
   height: 3em; 
-  width: 4em;  
+  width: 5em;  
   background: #0066A2;
   color: white;
   border-style: outset;
   border-color: #0066A2;
-  font: bold 18px arial, sans-serif;
+  font: bold 18px Didot;
 } 
 .submit_btn1 {
  -webkit-appearance: none; /* without this, doesn't work right*/
@@ -83,7 +83,7 @@ h3 {
   color: white;
   border-style: outset;
   border-color: #0066A2;
-  font: bold 18px arial, sans-serif;
+  font: bold 18px Didot;
 }
 .submit_btn2 {
  -webkit-appearance: none; /* without this, doesn't work right*/
@@ -93,7 +93,7 @@ h3 {
   color: white;
   border-style: outset;
   border-color: #778899;
-  font: bold 18px arial, sans-serif;
+  font: bold 18px Didot;
 }
 
 .hold_drop_btn {
@@ -104,7 +104,7 @@ h3 {
   color: white;
   border-style: outset;
   border-color: #778899;
-  font: bold 18px arial, sans-serif;
+  font: bold 18px Didot;
 }
 
 .deal_btn{
@@ -115,7 +115,7 @@ h3 {
   color: white;
   border-style: outset;
   border-color: #006400;
-  font: bold 18px arial, sans-serif;
+  font: bold 18px Didot;
 }
 .new_game_btn {
 -webkit-appearance: none; /* without this, doesn't work right*/
@@ -125,29 +125,29 @@ h3 {
   color: white;
   border-style: outset;
   border-color: #A93226;
-  font: bold 18px arial, sans-serif;
+  font: bold 18px Didot;
 }
 
 .place_bet_btn {
 -webkit-appearance: none; /* without this, doesn't work right*/
   height: 3em; 
-  width: 6em;  
+  width: 7em;  
   background: #A93226;
   color: white;
   border-style: outset;
   border-color: #A93226;
-  font: bold 18px arial, sans-serif;
+  font: bold 18px Didot;
 }
 
 .claim_btn { 
 -webkit-appearance: none; /* without this, doesn't work right*/
   height: 3em; 
-  width: 4em;  
+  width: 5em;  
   background: #0066A2;
   color: white;
   border-style: outset;
   border-color: #0066A2;
-  font: bold 18px arial, sans-serif;
+  font: bold 18px Didot;
 } 
 
 
