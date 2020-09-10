@@ -94,9 +94,6 @@ def get_display(hands_tuple, whose_pg):
         display_hands[key] = cards
         if whose_pg in list(hands_list.keys()) and drop_dict[whose_pg] != 'hold': # display the player's own hand
             display_hands[whose_pg] = hands_list[whose_pg]
-    # convert fucking lists back to fucking tuples...
-    #for key in display_hands.keys():
-    #    display_hands[key] = tuple(display_hands[key])
     if reveal_cards == True:
         for key in drop_dict.keys():
             if drop_dict[key] != 'drop':
