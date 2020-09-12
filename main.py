@@ -768,6 +768,7 @@ def claim_pot():
     players_active = players_tonight.copy()
     # the following are for logging purposes: will print to online log files and can then
     # retrieve at the end of the evening or later to get the player stashes
+    print(f'\n{requesting_player} has just claimed the pot.')
     print(f'player_stash_map: {player_stash_map}')
     print(f'player_name_map: {player_name_map}')
 
