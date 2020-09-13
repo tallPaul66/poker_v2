@@ -12,7 +12,7 @@ from itertools import combinations
 #   five cards must be drawn.
 # case 2: games like Omaha or Hold 'em or Fiery Cross where combos from different sets
 #   must be evaluated
-def return_best(hands):
+def get_best_hand(hands):
     scores = [(i, score(hand)) for i, hand in enumerate(hands)]
     last_ranked = sorted(scores , key=lambda x:x[1])[-1][0]
     second_ranked = sorted(scores , key=lambda x:x[1])[-2][0]
@@ -57,7 +57,7 @@ def get_best_comb(dict, holdem = False):
         ind_combs = [list(x) for x in ind_combs]
         print(ind_combs)
         combos = [list(np.array(lists[0])[x]) for x in ind_combs]
-        return return_best(combos)
+        return get_best_hand(combos)
     elif len(lists) == 2: 
         list_1 = lists[0]
         list_2 = lists[1] 
@@ -93,7 +93,7 @@ def get_best_comb(dict, holdem = False):
                 x = x_tmp.copy()
                 x.extend(y)
                 combos.append(x)
-        return return_best(combos)
+        return get_best_hand(combos)
     elif len(lists) == 3: # looks like Fiery Cross?
         # have to include info on how to do the combos
         # gets complimacated...
