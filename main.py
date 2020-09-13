@@ -11,6 +11,7 @@ from flask import Flask, render_template, session, request, \
     copy_current_request_context, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
+import get_best_hand
 import draw
 import five_card_stud
 import omaha 
@@ -544,7 +545,7 @@ def fold():
     draw.hands[requesting_player] = [draw.card_back] * hand_len
     spit.hands[requesting_player] = [spit.card_back] * hand_len
     
-    players_active.remove(requesting_player) # should add try/catch here in case player not in list
+    players_active.remove(requesting_player) # should add try/catch here in case player not in list    
         
     cards_player1_pg[requesting_player] = [draw.card_back] * hand_len
     cards_player2_pg[requesting_player] = [draw.card_back] * hand_len
@@ -579,6 +580,12 @@ def fold():
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
                     'player_by_number':requesting_player, 'fold': True},
                        broadcast=True) # broadcast latest player's bet
+    # if all but one have folded, remaining player wins; push pot amount to him/her
+    if len(players_active) == 1:
+        winner_player_number = players_active[0]
+        winning_player = player_name_map[winner_player_number]
+        emit('all_folded_msg', {'winner': winning_player}, broadcast=True)
+        claim_pot(default_winner=winner_player_number)
 
 @socketio.on('reveal', namespace='/test')
 def reveal_cards():
@@ -730,13 +737,17 @@ def receive_bet(message):
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
                     'player_by_number':requesting_player, 'amt': amt, 'fold': 'no'},
                        broadcast=True) # broadcast latest player's bet
-    for player in players_active:
-        emit('pot_msg', {'amt': pot_amount, 'call': max_bet - round_bets[player]}, 
+    for player in players_tonight:
+        if player in players_active:
+            emit('pot_msg', {'amt': pot_amount, 'call': max_bet - round_bets[player]}, 
+                 room=room_map[player]) # update each player's call amt
+        else:
+            emit('pot_msg', {'amt': pot_amount, 'call': 0}, 
                  room=room_map[player]) # update each player's call amt
     
 
 @socketio.on('claim_pot', namespace='/test')
-def claim_pot():
+def claim_pot(default_winner = None):
     global max_bet
     global round_bets
     global pot_claimed
@@ -745,6 +756,9 @@ def claim_pot():
     pot_claimed = True
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
+
+    if default_winner != None: # this occurs when all players but one fold. Push the pot to remaining player.
+        requesting_player = default_winner
     player_stash_map[requesting_player] = player_stash_map[requesting_player] + int(pot_amount)
     
     # if a pot is claimed the game is over, whether or not the game has been

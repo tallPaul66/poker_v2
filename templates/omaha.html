@@ -87,6 +87,13 @@
                 }                               
             });
             
+            // if all players but one have folded, print this message and main.py will
+            // push the pot amount to the winning player
+            socket.on('all_folded_msg', function(msg, cb) {
+                var winner = msg.winner
+                $('#bet_log').append('<br><br>' + $('<div/>').text("Everyone else folded. " + winner + " wins!").html());                                               
+            });
+            
             // global variable to keep track of amount in pot
             pot_value = 0
             // print to browser the total pot
