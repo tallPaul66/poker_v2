@@ -291,6 +291,25 @@
                 window.alert("There's a non-0 amount in the pot. Someone must claim it before a new game can be started.");
             });
             
+            socket.on('bets_needed_alert', function(msg,cb) {
+                var players = msg.negligent_bettors
+                if(players.length==1){
+                    has_verb = "has"
+                    owes_verb = "owes"
+                } else {
+                    has_verb = "have"
+                    owes_verb = "owe"
+                }
+                var fault_type = msg.fault_type
+                console.log('lenth of players', players.length)
+                if(fault_type == "no_call"){
+                    window.alert(players + " " + owes_verb + " money to the pot.");
+                } else if (fault_type == "no_bet"){
+                    window.alert(players + " " + has_verb + " not bet.");
+                }
+                
+            });
+            
             // print to browser player draw info
              socket.on('who_drew_what', function(msg, cb) {
                 // the following two lines just get the plural right in the 

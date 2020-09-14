@@ -55,6 +55,8 @@ player_stash_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'',
              'player5':'', 'player6':''}
 round_bets = {'player1':0, 'player2':0, 'player3':0, 'player4':0, 
              'player5':0, 'player6':0} # keep track of players' bets in a single round
+has_bet_this_round = [] # keep track of who has bet in the current round
+
 # declaring these global variables here so they're available 
 # in case someone clicks the New Game button before any hands 
 # are dealt for the evening.
@@ -365,10 +367,48 @@ def deal_click():
     global max_bet    
     global round_bets
     global pot_claimed
+    global has_bet_this_round
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'\ndeal_click() got called!')
+    print('\ndeal_click() got called!')
+    
+    # logic for making sure everyone bet in previous round before continuing
+    has_bet_set = set(has_bet_this_round)
+    players_active_set = set(players_active)
+    
+    # before allowing a deal event, we're going to check that all active players' 
+    # accounts are up to date. If not, dealer will get an alert message.
+    # Monty is more complicated once the game gets going, so skipping for now
+    if 'monty' not in http_ref:
+        if has_bet_set == players_active_set:
+            # create a new dict of bets of just the active players
+            active_player_round_bets = {}
+            for p in players_active:
+                active_player_round_bets[p] = round_bets[p]
+            print('here are the current active player bets:', active_player_round_bets)
+            if list(active_player_round_bets.values()) != [max(active_player_round_bets.values())] *len(players_active):                        
+                players_no_call = []
+                for p in active_player_round_bets.keys():
+                    if active_player_round_bets[p] < max(active_player_round_bets.values()):
+                        players_no_call.append(p)
+                for i in range(len(players_no_call)):
+                    # get the players actual names.
+                    players_no_call[i] = player_name_map[players_no_call[i]]
+                # emit a message that someone is under call amt
+                emit('bets_needed_alert', {'negligent_bettors': players_no_call, 'fault_type': 'no_call'}, 
+                     room=room_map[requesting_player])            
+                return            
+        else: # emit a message that triggers an alert to the dealer that someone hasn't bet
+            players_no_bet = list(players_active_set - has_bet_set)
+            for i in range(len(players_no_bet)):
+                # get the players actual names.
+                players_no_bet[i] = player_name_map[players_no_bet[i]]
+            emit('bets_needed_alert', {'negligent_bettors': players_no_bet, 'fault_type': 'no_bet'}, 
+                 room=room_map[requesting_player])
+            return
+    # if all is well so far, reset everybody's round bet value to 0
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
+    has_bet_this_round.clear()
     max_bet = 0  # reset the call amount
     
     if 'monty' in http_ref:
@@ -711,8 +751,10 @@ def start_new_game():
 def receive_bet(message):
     global max_bet
     global round_bets
+    global has_bet_this_round
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
+    has_bet_this_round.append(requesting_player)
     amt = int(message['amt'])
     # first let's validate bet to ensure player is not entering a negative amt
     # that is larger magnitude that what he's bet. Negative amounts are allowed to 
@@ -725,8 +767,8 @@ def receive_bet(message):
         return None
     
     pot_update(amt=amt) # update the pot total
-    round_bets[requesting_player] += amt
-    max_bet = max(round_bets.values()) #the max that anyone has betted in a round is the call amount
+    round_bets[requesting_player] += amt # update the record for this player for this betting round
+    max_bet = max(round_bets.values()) #the max that anyone has bet in a round is the call amount
     print(f'{requesting_player} just bet ${amt}.')
     
     # decrement player's stash, and send new stash amount to the player
@@ -740,10 +782,10 @@ def receive_bet(message):
     for player in players_tonight:
         if player in players_active:
             emit('pot_msg', {'amt': pot_amount, 'call': max_bet - round_bets[player]}, 
-                 room=room_map[player]) # update each player's call amt
+                 room=room_map[player]) # update active players' call amts
         else:
             emit('pot_msg', {'amt': pot_amount, 'call': 0}, 
-                 room=room_map[player]) # update each player's call amt
+                 room=room_map[player]) # update folded players' call amts
     
 
 @socketio.on('claim_pot', namespace='/test')

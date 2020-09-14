@@ -91,7 +91,7 @@
             // push the pot amount to the winning player
             socket.on('all_folded_msg', function(msg, cb) {
                 var winner = msg.winner
-                $('#bet_log').append('<br><br>' + $('<div/>').text("Everyone else folded. " + winner + " wins!").html());                                               
+                $('#bet_log').append('<br><br>' + $('<div/>').text("Everyone else folded. " + winner + " collects $" + pot_value + "!").html()); 
             });
                      
             // global variable to keep track of amount in pot   
@@ -289,6 +289,25 @@
             // alert message if money still in the pot and user tries to start a new game
             socket.on('money_left_alert', function(msg, cb) {
                 window.alert("There's a non-0 amount in the pot. Someone must claim it before a new game can be started.");
+            });
+             
+            socket.on('bets_needed_alert', function(msg,cb) {
+                var players = msg.negligent_bettors
+                if(players.length==1){
+                    has_verb = "has"
+                    owes_verb = "owes"
+                } else {
+                    has_verb = "have"
+                    owes_verb = "owe"
+                }
+                var fault_type = msg.fault_type
+                console.log('lenth of players', players.length)
+                if(fault_type == "no_call"){
+                    window.alert(players + " " + owes_verb + " money to the pot.");
+                } else if (fault_type == "no_bet"){
+                    window.alert(players + " " + has_verb + " not bet.");
+                }
+                
             });
             
             socket.on('get_cards', function(msg, cb) {
