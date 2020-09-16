@@ -11,9 +11,11 @@ from flask import Flask, render_template, session, request, \
     copy_current_request_context, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
+# import gevent
 import get_best_hand
 import draw
 import five_card_stud
+import seven_card_stud
 import omaha 
 # import seven_card_stud be sure to clear game stage in claim_pot(), add line in fold()
 import monty #be sure to clear game stage in claim_pot(), add line in fold()
@@ -318,16 +320,17 @@ def redirect_to_omaha():
     return redirect(url_for('omaha_play', player=requesting_player))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     7-card stud     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@app.route('/seven_card', methods = ['GET', 'POST'])
-def seven_card_play():   
-    return render_template('seven_card.html', names = player_name_map)
+@app.route('/seven_card_stud', methods = ['GET', 'POST'])
+def seven_card_play():
+    seven_card_stud.stage.clear()
+    return render_template('seven_card_stud.html', names = player_name_map)
 
-#@app.route('/link_to_seven_card')
-#def redirect_to_seven_card():
-#     http_ref = request.environ['HTTP_REFERER']
-#     requesting_player = http_ref[http_ref.find('player=')+7:]
-#     print(f'msg from redirect_to_seven_card(): requesting_player is {requesting_player}')
-#     return redirect(url_for('seven_card_play', player=requesting_player))
+@app.route('/link_to_seven_card')
+def redirect_to_seven_card_stud():
+     http_ref = request.environ['HTTP_REFERER']
+     requesting_player = http_ref[http_ref.find('player=')+7:]
+     print(f'msg from redirect_to_seven_card(): requesting_player is {requesting_player}')
+     return redirect(url_for('seven_card_play', player=requesting_player))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Monty   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/monty', methods = ['GET', 'POST'])
@@ -376,7 +379,7 @@ def deal_click():
     has_bet_set = set(has_bet_this_round)
     players_active_set = set(players_active)
     
-    # before allowing a deal event, we're going to check that all active players' 
+    # before allowing a deal event, we'll to check that all active players' 
     # accounts are up to date. If not, dealer will get an alert message.
     # Monty is more complicated once the game gets going, so skipping for now
     if 'monty' not in http_ref:
@@ -399,13 +402,14 @@ def deal_click():
                      room=room_map[requesting_player])            
                 return            
         else: # emit a message that triggers an alert to the dealer that someone hasn't bet
-            players_no_bet = list(players_active_set - has_bet_set)
-            for i in range(len(players_no_bet)):
-                # get the players actual names.
-                players_no_bet[i] = player_name_map[players_no_bet[i]]
-            emit('bets_needed_alert', {'negligent_bettors': players_no_bet, 'fault_type': 'no_bet'}, 
-                 room=room_map[requesting_player])
-            return
+            if len(has_bet_set) > 0:
+                players_no_bet = list(players_active_set - has_bet_set)
+                for i in range(len(players_no_bet)):
+                    # get the players actual names.
+                    players_no_bet[i] = player_name_map[players_no_bet[i]]
+                emit('bets_needed_alert', {'negligent_bettors': players_no_bet, 'fault_type': 'no_bet'}, 
+                     room=room_map[requesting_player])
+                return
     # if all is well so far, reset everybody's round bet value to 0
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     has_bet_this_round.clear()
@@ -498,6 +502,24 @@ def deal_click():
         pg4_tmp = five_card_stud.get_display(hands, 'player4')
         pg5_tmp = five_card_stud.get_display(hands, 'player5')
         pg6_tmp = five_card_stud.get_display(hands, 'player6')
+
+    if 'seven_card_stud' in http_ref:
+        print(f'Game is 7-card stud, boys. stage = {seven_card_stud.stage}; max_bet is {max_bet}')
+        if len(seven_card_stud.stage) == 0: 
+            if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
+                emit('money_left_alert', {}, room=room_map[requesting_player]) 
+                return None
+            pot_claimed = False
+            players_active = players_tonight.copy() # re-activate all tonight's players
+            emit('clear_log',{}, broadcast = True)  # clear the msg area
+            #pot_update(-pot_amount) # if beginning of game, clear pot amount            
+        hands = seven_card_stud.deal(players_active)
+        pg1_tmp = seven_card_stud.get_display(hands, 'player1')
+        pg2_tmp = seven_card_stud.get_display(hands, 'player2')
+        pg3_tmp = seven_card_stud.get_display(hands, 'player3')
+        pg4_tmp = seven_card_stud.get_display(hands, 'player4')
+        pg5_tmp = seven_card_stud.get_display(hands, 'player5')
+        pg6_tmp = seven_card_stud.get_display(hands, 'player6')
     
     if 'omaha' in http_ref:        
         print(f'Game is Omaha, boys. stage = {omaha.stage}; max_bet is {max_bet}')
@@ -579,13 +601,15 @@ def fold():
     print(f'We thus conclude that {requesting_player} ({player_name_map[requesting_player]})' +
           ' wants to fold, so I will fold them!...')
     hand_len = len(hands[requesting_player])
-    #seven_card_stud.hands[requesting_player] = [seven_card_stud.card_back] * hand_len
+    seven_card_stud.hands[requesting_player] = [seven_card_stud.card_back] * hand_len
     five_card_stud.hands[requesting_player] = [five_card_stud.card_back] * hand_len
     omaha.hands[requesting_player] = [omaha.card_back] * hand_len
     draw.hands[requesting_player] = [draw.card_back] * hand_len
     spit.hands[requesting_player] = [spit.card_back] * hand_len
     
-    players_active.remove(requesting_player) # should add try/catch here in case player not in list    
+    players_active.remove(requesting_player) # should add try/catch here in case player not in list
+    if requesting_player in has_bet_this_round:
+        has_bet_this_round.remove(requesting_player)
         
     cards_player1_pg[requesting_player] = [draw.card_back] * hand_len
     cards_player2_pg[requesting_player] = [draw.card_back] * hand_len
@@ -796,6 +820,7 @@ def claim_pot(default_winner = None):
     global players_active
     max_bet = 0
     pot_claimed = True
+    has_bet_this_round.clear()
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
 

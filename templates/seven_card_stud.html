@@ -8,7 +8,7 @@
 		background-repeat: no-repeat;}
   </style>
   <head>
-    <title>Five-card Stud</title>
+    <title>seven-card Stud</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
@@ -322,12 +322,16 @@
                     var player1_card3 = players_cards.player1[2];
                     var player1_card4 = players_cards.player1[3];
                     var player1_card5 = players_cards.player1[4];
+                    var player1_card6 = players_cards.player1[5];
+                    var player1_card7 = players_cards.player1[6];
                     
                     document.getElementById('player1_card1').src = player1_card1;
                     document.getElementById('player1_card2').src = player1_card2;
                     document.getElementById('player1_card3').src = player1_card3;
                     document.getElementById('player1_card4').src = player1_card4;
                     document.getElementById('player1_card5').src = player1_card5;
+                    document.getElementById('player1_card6').src = player1_card6;
+                    document.getElementById('player1_card7').src = player1_card7;
                 }
                 
                 if("player2" in players_cards){
@@ -336,12 +340,16 @@
                     var player2_card3 = players_cards.player2[2];
                     var player2_card4 = players_cards.player2[3];
                     var player2_card5 = players_cards.player2[4];
+                    var player2_card6 = players_cards.player2[5];
+                    var player2_card7 = players_cards.player2[6];
                     
                     document.getElementById('player2_card1').src = player2_card1;
                     document.getElementById('player2_card2').src = player2_card2;
                     document.getElementById('player2_card3').src = player2_card3;
                     document.getElementById('player2_card4').src = player2_card4;
                     document.getElementById('player2_card5').src = player2_card5;
+                    document.getElementById('player2_card6').src = player2_card6;
+                    document.getElementById('player2_card7').src = player2_card7;
                 }
                 if("player3" in players_cards){
                     var player3_card1 = players_cards.player3[0];
@@ -349,12 +357,16 @@
                     var player3_card3 = players_cards.player3[2];
                     var player3_card4 = players_cards.player3[3];
                     var player3_card5 = players_cards.player3[4];
+                    var player3_card6 = players_cards.player3[5];
+                    var player3_card7 = players_cards.player3[6];
                     
                     document.getElementById('player3_card1').src = player3_card1;
                     document.getElementById('player3_card2').src = player3_card2;
                     document.getElementById('player3_card3').src = player3_card3;
                     document.getElementById('player3_card4').src = player3_card4;
                     document.getElementById('player3_card5').src = player3_card5;
+                    document.getElementById('player3_card6').src = player3_card6;
+                    document.getElementById('player3_card7').src = player3_card7;
                 }
                 
                 if("player4" in players_cards){
@@ -363,12 +375,16 @@
                     var player4_card3 = players_cards.player4[2];
                     var player4_card4 = players_cards.player4[3];
                     var player4_card5 = players_cards.player4[4];
+                    var player4_card6 = players_cards.player4[5];
+                    var player4_card7 = players_cards.player4[6];
                     
                     document.getElementById('player4_card1').src = player4_card1;
                     document.getElementById('player4_card2').src = player4_card2;
                     document.getElementById('player4_card3').src = player4_card3;
                     document.getElementById('player4_card4').src = player4_card4;
                     document.getElementById('player4_card5').src = player4_card5;
+                    document.getElementById('player4_card6').src = player4_card6;
+                    document.getElementById('player4_card7').src = player4_card7;
                 }
                 
                 if("player5" in players_cards){
@@ -377,12 +393,16 @@
                     var player5_card3 = players_cards.player5[2];
                     var player5_card4 = players_cards.player5[3];
                     var player5_card5 = players_cards.player5[4];
+                    var player5_card6 = players_cards.player5[5];
+                    var player5_card7 = players_cards.player5[6];
                 
                     document.getElementById('player5_card1').src = player5_card1;
                     document.getElementById('player5_card2').src = player5_card2;
                     document.getElementById('player5_card3').src = player5_card3;
                     document.getElementById('player5_card4').src = player5_card4;
                     document.getElementById('player5_card5').src = player5_card5;
+                    document.getElementById('player5_card6').src = player5_card6;
+                    document.getElementById('player5_card7').src = player5_card7;
                 }
                 // below is from Miguel Grinberg's original code; I don't know what it does
                 if (cb)
@@ -392,15 +412,7 @@
             /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~            
                      Handlers for the different forms in the page.
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-            
-            // This doesn't work, as far as I can tell
-            $('form#connect_btn').submit(function(event) {
-                var url_params = new URLSearchParams(window.location.search);
-                var player_name = url_params.get('player');
-                socket.emit('my_event', {data: 'Client connected!', player: player_name});
-                return false;            
-            });
-            
+                    
             $('form#broadcast').submit(function(event) {
                 socket.emit('my_broadcast_event', {data: $('#broadcast_data').val()});
                 return false;
@@ -555,7 +567,7 @@
         </div>    	 
 	 </fieldset>
 	 <br>
-	 <h1 style="color:#FFDF00; text-align: center;">~ 5-CARD STUD ~</h1>
+	 <h1 style="color:#FFDF00; text-align: center;">~ 7-CARD STUD ~</h1>
      <br><br><br>
     <!--#################################################################################-->
     <!--                                The Poker Table                                  -->
@@ -576,7 +588,9 @@
 		  <td valign=top><img src="" id="player1_card3" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card4" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card5" width=80 height=122></td>
-          <td></td><td></td><td></td><td></td>
+          <td valign=top><img src="" id="player1_card6" width=80 height=122></td>
+          <td valign=top><img src="" id="player1_card7" width=80 height=122></td>
+          <td></td><td></td>
           <td></td><td></td>
         </tr>
         <tr>
@@ -622,13 +636,16 @@
 		  <td><img src="" id="player5_card3" width=80 height=122></td>
 		  <td><img src="" id="player5_card4" width=80 height=122></td>
 		  <td><img src="" id="player5_card5" width=80 height=122></td>
-		  <td></td><td></td><td></td><td></td>
-          <td></td><td></td><td></td>		  
+		  <td><img src="" id="player5_card6" width=80 height=122></td>
+		  <td><img src="" id="player5_card7" width=80 height=122></td>
+		  <td></td><td></td><td></td>
           <td><img src="" id="player2_card1" width=80 height=122></td>
 		  <td><img src="" id="player2_card2" width=80 height=122></td>
 		  <td><img src="" id="player2_card3" width=80 height=122></td>
 		  <td><img src="" id="player2_card4" width=80 height=122></td>
 		  <td><img src="" id="player2_card5" width=80 height=122></td>
+		  <td><img src="" id="player2_card6" width=80 height=122></td>
+		  <td><img src="" id="player2_card7" width=80 height=122></td>
         </tr>
         <tr>
           <td></td><td></td>
@@ -650,19 +667,23 @@
           <td></td><td></td>
         </tr>
         <tr>
-          <td></td><td></td><td></td>          
+          <td></td>
           <td><img src="" id="player4_card1" width=80 height=122></td>
 		  <td><img src="" id="player4_card2" width=80 height=122></td>
 		  <td><img src="" id="player4_card3" width=80 height=122></td>
 		  <td><img src="" id="player4_card4" width=80 height=122></td>
 		  <td><img src="" id="player4_card5" width=80 height=122></td>
+		  <td><img src="" id="player4_card6" width=80 height=122></td>
+		  <td><img src="" id="player4_card7" width=80 height=122></td>
 		  <td></td>
 		  <td><img src="" id="player3_card1" width=80 height=122></td>
 		  <td><img src="" id="player3_card2" width=80 height=122></td>
 		  <td><img src="" id="player3_card3" width=80 height=122></td>
 		  <td><img src="" id="player3_card4" width=80 height=122></td>
 		  <td><img src="" id="player3_card5" width=80 height=122></td>
-          <td></td><td></td><td></td>
+		  <td><img src="" id="player3_card6" width=80 height=122></td>
+		  <td><img src="" id="player3_card7" width=80 height=122></td>
+          <td></td>
         </tr>
 	  </table> 
    </body>

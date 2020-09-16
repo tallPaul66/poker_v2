@@ -533,9 +533,9 @@
             else if (game=='fcs'){
                  window.location.href = "{{ url_for('redirect_to_five_card_stud') }}";
             } 
-            //else if (game=='scs'){
-            //     window.location.href = "";
-            //} 
+            else if (game=='scs'){
+                 window.location.href = "{{ url_for('redirect_to_seven_card_stud') }}";
+            } 
             else if (game=='spit'){
                  window.location.href = "{{ url_for('redirect_to_spit') }}";
             } 
@@ -596,7 +596,7 @@
         	&nbsp&nbsp<a href="{{ url_for('redirect_to_spit') }}" onclick="check_pot('spit'); return false;" style="color:red; font-size:20px;">Spit</a> 
             <br><br>
     		&nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_monty') }}" onclick="check_pot('monty'); return false;" style="color:red; font-size:20px;">Monty</a> 
-    		
+    		&nbsp&nbsp<a href="{{ url_for('redirect_to_seven_card_stud') }}" onclick="check_pot('scs'); return false;" style="color:red; font-size:20px;">7-Card Stud</a> 
         </div>    	 
 	 </fieldset>
 	 <br>
