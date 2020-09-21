@@ -434,7 +434,7 @@
             // Claim_pot form handler
             $('form#claim_pot').submit(function(event) {
             // just in case someone clicks the 'claim' button by accident                
-                if (window.confirm("You won, pardner? Click 'OK' to claim the pot and confirm that you have tiny balls and penis.")) { 
+                if (window.confirm("You won, pardner? Click 'OK' to claim the pot and confirm that you're wearing women's panties.")) { 
                     socket.emit('claim_pot');
                 }              
                 return false;
@@ -544,6 +544,9 @@
             } 
             else if (game=='monty'){
                  window.location.href = "{{ url_for('redirect_to_monty') }}";
+            }
+            else if (game=='holdem'){
+                 window.location.href = "{{ url_for('redirect_to_holdem') }}";
             } 
             else {
                 window.alert("from check_pot() function: The game selected is not associated with any link.");
@@ -596,7 +599,8 @@
         	&nbsp&nbsp<a href="{{ url_for('redirect_to_spit') }}" onclick="check_pot('spit'); return false;" style="color:red; font-size:20px;">Spit</a> 
             <br><br>
     		&nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_monty') }}" onclick="check_pot('monty'); return false;" style="color:red; font-size:20px;">Monty</a> 
-    		&nbsp&nbsp<a href="{{ url_for('redirect_to_seven_card_stud') }}" onclick="check_pot('scs'); return false;" style="color:red; font-size:20px;">7-Card Stud</a> 
+    		&nbsp&nbsp<a href="{{ url_for('redirect_to_seven_card_stud') }}" onclick="check_pot('scs'); return false;" style="color:red; font-size:20px;">7-Card Stud</a>
+    		&nbsp&nbsp<a href="{{ url_for('redirect_to_holdem') }}" onclick="check_pot('holdem'); return false;" style="color:red; font-size:20px;">Hold Em</a> 
         </div>    	 
 	 </fieldset>
 	 <br>

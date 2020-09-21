@@ -13,13 +13,15 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 # import gevent
 import get_best_hand
+
+# Import games. Be sure to clear game stage in claim_pot(), add line in fold()
 import draw
 import five_card_stud
 import seven_card_stud
 import omaha 
-# import seven_card_stud be sure to clear game stage in claim_pot(), add line in fold()
-import monty #be sure to clear game stage in claim_pot(), add line in fold()
+import monty 
 import spit 
+import holdem
     
 
 #~~~~~~~~~~~~~~~~~~~ Config Stuff ~~~~~~~~~~~~~~~~~
@@ -353,10 +355,36 @@ def monty_drop():
     print('\nfrom monty_drop() fn:')
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'requesting_player {requesting_player} wants to drop.')
+    print(f'{requesting_player} wants to drop.')
     monty.drop_dict[requesting_player] = 'drop'
     monty_fold_hand = [monty.card_back] * 3
     emit('monty_drop', {'cards': monty_fold_hand}, room=room_map[requesting_player])
+    
+@socketio.on('monty_stay', namespace='/test')
+def monty_stay():
+    global hands
+    print('\nfrom monty_stay() fn:')
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    print(f'{requesting_player} wants to stay.')
+    monty.drop_dict[requesting_player] = ''
+    monty_keep_hand = hands[requesting_player]
+    emit('monty_drop', {'cards': monty_keep_hand}, room=room_map[requesting_player])
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     omaha     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@app.route('/holdem', methods = ['GET', 'POST'])
+def holdem_play():
+    # makes sure that the game starts from scratch if it was 
+    # left in a state stage != []
+    holdem.stage.clear()
+    return render_template('holdem.html', names = player_name_map)
+
+@app.route('/link_to_holdem')
+def redirect_to_holdem():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    print(f'msg from redirect_to_holdem(): requesting_player is {requesting_player}')
+    return redirect(url_for('holdem_play', player=requesting_player))
 
 
 ##########################################################################
@@ -382,7 +410,13 @@ def deal_click():
     # before allowing a deal event, we'll to check that all active players' 
     # accounts are up to date. If not, dealer will get an alert message.
     # Monty is more complicated once the game gets going, so skipping for now
-    if 'monty' not in http_ref:
+    # Hold 'em is also more complicated, so needs a clause to omit first round in
+    # this validation.
+    def validate_call_equity():
+        if 'monty' in http_ref: # no call validation
+            return 'continue_deal'
+        if 'holdem' in http_ref and len(holdem.stage) == 0: # no call validation bec of blinds
+            return 'continue_deal'   
         if has_bet_set == players_active_set:
             # create a new dict of bets of just the active players
             active_player_round_bets = {}
@@ -400,7 +434,9 @@ def deal_click():
                 # emit a message that someone is under call amt
                 emit('bets_needed_alert', {'negligent_bettors': players_no_call, 'fault_type': 'no_call'}, 
                      room=room_map[requesting_player])            
-                return            
+                return 'no_deal'
+            else:
+                return 'continue_deal'
         else: # emit a message that triggers an alert to the dealer that someone hasn't bet
             if len(has_bet_set) > 0:
                 players_no_bet = list(players_active_set - has_bet_set)
@@ -409,12 +445,35 @@ def deal_click():
                     players_no_bet[i] = player_name_map[players_no_bet[i]]
                 emit('bets_needed_alert', {'negligent_bettors': players_no_bet, 'fault_type': 'no_bet'}, 
                      room=room_map[requesting_player])
-                return
+                return 'no_deal'
+    vce = validate_call_equity()
+    if vce == 'no_deal':
+        return
+
     # if all is well so far, reset everybody's round bet value to 0
+    round_bets_tmp = round_bets.copy()
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
+    has_bet_this_round_tmp = has_bet_this_round.copy() # for holdem, can't reset this after first round
     has_bet_this_round.clear()
     max_bet = 0  # reset the call amount
-    
+    if 'holdem' in http_ref:        
+        print(f'Game is Hold \'em, boys. stage = {holdem.stage}; max_bet is {max_bet}')
+        if len(holdem.stage) == 0: # re-activate all tonight's players
+            # we disable the validation in this if clause to allow deal to start even
+            # if pot_claimed == False. We just don't want to allow a new game to start.
+            #if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
+            #    emit('money_left_alert', {}, room=room_map[requesting_player]) 
+            #    return None
+            pot_claimed = False
+            players_active = players_tonight.copy()
+            emit('clear_log',{}, broadcast = True)  # clear the msg area               
+        hands = holdem.deal(players_active)
+        pg1_tmp = holdem.get_display(hands, 'player1')
+        pg2_tmp = holdem.get_display(hands, 'player2')
+        pg3_tmp = holdem.get_display(hands, 'player3')
+        pg4_tmp = holdem.get_display(hands, 'player4')
+        pg5_tmp = holdem.get_display(hands, 'player5')
+        pg6_tmp = holdem.get_display(hands, 'player6')    
     if 'monty' in http_ref:
         print(f'Game is Monty, boys. stage = {monty.stage}')
         if len(draw.stage) == 0:
@@ -512,7 +571,6 @@ def deal_click():
             pot_claimed = False
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the msg area
-            #pot_update(-pot_amount) # if beginning of game, clear pot amount            
         hands = seven_card_stud.deal(players_active)
         pg1_tmp = seven_card_stud.get_display(hands, 'player1')
         pg2_tmp = seven_card_stud.get_display(hands, 'player2')
@@ -529,8 +587,7 @@ def deal_click():
                 return None
             pot_claimed = False
             players_active = players_tonight.copy()
-            emit('clear_log',{}, broadcast = True)  # clear the msg area
-            #pot_update(-pot_amount) # if beginning of game, clear pot amount            
+            emit('clear_log',{}, broadcast = True)  # clear the msg area  
         hands = omaha.deal(players_active)
         pg1_tmp = omaha.get_display(hands, 'player1')
         pg2_tmp = omaha.get_display(hands, 'player2')
@@ -581,7 +638,16 @@ def deal_click():
          broadcast=True)    
     
     emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) # broadcast pot update
-    # clear everybody's bet log
+   
+    # clear everybody's bet log unless it's Hold 'em first round
+    if 'holdem' in http_ref:
+        if len(holdem.stage) > 0 and holdem.stage[0] == 'flop':            
+            round_bets = round_bets_tmp.copy()
+            has_bet_this_round = has_bet_this_round_tmp.copy()
+            for player in players_active:
+                emit('pot_msg', {'amt': pot_amount, 'call':  max(round_bets.values()) - round_bets[player]}, 
+                     room=room_map[player]) # update active players' call amts
+            return
     emit('clear_bet_log', broadcast=True)
     if 'monty' in http_ref:        
         # If everybody, drops, emit a message so they know to ante again, and dealer knows to deal again.        
@@ -606,6 +672,7 @@ def fold():
     omaha.hands[requesting_player] = [omaha.card_back] * hand_len
     draw.hands[requesting_player] = [draw.card_back] * hand_len
     spit.hands[requesting_player] = [spit.card_back] * hand_len
+    holdem.hands[requesting_player] = [holdem.card_back] * hand_len
     
     players_active.remove(requesting_player) # should add try/catch here in case player not in list
     if requesting_player in has_bet_this_round:
@@ -776,6 +843,7 @@ def receive_bet(message):
     global max_bet
     global round_bets
     global has_bet_this_round
+    global pot_claimed
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     has_bet_this_round.append(requesting_player)
@@ -799,6 +867,26 @@ def receive_bet(message):
     player_stash_map[requesting_player] = player_stash_map[requesting_player] - int(amt)
     emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': buy_in}, 
          broadcast=True)
+    if 'holdem' in http_ref:
+        if len(holdem.stage) == 0:
+            holdem_stage = 0
+            pot_claimed = False # normally we do this in deal_click() but we want to do it
+                                # after the blinds are placed because otherwise we lose track
+                                # of who placed the blinds.
+        else:
+            holdem_stage = holdem.stage
+        emit('bet_msg',{'player':  player_name_map[requesting_player], 
+                    'player_by_number':requesting_player, 'amt': amt, 
+                    'fold': 'no', 'stage': holdem_stage},
+                       broadcast=True) # broadcast latest player's bet
+        for player in players_tonight:
+            if len(holdem.stage) == 0:
+                call_amt = 0
+            else:
+                call_amt = max_bet - round_bets[player]
+            emit('pot_msg', {'amt': pot_amount, 'call': call_amt}, 
+                     room=room_map[player]) # update active players' call amts
+        return
     
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
                     'player_by_number':requesting_player, 'amt': amt, 'fold': 'no'},
@@ -835,14 +923,23 @@ def claim_pot(default_winner = None):
     omaha.stage.clear()
     spit.stage.clear()
     monty.stage.clear()
+    holdem.stage.clear()
         
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
+    pot_tmp = pot_amount
     pot_update(-pot_amount) # clear pot amount
      # show everyone the winner's increased stash
     emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': buy_in}, 
          broadcast=True)
-    emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) # broadcast pot update
     
+        
+    emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, 
+         broadcast=True) # broadcast pot update
+    # In Monty, it's nice to have a record of how much the winner just took, for matching.
+    if 'monty' in http_ref:
+        emit('pot_msg', {'amt': pot_amount, 'call': max_bet, 'winner': player_name_map[requesting_player],
+                'winnings': pot_tmp}, broadcast=True) # broadcast pot update
+        
     # Without doing this here, if an ante is entered in the next game,
     # pre-deal, players who folded in previous game won't see the pot amt when
     # they ante. Not crucial, but it will feel a little weird to them not to see the pot.
