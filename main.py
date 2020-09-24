@@ -14,7 +14,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, \
 # import gevent
 import get_best_hand
 
-# Import games. Be sure to clear game stage in claim_pot(), add line in fold()
+# Import games. Be sure to clear game stage in claim_pot(), add line in fold(), and in new_game()
 import draw
 import five_card_stud
 import seven_card_stud
@@ -48,8 +48,9 @@ socketio = SocketIO(app, async_mode=async_mode, ping_interval=10000, ping_timeou
 
 thread = None
 thread_lock = Lock()
-#~~~~~~~~~~~~~~~~~~~ Config Stuff ~~~~~~~~~~~~~~~~~
-# global variables
+
+#~~~~~~~~~~~~~~~~~~~ Global Variables ~~~~~~~~~~~~~~~~~
+
 pot_claimed = True
 players_tonight = []
 players_active = []
@@ -412,10 +413,11 @@ def deal_click():
     # Monty is more complicated once the game gets going, so skipping for now
     # Hold 'em is also more complicated, so needs a clause to omit first round in
     # this validation.
-    def validate_call_equity():
+    def enforce_call_equity():
         if 'monty' in http_ref: # no call validation
             return 'continue_deal'
         if 'holdem' in http_ref and len(holdem.stage) == 0: # no call validation bec of blinds
+            print('from validate_call_equity, holdem.stage = 0, pot_claimed = ', pot_claimed)
             return 'continue_deal'   
         if has_bet_set == players_active_set:
             # create a new dict of bets of just the active players
@@ -438,6 +440,8 @@ def deal_click():
             else:
                 return 'continue_deal'
         else: # emit a message that triggers an alert to the dealer that someone hasn't bet
+            if len(players_active_set) == 0:
+                return 'continue_deal'
             if len(has_bet_set) > 0:
                 players_no_bet = list(players_active_set - has_bet_set)
                 for i in range(len(players_no_bet)):
@@ -446,7 +450,7 @@ def deal_click():
                 emit('bets_needed_alert', {'negligent_bettors': players_no_bet, 'fault_type': 'no_bet'}, 
                      room=room_map[requesting_player])
                 return 'no_deal'
-    vce = validate_call_equity()
+    vce = enforce_call_equity()
     if vce == 'no_deal':
         return
 
@@ -459,21 +463,24 @@ def deal_click():
     if 'holdem' in http_ref:        
         print(f'Game is Hold \'em, boys. stage = {holdem.stage}; max_bet is {max_bet}')
         if len(holdem.stage) == 0: # re-activate all tonight's players
+            if pot_claimed == False:
+                emit('money_left_alert', {}, room=room_map[requesting_player]) 
+                return None
             # we disable the validation in this if clause to allow deal to start even
             # if pot_claimed == False. We just don't want to allow a new game to start.
             #if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
             #    emit('money_left_alert', {}, room=room_map[requesting_player]) 
-            #    return None
-            pot_claimed = False
+            #    return None            
             players_active = players_tonight.copy()
-            emit('clear_log',{}, broadcast = True)  # clear the msg area               
+            emit('clear_log',{}, broadcast = True)  # clear the msg area
         hands = holdem.deal(players_active)
         pg1_tmp = holdem.get_display(hands, 'player1')
         pg2_tmp = holdem.get_display(hands, 'player2')
         pg3_tmp = holdem.get_display(hands, 'player3')
         pg4_tmp = holdem.get_display(hands, 'player4')
         pg5_tmp = holdem.get_display(hands, 'player5')
-        pg6_tmp = holdem.get_display(hands, 'player6')    
+        pg6_tmp = holdem.get_display(hands, 'player6') 
+        pot_claimed = False
     if 'monty' in http_ref:
         print(f'Game is Monty, boys. stage = {monty.stage}')
         if len(draw.stage) == 0:
@@ -781,7 +788,7 @@ def start_new_game():
     global round_bets
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    if pot_amount > 0 and pot_claimed==False: # disallow staring new game 
+    if pot_amount > 0: # and pot_claimed==False: # disallow staring new game 
         emit('money_left_alert', {}, room=room_map[requesting_player]) 
         return None
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
@@ -810,14 +817,15 @@ def start_new_game():
     elif 'monty' in http_ref:
         monty.new_game(players = players_tonight)
     elif 'spit' in http_ref:
-        spit.new_game(players = players_tonight)
-        
+        spit.new_game(players = players_tonight)        
         cards_player1_pg['spit'] = None
         cards_player2_pg['spit'] = None       
         cards_player3_pg['spit'] = None
         cards_player4_pg['spit'] = None
         cards_player5_pg['spit'] = None 
         cards_player6_pg['spit'] = None
+    elif 'holdem' in http_ref:
+        holdem.new_game(players = players_tonight)
 
     emit('clear_bet_log', broadcast=True)
         
@@ -844,8 +852,16 @@ def receive_bet(message):
     global round_bets
     global has_bet_this_round
     global pot_claimed
+    global players_active
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
+    
+    # first let's make sure the player is allowed to bet, IOW, hasn't folded
+    if requesting_player in players_active:
+        bet_allowed = True # this is a dummy that does nothing
+    else: # disallow bet: send window alert to client, return out of receive_bet()
+        emit('illegal_bet_alert', {}, room = room_map[requesting_player])
+        return
     has_bet_this_round.append(requesting_player)
     amt = int(message['amt'])
     # first let's validate bet to ensure player is not entering a negative amt
@@ -867,10 +883,15 @@ def receive_bet(message):
     player_stash_map[requesting_player] = player_stash_map[requesting_player] - int(amt)
     emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': buy_in}, 
          broadcast=True)
+    # hold em gets its own bet logic
     if 'holdem' in http_ref:
+        print('from receive_bet(), holdem.stage: ', holdem.stage)
         if len(holdem.stage) == 0:
-            holdem_stage = 0
-            pot_claimed = False # normally we do this in deal_click() but we want to do it
+            if pot_claimed == True:
+                holdem_stage = 0
+            else:
+                holdem_stage = 'river' # this is just a guess
+            #pot_claimed = False # normally we do this in deal_click() but we want to do it
                                 # after the blinds are placed because otherwise we lose track
                                 # of who placed the blinds.
         else:
@@ -880,7 +901,7 @@ def receive_bet(message):
                     'fold': 'no', 'stage': holdem_stage},
                        broadcast=True) # broadcast latest player's bet
         for player in players_tonight:
-            if len(holdem.stage) == 0:
+            if len(holdem.stage) == 0 and pot_claimed == True:
                 call_amt = 0
             else:
                 call_amt = max_bet - round_bets[player]

@@ -291,6 +291,11 @@
                 window.alert("There's a non-0 amount in the pot. Someone must claim it before a new game can be started.");
             });
             
+            // alert message if player trying to bet and not in active players list, hopefully only because s/he folded
+            socket.on('illegal_bet_alert', function(msg, cb) {
+                window.alert("You can't place a bet because you're not in the acitve players list.");
+            });
+             
             socket.on('bets_needed_alert', function(msg,cb) {
                 var players = msg.negligent_bettors
                 if(players.length==1){
@@ -431,7 +436,7 @@
             // Claim_pot form handler
             $('form#claim_pot').submit(function(event) {
             // just in case someone clicks the 'claim' button by accident                
-                if (window.confirm("You won, pardner? Click 'OK' to claim the pot and confirm that you're wearing women's panties.")) { 
+                if (window.confirm("You won, pardner? Click 'OK' to claim the pot and confirm your status as a eunuch.")) { 
                     socket.emit('claim_pot');
                 }              
                 return false;
