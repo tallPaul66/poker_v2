@@ -1,210 +1,40 @@
-<!DOCTYPE HTML>
-<html>
-<style>
-	body{ background-image:url("/static/card_pics/table_top_5.png");
-		width: 100%;
-	    height: 100%;
-	    max-height: 100%;
-		background-size: cover;
-		background-repeat: no-repeat;}
-  </style>
-<head>
-    <title>Poker v2!</title>
-     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
-    <script type="text/javascript" charset="utf-8">
-        $(document).ready(function() {
-            // Use a "/test" namespace.
-            // An application can open a connection on multiple namespaces, and
-            // Socket.IO will multiplex all those connections on a single
-            // physical channel. If you don't care about multiple channels, you
-            // can set the namespace to an empty string.
-            namespace = '/test';
+<!doctype html>
+<html lang="en">
+<script>
+//document.addEventListener('DOMContentLoaded', function() {
+makeRadioButton = function(){
+  var button1 = document.createElement('input');
+  //button1.type = "radio";
+  //button1.id="card1Hld" 
+  button1.setAttribute("type", "radio");
+  button1.setAttribute("name", "card1Hld" + 1);
+  button1.setAttribute("value", "N");
+  button1.setAttribute("id","card1Hld" + 1);
+  
+  var button2 = document.createElement('input')
+  button2.setAttribute("type", "radio");
+  button2.setAttribute("name", "card1Hld" + 2);
+  button2.setAttribute("value", "N");
+  button2.setAttribute("id","card1Hld" + 2);
 
-            // Connect to the Socket.IO server.
-            // The connection URL has the following format, relative to the current page:
-            //     http[s]://<domain>:<port>[/<namespace>]
-            var socket = io(namespace);
 
-            // Event handler for new connections.
-            // The callback function is invoked when a connection with the
-            // server is established.
-            socket.on('connect', function() {
-                socket.emit('my_event', {data: 'I\'m connected!'});
-            });
+//  var button2 = document.createElement('input');
+//  button2.type = "radio";
+//  button2.id="card2Hld" 
+  button1.onclick = function() {
+    // ...
+  };
 
-            // Event handler for server sent data.
-            // The callback function is invoked whenever the server emits data
-            // to the client. The data is then displayed in the "Received"
-            // section of the page.
-            socket.on('my_cards', function(msg, cb) {
-                $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
-               // var msg_data_stringified = JSON.stringify(msg.data);
-               // var msg_rejsonified = JSON.parse(msg_data_stringified)
-               console.log('msg.cards ', msg.cards)
-                if(msg.from == "server"){
-                    console.log('msg.data', msg.data)
-                    console.log('msg_data_stringified ', msg_data_stringified)
-                    console.log('msg_rejsonified  ', msg_rejsonified )
-                    console.log('msg_rejsonified.player1 ', msg_rejsonified.player1)
-                    console.log('msg_rejsonified.player1[0] ', msg_rejsonified.player1[0])
-                }
-                //console.log('msg_rejsonified.player1[0] ', msg_rejsonified.player1[0])
-                //console.log('msg.data: ', msg.data);
-                //console.log('msg.data[\"player1\"]: ', msg.data["player1"]);
-                //console.log('msg.data.player1: ', msg.data.player1);
-                //console.log('msg.data.player1[0]: ', msg.data.player1[0]);
-                //console.log('typeof msg.data: ', typeof msg.data)
-                
-                var data_local = {"player1": ["p1_card1.jpg", "p1_card2.jpg"], "player2": ["p2_card1.jpg", "p2_card2.jpg"]}
-                console.log('data_local: ', data_local);
-                console.log('data_local[\"player1\"]: ', data_local["player1"]);
-                console.log('data_local.player1: ', data_local.player1);
-                console.log('data_local.player1[0].cards: ', data_local.player1[0]);
-                console.log('typeof data_local: ', typeof data_local)
-                
-                //console.log('msg.data_stingified: ', msg_data_stringified);
-                //console.log('msg.data_stringified[\"player1\"]: ', msg_data_stringified["player1"]);
-                //console.log('msg.data[\"player1\"]', msg_data["player1"])
-                //console.log('msg.data.player1: ', msg_data.player1)
-                //console.log('msg.data.player1[1]: ', msg_data.player1[1])
-                
-                var player1_card1 = msg.cards.player1[0];
-                var player1_card2 = msg.cards.player1[1];
-                var player2_card1 = msg.cards.player2[0];
-                var player2_card2 = msg.cards.player2[1];   
-                var player3_card1 = msg.cards.player3[0];
-                var player3_card2 = msg.cards.player3[1];
-                document.getElementById('player1_card1').src = player1_card1;
-                document.getElementById('player1_card2').src = player1_card2;               
-                document.getElementById('player2_card1').src = player2_card1;
-                document.getElementById('player2_card2').src = player2_card2;                
-                document.getElementById('player3_card1').src = player3_card1;
-                document.getElementById('player3_card2').src = player3_card2;
-                if (cb)
-                    cb();
-            });
-            //socket.on('my-image-event', function(msg, cb) {
-            //    var player1_card1 = msg.image_data;
-            //    if(cb)
-            //        cb();
-            //)};
-
-            // Interval function that tests message latency by sending a "ping"
-            // message. The server then responds with a "pong" message and the
-            // round trip time is measured.
-            var ping_pong_times = [];
-            var start_time;
-            window.setInterval(function() {
-                start_time = (new Date).getTime();
-                socket.emit('my_ping');
-            }, 1000);
-
-            // Handler for the "pong" message. When the pong is received, the
-            // time from the ping is stored, and the average of the last 30
-            // samples is average and displayed.
-            socket.on('my_pong', function() {
-                var latency = (new Date).getTime() - start_time;
-                ping_pong_times.push(latency);
-                ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
-                var sum = 0;
-                for (var i = 0; i < ping_pong_times.length; i++)
-                    sum += ping_pong_times[i];
-                $('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
-            });
-
-            // Handlers for the different forms in the page.
-            // These accept data from the user and send it to the server in a
-            // variety of ways
-            $('form#broadcast').submit(function(event) {
-                socket.emit('my_broadcast_event', {data: $('#broadcast_data').val()});
-                return false;
-            });
-            $('form#join').submit(function(event) {
-                socket.emit('join', {room: $('#join_room').val()});
-                return false;
-            });
-            $('form#leave').submit(function(event) {
-                socket.emit('leave', {room: $('#leave_room').val()});
-                return false;
-            });
-            $('form#deal').submit(function(event) {
-                socket.emit('my_room_event'); //don't need this arg now: , {room: $('#room_name').val(), data: $('#room_data').val()});
-                return false;
-            });
-            $('form#close').submit(function(event) {
-                socket.emit('close_room', {room: $('#close_room').val()});
-                return false;
-            });
-            $('form#disconnect').submit(function(event) {
-                socket.emit('disconnect_request');
-                return false;
-            });
-        });
-    </script>
-</head>
-<body>
-    <h1>Poker v2!</h1>
-    <p>Async mode is: <b>{{ async_mode }}</b></p>
-    <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
-    <h2>Send:</h2>
-    <fieldset>
-    <form id="broadcast" class="form" method="POST" action='#'>
-        <input type="text" name="broadcast_data" id="broadcast_data" placeholder="Message">
-        <input type="submit" value="Broadcast">
-    </form>
-    </fieldset>
-     <fieldset>
-    <form id="join" class="form" method="POST" action='#'>
-        <input type="text" name="join_room" id="join_room" placeholder="Player Name">
-        <input type="submit" value="Enter Player Name">
-    </form>
-    <br>
-     <form id="deal" class="form" method="POST" action='#'>
-         <input  class = "deal_btn" type="submit" name="btn" value="D E A L" > 
-    </form>
-     </fieldset>
-    <fieldset>
-    <form id="leave" class="form" method="POST" action='#'>
-        <input type="text" name="leave_room" id="leave_room" placeholder="Room Name">
-        <input type="submit" value="Leave Room">
-    </form>   
-    <form id="close" class="form" method="POST" action="#">
-        <input type="text" name="close_room" id="close_room" placeholder="Room Name">
-        <input type="submit" value="Close Room">
-    </form>
-    <form id="disconnect" class="form" method="POST" action="#">
-        <input type="submit" value="Disconnect">
-    </form>
-    </fieldset>
-    <h2>Receive:</h2>
-    <div id="log"></div>
    
-    </div>
-   
-    <table width="500px"  height="50%">
-      <tr>
-        <th valign=bottom>
-            <h3 id="player1"></h3>
-        </th>
-		<td valign=top><img src="" id="player1_card1" width=80 height=122></td>
-		<td valign=top><img src="" id="player1_card2" width=80 height=122></td>
-      </tr>
-     <tr>
-        <th valign=bottom>
-            <h3 id="player2"></h3>
-        </th>
-		<td valign=top><img src="" id="player2_card1" width=80 height=122></td>
-		<td valign=top><img src="" id="player2_card2" width=80 height=122></td>
-     </tr>
-     <tr>
-        <th valign=bottom>
-            <h3 id="player3"></h3>
-        </th>
-		<td valign=top><img src="" id="player3_card1" width=80 height=122></td>
-		<td valign=top><img src="" id="player3_card2" width=80 height=122></td>
-      </tr>
-    </table> 	
+  var container = document.getElementById('container');
+  container.appendChild(button1);
+  container.appendChild(button2);
+//  container.appendChild(button2);
+}
+
+
+</script>
+<body onload="makeRadioButton()">
+  <div id="container"></div>
 </body>
 </html>
