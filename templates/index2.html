@@ -2,39 +2,126 @@
 <html lang="en">
 <script>
 //document.addEventListener('DOMContentLoaded', function() {
+const url_params = new URLSearchParams(window.location.search);
+const player_name = url_params.get('player');
+
 makeRadioButton = function(){
   var button1 = document.createElement('input');
   //button1.type = "radio";
   //button1.id="card1Hld" 
   button1.setAttribute("type", "radio");
-  button1.setAttribute("name", "card1Hld" + 1);
-  button1.setAttribute("value", "N");
-  button1.setAttribute("id","card1Hld" + 1);
+  button1.setAttribute("name", "card1");
+  button1.setAttribute("value", "Discard");
+  button1.setAttribute("id","card1Hld");
   
   var button2 = document.createElement('input')
   button2.setAttribute("type", "radio");
-  button2.setAttribute("name", "card1Hld" + 2);
-  button2.setAttribute("value", "N");
-  button2.setAttribute("id","card1Hld" + 2);
+  button2.setAttribute("name", "card1");
+  button2.setAttribute("value", "Hold");
+  button2.setAttribute("id","card1Dis");
+  
+  var button3 = document.createElement('input')
+  button3.setAttribute("type", "radio");
+  button3.setAttribute("name", "card2");
+  button3.setAttribute("value", "Discard");
+  button3.setAttribute("id","card2Hld");
+  
+  var button4 = document.createElement('input')
+  button4.setAttribute("type", "radio");
+  button4.setAttribute("name", "card2");
+  button4.setAttribute("value", "Hold");
+  button4.setAttribute("id","card2Dis");
+  
+  
+  var draw_btn = document.createElement('input')
+  draw_btn.setAttribute("type", "submit")
+  draw_btn.setAttribute("value", "Draw")
+  draw_btn.setAttribute("method", "POST")
+  draw_btn.setAttribute("id", "draw_cards")
+  draw_btn.setAttribute("class", "submit_btn2")
+  draw_btn.setAttribute("name", "btn")
+  draw_btn.setAttribute("onClick", "draw_click()")
+    
+  var label1 = document.createElement("label");
+  label1.appendChild(button1);
+  label1.innerHTML += "Hold";
+  
+  var label2 = document.createElement("label");
+  label2.appendChild(button2);
+  label2.innerHTML += "Discard";
+  
+  var label3 = document.createElement("label");
+  label3.appendChild(button3);
+  label3.innerHTML += "Hold";
+  
+  var label4 = document.createElement("label");
+  label4.appendChild(button4);
+  label4.innerHTML += "Discard";
 
-
-//  var button2 = document.createElement('input');
-//  button2.type = "radio";
-//  button2.id="card2Hld" 
   button1.onclick = function() {
     // ...
   };
 
-   
-  var container = document.getElementById('container');
-  container.appendChild(button1);
-  container.appendChild(button2);
-//  container.appendChild(button2);
+if(player_name == 'player1'){ 
+    var container = document.getElementById('container1');
+} else {
+    var container = document.getElementById('container2');
+}
+var container3 = document.getElementById('container3')
+container.appendChild(label1)
+container.appendChild(label2)
+
+container.appendChild(label3)
+container.appendChild(label4)
+container3.appendChild(draw_btn)
+
+}
+draw_click = function(){
+    var card1Dis_is_checked = document.getElementById('card1Dis').checked
+    console.log('card1Dis_is_checked', card1Dis_is_checked)
 }
 
 
 </script>
 <body onload="makeRadioButton()">
-  <div id="container"></div>
+  
+  <h1>container1 is above this sentence, container2 is below</h1>
+ 
+  <div id="container3"></div>
+  <table width="500px"  height="50%">
+        <tr>
+          <td></td><td></td><td></td>
+          <td></td>
+          <th>
+              <h1><div id="player1_stash"></div></h1>
+              
+          </th>
+          <td></td><td><div id="container1"></div></td><td></td><td></td>
+		  <td></td><td></td><td></td><td></td>
+		  <td></td><td></td><td> <div id="container2"></div></td>
+        </tr>
+        <tr>
+          <th>
+             <h1> <div id="container3"></div></h1>
+
+          </th>
+          <th>
+		  </th>
+          <td></td><td></td>
+		  
+		  <th colspan="2" valign=top>
+		     <br> 
+             <h1><div id="pot_total"></div></h1>
+             <br> 
+             <div  id="call_amt"></div>
+		  </th>
+		  <th>
+		  </th>
+          <td></td><td></td>
+          <td></td>
+          <th valign=bottom colspan = "2">              
+              <h1><div id="player2_stash"></div></h1>
+          </th>
+         </tr>
 </body>
 </html>
