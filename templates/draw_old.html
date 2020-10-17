@@ -13,167 +13,11 @@
     <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
     <script type="text/javascript" charset="utf-8">
-        const url_params = new URLSearchParams(window.location.search);
-        const player_name = url_params.get('player');
-
-        makeRadioButtons = function(){
-            //var form = document.createElement('form');
-            //form.setAttribute('method', 'POST');
-            //form.setAttribute('action', '#');
-            //form.setAttribute('id', '#draw_cards');
-    
-            var button1a = document.createElement('input');
-            button1a.setAttribute("type", "radio");
-            button1a.setAttribute("name", "card1");
-            button1a.setAttribute("value", "Discard");
-            button1a.setAttribute("id","card1Hld");
-            button1a.setAttribute("checked","true");
-  
-            var button1b = document.createElement('input')
-            button1b.setAttribute("type", "radio");
-            button1b.setAttribute("name", "card1");
-            button1b.setAttribute("value", "Hold");
-            button1b.setAttribute("id","card1Dis");
-              
-            var button2a = document.createElement('input')
-            button2a.setAttribute("type", "radio");
-            button2a.setAttribute("name", "card2");
-            button2a.setAttribute("value", "Discard");
-            button2a.setAttribute("id","card2Hld");
-            button2a.setAttribute("checked","true");
-  
-            var button2b = document.createElement('input')
-            button2b.setAttribute("type", "radio");
-            button2b.setAttribute("name", "card2");
-            button2b.setAttribute("value", "Hold");
-            button2b.setAttribute("id","card2Dis");            
-            
-            var button3a = document.createElement('input')
-            button3a.setAttribute("type", "radio");
-            button3a.setAttribute("name", "card3");
-            button3a.setAttribute("value", "Discard");
-            button3a.setAttribute("id","card3Hld");
-            button3a.setAttribute("checked","true");
-  
-            var button3b = document.createElement('input')
-            button3b.setAttribute("type", "radio");
-            button3b.setAttribute("name", "card3");
-            button3b.setAttribute("value", "Hold");
-            button3b.setAttribute("id","card3Dis");
-  
-            var button4a = document.createElement('input')
-            button4a.setAttribute("type", "radio");
-            button4a.setAttribute("name", "card4");
-            button4a.setAttribute("value", "Discard");
-            button4a.setAttribute("id","card4Hld");
-            button4a.setAttribute("checked","true");
-  
-            var button4b = document.createElement('input')
-            button4b.setAttribute("type", "radio");
-            button4b.setAttribute("name", "card4");
-            button4b.setAttribute("value", "Hold");
-            button4b.setAttribute("id","card4Dis");
-            
-            var button5a = document.createElement('input')
-            button5a.setAttribute("type", "radio");
-            button5a.setAttribute("name", "card5");
-            button5a.setAttribute("value", "Discard");
-            button5a.setAttribute("id","card5Hld");
-            button5a.setAttribute("checked","true");
-  
-            var button5b = document.createElement('input')
-            button5b.setAttribute("type", "radio");
-            button5b.setAttribute("name", "card5");
-            button5b.setAttribute("value", "Hold");
-            button5b.setAttribute("id","card5Dis");
- 
-            var label1a = document.createElement("label");
-            label1a.appendChild(button1a);
-            label1a.innerHTML += "Hold";
-  
-            var label1b = document.createElement("label");
-            label1b.appendChild(button1b);
-            label1b.innerHTML += "Discard";
-  
-            var label2a = document.createElement("label");
-            label2a.appendChild(button2a);
-            label2a.innerHTML += "Hold";
-  
-            var label2b = document.createElement("label");
-            label2b.appendChild(button2b);
-            label2b.innerHTML += "Discard";
-            
-            var label3a = document.createElement("label");
-            label3a.appendChild(button3a);
-            label3a.innerHTML += "Hold";
-  
-            var label3b = document.createElement("label");
-            label3b.appendChild(button3b);
-            label3b.innerHTML += "Discard";
-            
-            var label4a = document.createElement("label");
-            label4a.appendChild(button4a);
-            label4a.innerHTML += "Hold";
-  
-            var label4b = document.createElement("label");
-            label4b.appendChild(button4b);
-            label4b.innerHTML += "Discard";
-            
-            var label5a = document.createElement("label");
-            label5a.appendChild(button5a);
-            label5a.innerHTML += "Hold";
-  
-            var label5b = document.createElement("label");
-            label5b.appendChild(button5b);
-            label5b.innerHTML += "Discard";
-
-            if(player_name == 'player1'){ 
-                var container_card1 = document.getElementById('container_plyr1_card1');
-                var container_card2 = document.getElementById('container_plyr1_card2');
-                var container_card3 = document.getElementById('container_plyr1_card3');
-                var container_card4 = document.getElementById('container_plyr1_card4');
-                var container_card5 = document.getElementById('container_plyr1_card5');
-            } else if(player_name == 'player2'){
-                var container_card1 = document.getElementById('container_plyr2_card1');
-                var container_card2 = document.getElementById('container_plyr2_card2');
-                var container_card3 = document.getElementById('container_plyr2_card3');
-                var container_card4 = document.getElementById('container_plyr2_card4');
-                var container_card5 = document.getElementById('container_plyr2_card5');
-            } else if(player_name == 'player3'){
-                var container_card1 = document.getElementById('container_plyr3_card1');
-                var container_card2 = document.getElementById('container_plyr3_card2');
-                var container_card3 = document.getElementById('container_plyr3_card3');
-                var container_card4 = document.getElementById('container_plyr3_card4');
-                var container_card5 = document.getElementById('container_plyr3_card5');
-            } else if(player_name == 'player4'){
-                var container_card1 = document.getElementById('container_plyr4_card1');
-                var container_card2 = document.getElementById('container_plyr4_card2');
-                var container_card3 = document.getElementById('container_plyr4_card3');
-                var container_card4 = document.getElementById('container_plyr4_card4');
-                var container_card5 = document.getElementById('container_plyr4_card5');
-            } else if(player_name == 'player5'){
-                var container_card1 = document.getElementById('container_plyr5_card1');
-                var container_card2 = document.getElementById('container_plyr5_card2');
-                var container_card3 = document.getElementById('container_plyr5_card3');
-                var container_card4 = document.getElementById('container_plyr5_card4');
-                var container_card5 = document.getElementById('container_plyr5_card5');
-            }
-            var container_draw_btn = document.getElementById('container_draw_btn');
-
-            container_card1.appendChild(label1a);
-            container_card1.appendChild(label1b);
-            container_card2.appendChild(label2a);
-            container_card2.appendChild(label2b);
-            container_card3.appendChild(label3a);
-            container_card3.appendChild(label3b);
-            container_card4.appendChild(label4a);
-            container_card4.appendChild(label4b);
-            container_card5.appendChild(label5a);
-            container_card5.appendChild(label5b);
-            
-            return false
-        }
-        
+        // [Paul: trying this to fix constant disconnect error, from someone on stackexchange;
+        // doesn't seem to help any]
+        //    socket = io.connect(location.origin, {
+        //        'timeout': 120000 // Increasing connection timeout.
+        //    })
         $(document).ready(function() {
             // Use a "/test" namespace.
             // An application can open a connection on multiple namespaces, and
@@ -487,6 +331,19 @@
                 console.log('keys are', players)
                 console.log("player1's cards", players_cards.player1)
                 
+                //these are the cards the player sees in the middle
+                var requesting_p1yr_card1 = players_cards.requesting_player[0]
+                var requesting_p1yr_card2 = players_cards.requesting_player[1]
+                var requesting_p1yr_card3 = players_cards.requesting_player[2]
+                var requesting_p1yr_card4 = players_cards.requesting_player[3]
+                var requesting_p1yr_card5 = players_cards.requesting_player[4]
+                
+                document.getElementById('requesting_p1yr_card1').src = requesting_p1yr_card1;
+                document.getElementById('requesting_p1yr_card2').src = requesting_p1yr_card2;
+                document.getElementById('requesting_p1yr_card3').src = requesting_p1yr_card3;
+                document.getElementById('requesting_p1yr_card4').src = requesting_p1yr_card4;
+                document.getElementById('requesting_p1yr_card5').src = requesting_p1yr_card5;
+                
                 if("player1" in players_cards){
                     var player1_card1 = players_cards.player1[0];
                     var player1_card2 = players_cards.player1[1];
@@ -601,7 +458,6 @@
                 socket.emit('new_game'); 
                 return false;
             });
-           
             $('form#draw_cards').submit(function(event) {
                 var card1_Hld_checked = document.getElementById('card1Hld').checked;
                 var card2_Hld_checked = document.getElementById('card2Hld').checked;
@@ -610,9 +466,9 @@
                 var card5_Hld_checked = document.getElementById('card5Hld').checked;
                 var card_holds = {card1: card1_Hld_checked, card2: card2_Hld_checked, 
                                   card3: card3_Hld_checked, card4: card4_Hld_checked, 
-                                  card5: card5_Hld_checked};
+                                  card5: card5_Hld_checked}
                 console.log('card_holds ', card_holds);
-                socket.emit('draw_cards_draw_II', {data: card_holds}); 
+                socket.emit('draw_cards_draw', {data: card_holds}); 
                 
                 // reset the radio buttons to the default Hold checked
                 document.getElementById("card1Hld").checked = true;
@@ -700,7 +556,7 @@
         }
     </script>
   </head>
-   <body onload="makeRadioButtons()">
+   <body>
      
     <!--#################################################################################-->
     <!--                                      DASHBOARD                                  -->
@@ -721,7 +577,7 @@
         </form>
         <form style= "margin-right:20px; margin-top: 14px;" id= "reveal" class = "form" method="POST" action='#'> 
 	         <input class="submit_btn1" type="submit" name="btn" value="REVEAL">
-        </form>       
+        </form>            
         
         <hr class="vertical" />
         <hr class="vertical" />        
@@ -750,10 +606,7 @@
         </div>    	 
 	 </fieldset>
 	 <br>
-	 <h1 style="color:#FFDF00; text-align: center;">When I say 
-	 <form style= "margin-right:20px; margin-top: 14px;"  id="draw_cards" class="form" method="POST" action='#'>
-             <input class="submit_btn2" type="submit" name="draw_cards" value="Draw">
-        </form> </h1>
+	 <h1 style="color:#FFDF00; text-align: center;">When I say "DRAW,"....</h1>
      <br><br><br>
     <!--#################################################################################-->
     <!--                                The Poker Table                                  -->
@@ -762,27 +615,18 @@
     <br>	
 	  <table width="500px"  height="50%">
         <tr>
-          <td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td>
+          <td></td>
           <th valign=middle colspan = "2">                
               <h3 style="color:#FFDF00;">{{names["player1"]}}</h3>
               <h1><div id="player1_stash"></div></h1>
               <img src="" id="player1_stash_img" width=80 height=80>
           </th>
-          <td valign=top><img src="" id="player1_card1" width=80 height=122>
-              <div id="container_plyr1_card1">
-          </td>
-		  <td valign=top><img src="" id="player1_card2" width=80 height=122>
-    		  <div id="container_plyr1_card2">
-		  </td>
-		  <td valign=top><img src="" id="player1_card3" width=80 height=122>
-    		  <div id="container_plyr1_card3">
-		  </td>
-		  <td valign=top><img src="" id="player1_card4" width=80 height=122>
-    		  <div id="container_plyr1_card4">
-		  </td>
-		  <td valign=top><img src="" id="player1_card5" width=80 height=122>
-    		  <div id="container_plyr1_card5">
-		  </td>
+          <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
+		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>
+		  <td valign=top><img src="" id="player1_card3" width=80 height=122></td>
+		  <td valign=top><img src="" id="player1_card4" width=80 height=122></td>
+		  <td valign=top><img src="" id="player1_card5" width=80 height=122></td>
           <td></td><td></td><td></td><td></td>
           <td></td><td></td>
         </tr>
@@ -795,17 +639,12 @@
           <th colspan = "3" valign=top>
     		  <div style="color:#F0FFFF;" id="log"></div>
 		  </th>
-          <td></td>
-          <td></td>
-		  <td>
-        		<div id="container_draw_btn">
-		  </td>
+          <td></td><td></td>
     <!--####################################################################-->
     <!--                                 BETTING                            -->
     <!--####################################################################-->
 		  
 		  <th colspan="2" valign=top>
-		     <div id="container_plyr1_card3">
 		     <br> 
              <h1><div id="pot_total"></div></h1>
              <br> 
@@ -815,7 +654,6 @@
                      <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
              </form> 
 		  </th>
-		  
 		  <th colspan = "3" valign=top  align=right>
         		  <br>
         		  <div style="color:#F0FFFF;" id="bet_log"></div>
@@ -824,7 +662,7 @@
     <!--                                                                    -->
     <!--####################################################################-->    
           <td></td><td></td>
-          
+          <td></td>
           <th valign=bottom colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
               <h1><div id="player2_stash"></div></h1>
@@ -832,38 +670,23 @@
           </th>
          </tr>
          <tr>
-          <td><img src="" id="player5_card1" width=80 height=122>
-              <div id="container_plyr5_card1">
-          </td>
-		  <td><img src="" id="player5_card2" width=80 height=122>
-    		  <div id="container_plyr5_card2">
-		  </td>
-		  <td><img src="" id="player5_card3" width=80 height=122>
-    		  <div id="container_plyr5_card3">
-		  </td>
-		  <td><img src="" id="player5_card4" width=80 height=122>
-    		  <div id="container_plyr5_card4">
-		  </td>
-		  <td><img src="" id="player5_card5" width=80 height=122>
-    		  <div id="container_plyr5_card5">
-		  </td>
-		  <td></td><td></td><td></td><td></td>
-          <td></td><td></td><td></td>		  
-          <td><img src="" id="player2_card1" width=80 height=122>
-              <div id="container_plyr2_card1">
-          </td>
-		  <td><img src="" id="player2_card2" width=80 height=122>
-    		  <div id="container_plyr2_card2">
-		  </td>
-		  <td><img src="" id="player2_card3" width=80 height=122>
-    		  <div id="container_plyr2_card3">
-		  </td>
-		  <td><img src="" id="player2_card4" width=80 height=122>
-           	  <div id="container_plyr2_card4">  
-		  </td>
-		  <td><img src="" id="player2_card5" width=80 height=122>
-    		  <div id="container_plyr2_card5">
-		  </td>
+          <td><img src="" id="player5_card1" width=80 height=122></td>
+		  <td><img src="" id="player5_card2" width=80 height=122></td>
+		  <td><img src="" id="player5_card3" width=80 height=122></td>
+		  <td><img src="" id="player5_card4" width=80 height=122></td>
+		  <td><img src="" id="player5_card5" width=80 height=122></td>
+		  <td></td>
+		  <td><img src="" id="requesting_p1yr_card1" width=80 height=122></td>
+          <td><img src="" id="requesting_p1yr_card2" width=80 height=122></td>
+          <td><img src="" id="requesting_p1yr_card3" width=80 height=122></td>
+          <td><img src="" id="requesting_p1yr_card4" width=80 height=122></td>
+          <td><img src="" id="requesting_p1yr_card5" width=80 height=122></td>
+		  <td></td>		  
+          <td><img src="" id="player2_card1" width=80 height=122></td>
+		  <td><img src="" id="player2_card2" width=80 height=122></td>
+		  <td><img src="" id="player2_card3" width=80 height=122></td>
+		  <td><img src="" id="player2_card4" width=80 height=122></td>
+		  <td><img src="" id="player2_card5" width=80 height=122></td>
         </tr>
         <tr>
           <td></td><td></td>
@@ -873,11 +696,31 @@
               <h1><div id="player4_stash"></div></h1>
               <img src="" id="player4_stash_img" width=80 height=80>
           </th>          
-          <td></td><td></td><td></td><td></td>
-          <td>
+          <td></td><td></td>
+          <td valign=top>          
+            <input type="radio" id="card1Hld" name="card1" value="hold" checked="checked"><label for="card1Hld" style="color:yellow;">Hold</label><br>
+            <input type="radio" id="card1Dis" name="card1" value="discard"><label for="card1Dis" style="color:#DC143C; font-weight:bold;">Discard</label>           
           </td>
-          <td></td><td></td><td></td>
-          <td></td>
+          <td valign=top>
+            <input type="radio" id="card2Hld" name="card2" value="hold" checked="checked"><label for="card2Hld" style="color:yellow;">Hold</label><br>
+            <input type="radio" id="card2Dis" name="card2" value="discard"><label for="card2Dis" style="color:#DC143C; font-weight:bold;">Discard</label>            
+          </td>
+          <td valign=top>
+            <input type="radio" id="card3Hld" name="card3" value="hold" checked="checked"><label for="card3Hld" style="color:yellow;">Hold</label><br>
+            <input type="radio" id="card3Dis" name="card3" value="discard"><label for="card3Dis" style="color:#DC143C; font-weight:bold;">Discard</label>      
+            <p></p><form id="draw_cards" class="form" method="POST" action='#'>
+                      <input class="submit_btn2" type="submit" name="btn" value="Draw">
+                   </form>
+          </td>
+          <td valign=top>
+            <input type="radio" id="card4Hld" name="card4" value="hold" checked="checked"><label for="card4Hld" style="color:yellow;">Hold</label><br>
+            <input type="radio" id="card4Dis" name="card4" value="discard"><label for="card4Dis" style="color:#DC143C; font-weight:bold;">Discard</label>            
+          </td>
+          <td valign=top>
+            <input type="radio" id="card5Hld" name="card5" value="hold" checked="checked"><label for="card5Hld" style="color:yellow;">Hold</label><br>
+            <input type="radio" id="card5Dis" name="card5" value="discard"><label for="card5Dis" style="color:#DC143C; font-weight:bold;">Discard</label>
+          
+          </td><td></td><td></td>
           <th valign=bottom align="right" colspan = "2"> 
               <br><br>             
               <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
@@ -888,37 +731,17 @@
         </tr>
         <tr>
           <td></td><td></td><td></td>          
-          <td><img src="" id="player4_card1" width=80 height=122>
-              <div id="container_plyr4_card1">
-          </td>
-		  <td><img src="" id="player4_card2" width=80 height=122>
-    		  <div id="container_plyr4_card2">
-		  </td>
-		  <td><img src="" id="player4_card3" width=80 height=122>
-    		  <div id="container_plyr4_card3">
-		  </td>
-		  <td><img src="" id="player4_card4" width=80 height=122>
-    		  <div id="container_plyr4_card4">
-		  </td>
-		  <td><img src="" id="player4_card5" width=80 height=122>
-    		  <div id="container_plyr4_card5">
-		  </td>
+          <td><img src="" id="player4_card1" width=80 height=122></td>
+		  <td><img src="" id="player4_card2" width=80 height=122></td>
+		  <td><img src="" id="player4_card3" width=80 height=122></td>
+		  <td><img src="" id="player4_card4" width=80 height=122></td>
+		  <td><img src="" id="player4_card5" width=80 height=122></td>
 		  <td></td>
-		  <td><img src="" id="player3_card1" width=80 height=122>
-    		<div id="container_plyr3_card1">
-		  </td>
-		  <td><img src="" id="player3_card2" width=80 height=122>
-    		  <div id="container_plyr3_card2">
-		  </td>
-		  <td><img src="" id="player3_card3" width=80 height=122>
-    		  <div id="container_plyr3_card3">
-		  </td>
-		  <td><img src="" id="player3_card4" width=80 height=122>
-    		  <div id="container_plyr3_card4">
-		  </td>
-		  <td><img src="" id="player3_card5" width=80 height=122>
-    		  <div id="container_plyr3_card5">
-		  </td>
+		  <td><img src="" id="player3_card1" width=80 height=122></td>
+		  <td><img src="" id="player3_card2" width=80 height=122></td>
+		  <td><img src="" id="player3_card3" width=80 height=122></td>
+		  <td><img src="" id="player3_card4" width=80 height=122></td>
+		  <td><img src="" id="player3_card5" width=80 height=122></td>
           <td></td><td></td><td></td>
         </tr>
 	  </table> 		

@@ -143,6 +143,7 @@ def home():
 ### GAMES
 ##########################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Draw   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 @app.route('/draw', methods = ['GET', 'POST'])
 def draw_play():
     # makes sure that the game starts from scratch if it was 
@@ -167,85 +168,12 @@ def draw_cards_draw(message):
     hold_statuses = [message['data']['card1'], message['data']['card2'], 
                      message['data']['card3'], message['data']['card4'], 
                      message['data']['card5']]
-    if requesting_player == 'player1':
-        # 1. Show card backs to player for cards selected to discard
-        # as he/she waits for the dealer to deal the draw
-        for i in range(len(cards_player1_pg['requesting_player'])):
-            if hold_statuses[i] == False:                
-                cards_player1_pg['requesting_player'][i] = None
-        emit('get_cards',  {'cards': cards_player1_pg}, room=room_map['player1'])
-        
-        # 2. register the cards s/he wants drawn in draw.py
-        draw.draw_card_idxs['player1'] = hold_statuses
-    elif requesting_player == 'player2':
-        for i in range(len(cards_player2_pg['requesting_player'])):
-            if hold_statuses[i] == False:                
-                cards_player2_pg['requesting_player'][i] = None
-        emit('get_cards',  {'cards': cards_player2_pg}, room=room_map['player2'])
-        draw.draw_card_idxs['player2'] = hold_statuses
-    elif requesting_player == 'player3':
-        for i in range(len(cards_player3_pg['requesting_player'])):
-            if hold_statuses[i] == False:                
-                cards_player3_pg['requesting_player'][i] = None
-        emit('get_cards',  {'cards': cards_player3_pg}, room=room_map['player3'])
-        draw.draw_card_idxs['player3'] = hold_statuses
-    elif requesting_player == 'player4':
-        for i in range(len(cards_player4_pg['requesting_player'])):
-            if hold_statuses[i] == False:                
-                cards_player4_pg['requesting_player'][i] = None
-        emit('get_cards',  {'cards': cards_player4_pg}, room=room_map['player4'])
-        draw.draw_card_idxs['player4'] = hold_statuses
-    elif requesting_player == 'player5':
-        for i in range(len(cards_player5_pg['requesting_player'])):
-            if hold_statuses[i] == False:                
-                cards_player5_pg['requesting_player'][i] = None
-        emit('get_cards',  {'cards': cards_player5_pg}, room=room_map['player5'])
-        draw.draw_card_idxs['player5'] = hold_statuses
-    elif requesting_player == 'player6':
-        for i in range(len(cards_player6_pg['requesting_player'])):
-            if hold_statuses[i] == False:                
-                cards_player6_pg['requesting_player'][i] = None
-        emit('get_cards',  {'cards': cards_player6_pg}, room=room_map['player6'])
-        draw.draw_card_idxs['player6'] = hold_statuses
-    # this broadcasts the message to everybody how many cards the requesting player took
-    emit('who_drew_what',
-                      {'data': 5-sum(hold_statuses), 
-                       'player': player_name_map[requesting_player] + ' takes '},
-                       broadcast=True)
-    
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Draw   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@app.route('/draw_II', methods = ['GET', 'POST'])
-def draw_II_play():
-    # makes sure that the game starts from scratch if it was 
-    # left in a state stage != []
-    draw.stage.clear()
-    return render_template('draw_II.html', names = player_name_map)
-
-@app.route('/link_to_draw_II')
-def redirect_to_draw_II():
-    # start_new_game() # this causes error
-    http_ref = request.environ['HTTP_REFERER']
-    requesting_player = http_ref[http_ref.find('player=')+7:]    
-    return redirect(url_for('draw_II_play', player=requesting_player))
-
-# special function for the game of draw poker to register discards for each
-# player
-@socketio.on('draw_cards_draw_II', namespace='/test')
-def draw_cards_draw_II(message):
-    http_ref = request.environ['HTTP_REFERER']
-    requesting_player = http_ref[http_ref.find('player=')+7:]
-    print('hold statuses: ', message['data'])
-    hold_statuses = [message['data']['card1'], message['data']['card2'], 
-                     message['data']['card3'], message['data']['card4'], 
-                     message['data']['card5']]
     if requesting_player == 'player1':        
         # 1. Show card backs to player for cards selected to discard
         # as he/she waits for the dealer to deal the draw
         for i in range(len(cards_player1_pg['player1'])):
             if hold_statuses[i] == False:                
-                #cards_player1_pg['requesting_player'][i] = None
                 cards_player1_pg['player1'][i] = None
-        print('\nfrom draw_cards_draw_II(message), cards_player1_pg: ', cards_player1_pg)
         emit('get_cards',  {'cards': cards_player1_pg}, room=room_map['player1'])
         
         # 2. register the cards s/he wants drawn in draw.py
@@ -253,35 +181,30 @@ def draw_cards_draw_II(message):
     elif requesting_player == 'player2':
         for i in range(len(cards_player2_pg['player2'])):
             if hold_statuses[i] == False:                
-                #cards_player2_pg['requesting_player'][i] = None
                 cards_player2_pg['player2'][i] = None
         emit('get_cards',  {'cards': cards_player2_pg}, room=room_map['player2'])
         draw.draw_card_idxs['player2'] = hold_statuses
     elif requesting_player == 'player3':
         for i in range(len(cards_player3_pg['player3'])):
             if hold_statuses[i] == False:                
-                #cards_player3_pg['requesting_player'][i] = None
                 cards_player3_pg['player3'][i] = None
         emit('get_cards',  {'cards': cards_player3_pg}, room=room_map['player3'])
         draw.draw_card_idxs['player3'] = hold_statuses
     elif requesting_player == 'player4':
         for i in range(len(cards_player4_pg['player4'])):
             if hold_statuses[i] == False:                
-                #cards_player4_pg['requesting_player'][i] = None
                 cards_player4_pg['player4'][i] = None
         emit('get_cards',  {'cards': cards_player4_pg}, room=room_map['player4'])
         draw.draw_card_idxs['player4'] = hold_statuses
     elif requesting_player == 'player5':
         for i in range(len(cards_player5_pg['player5'])):
             if hold_statuses[i] == False:                
-                #cards_player5_pg['requesting_player'][i] = None
                 cards_player5_pg['player5'][i] = None
         emit('get_cards',  {'cards': cards_player5_pg}, room=room_map['player5'])
         draw.draw_card_idxs['player5'] = hold_statuses
     elif requesting_player == 'player6':
         for i in range(len(cards_player6_pg['player6'])):
             if hold_statuses[i] == False:                
-                #cards_player6_pg['requesting_player'][i] = None
                 cards_player6_pg['player6'][i] = None
         emit('get_cards',  {'cards': cards_player6_pg}, room=room_map['player6'])
         draw.draw_card_idxs['player6'] = hold_statuses
