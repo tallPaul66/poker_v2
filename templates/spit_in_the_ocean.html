@@ -15,12 +15,10 @@
     <script type="text/javascript" charset="utf-8">
         const url_params = new URLSearchParams(window.location.search);
         const player_name = url_params.get('player');
-
+    
+        // this function dynamically places the radio buttons under the set of cards
+        // corresponding to the player's name in the query string of the url.
         makeRadioButtons = function(){
-            //var form = document.createElement('form');
-            //form.setAttribute('method', 'POST');
-            //form.setAttribute('action', '#');
-            //form.setAttribute('id', '#draw_cards');
     
             var button1a = document.createElement('input');
             button1a.setAttribute("type", "radio");
@@ -562,6 +560,29 @@
                 if (cb)
                     cb();
             });
+            // This function gets invoked whenever ANYONE clicks a game link. Upon clicking
+            // a game link, first check_pot(game) gets called in the javascript. That fn
+            // emits the game to the server, which then broadcasts the game name to all
+            // connected players and is handled by this function, which takes the client
+            // to whatever game was clicked by the originalplayer.
+            socket.on('redirect_all_players', function(msg, cb){
+                console.log('new_game got called!', msg.new_game)
+                if(msg.new_game == 'draw'){
+                    window.location.href = "{{ url_for('redirect_to_draw') }}";
+                } else if(msg.new_game == 'spit') {
+                    window.location.href = "{{ url_for('redirect_to_spit') }}";
+                } else if (msg.new_game=='fcs'){
+                    window.location.href = "{{ url_for('redirect_to_five_card_stud') }}";
+                } else if (msg.new_game=='scs'){
+                    window.location.href = "{{ url_for('redirect_to_seven_card_stud') }}";
+                } else if (msg.new_game=='monty'){
+                    window.location.href = "{{ url_for('redirect_to_monty') }}";
+                } else if (msg.new_game=='holdem'){
+                    window.location.href = "{{ url_for('redirect_to_holdem') }}";
+                } else if (msg.new_game=='omaha'){
+                    window.location.href = "{{ url_for('redirect_to_omaha') }}";
+                }
+            });
             
             /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~            
                      Handlers for the different forms in the page.
@@ -604,6 +625,7 @@
                 socket.emit('new_game'); 
                 return false;
             });
+            
                        
             $('form#draw_cards').submit(function(event) {
                 var card1_Hld_checked = document.getElementById('card1Hld').checked;
@@ -672,34 +694,54 @@
         // player buy-in sum does not match the total amount in circulation, and money is 
         // basically "lost.")
         
+        // Further, if it passes the no-money-in-pot test, the link that was clicked gets
+        // emitted to the server, which then broadcasts the game link to all connected
+        // clients and the clients are redirected to that link.
+        namespace = '/test';
+        var socket = io(namespace);        
         function check_pot(game) {
             if(pot_value != 0){
                 window.alert("There's still money in the pot. Links won't work until it's claimed.");
             } 
             else if (game=='draw'){
-                 window.location.href = "{{ url_for('redirect_to_draw') }}";
+                 if(window.confirm("Take all players to Draw Poker?")){
+                     socket.emit('change_game', {new_game:'draw'})                     
+                 }                 
             } 
             else if (game=='fcs'){
-                 window.location.href = "{{ url_for('redirect_to_five_card_stud') }}";
+                 if(window.confirm("Take all players to Five Card Stud?")){
+                     socket.emit('change_game', {new_game:'fcs'})                     
+                 }
             } 
             else if (game=='scs'){
-                 window.location.href = "{{ url_for('redirect_to_seven_card_stud') }}";
+                 if(window.confirm("Take all players to Seven Card Stud?")){
+                     socket.emit('change_game', {new_game:'scs'})                     
+                 }
             } 
             else if (game=='spit'){
-                 window.location.href = "{{ url_for('redirect_to_spit') }}";
+                 if(window.confirm("Take all players to Spit/Hootenanny?")){
+                     socket.emit('change_game', {new_game:'spit'})                     
+                 }
             } 
             else if (game=='omaha'){
-                 window.location.href = "{{ url_for('redirect_to_omaha') }}";
+                 if(window.confirm("Take all players to Omaha?")){
+                     socket.emit('change_game', {new_game:'omaha'})                     
+                 }
             } 
             else if (game=='monty'){
-                 window.location.href = "{{ url_for('redirect_to_monty') }}";
+                 if(window.confirm("Take all players to 3-Card Monty?")){
+                     socket.emit('change_game', {new_game:'monty'})                     
+                 }
             }
             else if (game=='holdem'){
-                 window.location.href = "{{ url_for('redirect_to_holdem') }}";
+                 if(window.confirm("Take all players to Hold 'em?")){
+                     socket.emit('change_game', {new_game:'holdem'})                     
+                 }
             } 
             else {
                 window.alert("from check_pot() function: The game selected is not associated with any link.");
             }
+            return false;
         }
     </script>
   </head>

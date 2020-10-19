@@ -471,7 +471,7 @@
                                   card3: card3_Hld_checked, card4: card4_Hld_checked, 
                                   card5: card5_Hld_checked}
                 console.log('card_holds ', card_holds);
-                socket.emit('draw_cards_spit', {data: card_holds}); 
+                socket.emit('draw_cards_draw', {data: card_holds}); 
                 
                 // reset the radio buttons to the default Hold checked
                 document.getElementById("card1Hld").checked = true;

@@ -158,7 +158,7 @@ def redirect_to_draw():
     requesting_player = http_ref[http_ref.find('player=')+7:]    
     return redirect(url_for('draw_play', player=requesting_player))
 
-# special function for the game of draw poker to register discards for each
+# special function draw poker and spit to register discards for each
 # player
 @socketio.on('draw_cards_draw', namespace='/test')
 def draw_cards_draw(message):
@@ -216,15 +216,6 @@ def draw_cards_draw(message):
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Spit   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
-#def reveal_spit():
-#    print('\nfrom reveal_spit() fn:')
-#    cards_player1_pg['spit'] = hands['spit']
-#    cards_player2_pg['spit'] = hands['spit']
-#    cards_player3_pg['spit'] = hands['spit']
-#    cards_player4_pg['spit'] = hands['spit']
-#    cards_player5_pg['spit'] = hands['spit']
-#    cards_player6_pg['spit'] = hands['spit']
-
 @app.route('/spit', methods = ['GET', 'POST'])
 def spit_play():
     # makes sure that the game starts from scratch if it was 
@@ -236,7 +227,6 @@ def spit_play():
 def redirect_to_spit():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]  
-    print('redirect_to_spit is working has been called')
     return redirect(url_for('spit_play', player=requesting_player))
 
 @socketio.on('draw_cards_spit', namespace='/test')
@@ -615,7 +605,7 @@ def deal_click():
     # for draw and spit in the ocean, each player sees his cards in the middle,
     # to faciliate the draw UI approach. I'm also changing the cards in his
     # normal position on the table to blanks so it's not confusing.
-    print('\ncards_player1_page: ', cards_player1_pg)
+   
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
     emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
@@ -825,6 +815,10 @@ def start_new_game():
     
     emit('clear_log',{}, broadcast = True)
 
+@socketio.on('change_game', namespace='/test')
+def change_game(new_game):
+    print('change_game(new_game) got called on the server, argument passed; ', new_game['new_game'])
+    emit('redirect_all_players', {'new_game': new_game['new_game']}, broadcast = True)
 ##########################################################################
 ### Betting Handlers
 ##########################################################################
