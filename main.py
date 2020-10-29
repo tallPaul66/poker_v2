@@ -310,7 +310,6 @@ def omaha_play():
 def redirect_to_omaha():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'msg from link_to_omaha(): requesting_player is {requesting_player}')
     return redirect(url_for('omaha_play', player=requesting_player))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     7-card stud     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -985,10 +984,11 @@ def ping_pong():
 
 @socketio.on('connect', namespace='/test')
 def connect_success():
-    print('\ntest_connect() got called.')
+    
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     client_sid = request.sid
+    print('\ntest_connect() got called. Requesting player is ', requesting_player)
     # when a client connects, grab it's sid and update the player-sid
     # map using also requesting_player captured from http_ref
     update_room_map(player = requesting_player, client_sid = client_sid)
