@@ -831,6 +831,7 @@ def receive_bet(message):
     global players_active
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
+    print('from receive_bet(), room_map: ', room_map, '; player_map[requesting_player]: ', room_map[requesting_player])
     
     # first let's make sure the player is allowed to bet, IOW, hasn't folded
     if requesting_player in players_active:
