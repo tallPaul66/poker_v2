@@ -993,6 +993,7 @@ def connect_success():
     # when a client connects, grab it's sid and update the player-sid
     # map using also requesting_player captured from http_ref
     update_room_map(player = requesting_player, client_sid = client_sid)
+    print('updated room_map is now; ', room_map)
     #global thread
     #with thread_lock:
     #   if thread is None:
@@ -1017,7 +1018,8 @@ def disconnect_request():
     
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
-    print('Client disconnected', request.sid)
+    print('\n under "disconnect" decorator: test_disconnect() got called from test_disconnedt():', request.sid)
+    print('room_map: ', room_map)
 
 
 if __name__ == '__main__':

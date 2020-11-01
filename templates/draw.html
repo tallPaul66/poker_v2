@@ -667,10 +667,6 @@
                 socket.emit('close_room', {room: $('#close_room').val()});
                 return false;
             });
-            $('form#disconnect').submit(function(event) {
-                socket.emit('disconnect_request');
-                return false;
-            });
         });
         // This is for the betting and clear buttons to enter the values
         // into the betting amount text box
