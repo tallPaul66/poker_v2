@@ -392,7 +392,7 @@ def deal_click():
     global has_bet_this_round
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print('\ndeal_click() got called!')
+    print('\ndeal_click() got called! Current active players: ', players_active)
     
     # logic for making sure everyone bet in previous round before continuing
     has_bet_set = set(has_bet_this_round)
@@ -831,7 +831,8 @@ def receive_bet(message):
     global players_active
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print('from receive_bet(), room_map: ', room_map, '; player_map[requesting_player]: ', room_map[requesting_player])
+    print('from receive_bet(), players_active: ' , players_active, '; \nroom_map: ', room_map, 
+          '; \nplayer_map[requesting_player]: ', room_map[requesting_player])
     
     # first let's make sure the player is allowed to bet, IOW, hasn't folded
     if requesting_player in players_active:
