@@ -989,7 +989,7 @@ def connect_success():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     client_sid = request.sid
-    print('\ntest_connect() got called. Requesting player is ', requesting_player)
+    print('\nconnect decorator: connect_success() got called. Requesting player is ', requesting_player)
     # when a client connects, grab it's sid and update the player-sid
     # map using also requesting_player captured from http_ref
     update_room_map(player = requesting_player, client_sid = client_sid)
@@ -1018,7 +1018,7 @@ def disconnect_request():
     
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
-    print('\n under "disconnect" decorator: test_disconnect() got called from test_disconnedt():', request.sid)
+    print('\n under "disconnect" decorator: test_disconnect() got called. request.sid:', request.sid)
     print('room_map: ', room_map)
 
 
