@@ -1018,7 +1018,10 @@ def disconnect_request():
     
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
     print('\n under "disconnect" decorator: test_disconnect() got called. request.sid:', request.sid)
+    print('if there is a client requesting disconnect it is for ', requesting_player)
     print('room_map: ', room_map)
 
 
