@@ -91,6 +91,7 @@ def pot_update(amt):
 
 
 def update_room_map(player, client_sid):
+    global room_map
     room_map[player] = client_sid
     
 def background_thread():
