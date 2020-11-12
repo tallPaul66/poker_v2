@@ -393,7 +393,8 @@ def deal_click():
     global has_bet_this_round
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print('\ndeal_click() got called! Current active players: ', players_active)
+    print('\ndeal_click() got called! coming from player:', requesting_player,
+          'and his request.sid is ', request.sid)
     
     # logic for making sure everyone bet in previous round before continuing
     has_bet_set = set(has_bet_this_round)
