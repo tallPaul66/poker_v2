@@ -11,7 +11,7 @@ from flask import Flask, render_template, session, request, \
     copy_current_request_context, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
-# import gevent
+import gevent
 import get_best_hand
 
 # Import games. Be sure to clear game stage in claim_pot(), add line in fold(), and in new_game()
@@ -105,6 +105,11 @@ def background_thread():
                       namespace='/test')
 
 print('what the fuck')
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ NEW SESSION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 @app.route('/', methods=['GET', 'POST'])
 def home():
     global players_active
