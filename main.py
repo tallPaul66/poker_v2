@@ -823,7 +823,7 @@ def start_new_game():
 
 @socketio.on('change_game', namespace='/test')
 def change_game(new_game):
-    print('change_game(new_game) got called on the server, argument passed; ', new_game['new_game'])
+    print('change_game(new_game) got called on the server, argument passed: "', new_game['new_game'], '"')
     emit('redirect_all_players', {'new_game': new_game['new_game']}, broadcast = True)
 ##########################################################################
 ### Betting Handlers
@@ -838,8 +838,8 @@ def receive_bet(message):
     global players_active
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print('from receive_bet(), players_active: ' , players_active, '; \nroom_map: ', room_map, 
-          '; \nplayer_map[requesting_player]: ', room_map[requesting_player])
+    #print('from receive_bet(), players_active: ' , players_active, '; \nroom_map: ', room_map, 
+    #      '; \nplayer_map[requesting_player]: ', room_map[requesting_player])
     
     # first let's make sure the player is allowed to bet, IOW, hasn't folded
     if requesting_player in players_active:
@@ -1000,9 +1000,11 @@ def connect_success():
     print('\nconnect decorator: connect_success() got called. Requesting player is ', requesting_player)
     # when a client connects, grab it's sid and update the player-sid
     # map using also requesting_player captured from http_ref
-    if len(room_map[requesting_player])==0:
+    if len(room_map[requesting_player])==0: # without this condition, reconnection gets screwed up
+                                            # if the connection is dropped randomly (i.e., not from
+                                            # selecting a new game), which constantly happens on the
+                                            # heroku server, but almost never happens locally.)
         update_room_map(player = requesting_player, client_sid = client_sid)
-    print('updated room_map is now; ', room_map)
     #global thread
     #with thread_lock:
     #   if thread is None:
@@ -1029,9 +1031,7 @@ def disconnect_request():
 def test_disconnect():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print('\n under "disconnect" decorator: test_disconnect() got called. request.sid:', request.sid)
-    print('if there is a client requesting disconnect it is ', requesting_player)
-    print('room_map: ', room_map)
+    print('\n "disconnect" decorator: ', requesting_player, ' is disconnecting. request.sid is ', request.sid)
 
 
 if __name__ == '__main__':
