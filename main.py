@@ -11,7 +11,7 @@ from flask import Flask, render_template, session, request, \
     copy_current_request_context, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
-import gevent
+#import gevent
 import get_best_hand
 
 # Import games. Be sure to clear game stage in claim_pot(), add line in fold(), and in new_game()
@@ -1000,7 +1000,7 @@ def connect_success():
     print('\nconnect decorator: connect_success() got called. Requesting player is ', requesting_player)
     # when a client connects, grab it's sid and update the player-sid
     # map using also requesting_player captured from http_ref
-    if len(room_map[requesting_player]==0):
+    if len(room_map[requesting_player])==0:
         update_room_map(player = requesting_player, client_sid = client_sid)
     print('updated room_map is now; ', room_map)
     #global thread
