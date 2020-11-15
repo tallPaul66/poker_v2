@@ -1000,7 +1000,8 @@ def connect_success():
     print('\nconnect decorator: connect_success() got called. Requesting player is ', requesting_player)
     # when a client connects, grab it's sid and update the player-sid
     # map using also requesting_player captured from http_ref
-    update_room_map(player = requesting_player, client_sid = client_sid)
+    if len(room_map[requesting_player]==0):
+        update_room_map(player = requesting_player, client_sid = client_sid)
     print('updated room_map is now; ', room_map)
     #global thread
     #with thread_lock:
