@@ -398,7 +398,7 @@ def deal_click():
     global has_bet_this_round
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print('\ndeal_click() got called! coming from player:', requesting_player,
+    print('\ndeal_click() got called! coming from ', requesting_player,
           'and his request.sid is ', request.sid)
     
     # logic for making sure everyone bet in previous round before continuing
@@ -421,7 +421,7 @@ def deal_click():
             active_player_round_bets = {}
             for p in players_active:
                 active_player_round_bets[p] = round_bets[p]
-            print('here are the current active player bets:', active_player_round_bets)
+            #print('here are the current active player bets:', active_player_round_bets)
             if list(active_player_round_bets.values()) != [max(active_player_round_bets.values())] *len(players_active):                        
                 players_no_call = []
                 for p in active_player_round_bets.keys():
@@ -480,13 +480,7 @@ def deal_click():
         pot_claimed = False
     if 'monty' in http_ref:
         print(f'Game is Monty, boys. stage = {monty.stage}')
-        if len(draw.stage) == 0:
-            # this is for the case when all players in monty drop. If that's the case
-            # you'll see at the end of the deal_click() function we'll send a message.
-            drops = 0
-            for player in monty.drop_dict.keys():
-                if monty.drop_dict[player] == 'drop':
-                    drops += 1
+        if len(monty.stage) == 0:            
             # the three lines below prevent players from accidentally starting a new game
             # without someone's claiming the previous pot. 
             
@@ -502,6 +496,7 @@ def deal_click():
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the msg area
             # pot_update(-pot_amount) # if beginning of game, clear pot amount. Nope--removes antes also
+            
         hands = monty.deal(players_active)
         pg1_tmp = monty.get_display(hands, 'player1')              
         pg2_tmp = monty.get_display(hands, 'player2')
@@ -607,11 +602,8 @@ def deal_click():
         cards_player4_pg[key] = pg4_tmp[key]        
         cards_player5_pg[key] = pg5_tmp[key]        
         cards_player6_pg[key] = pg6_tmp[key]
-        
-    # for draw and spit in the ocean, each player sees his cards in the middle,
-    # to faciliate the draw UI approach. I'm also changing the cards in his
-    # normal position on the table to blanks so it's not confusing.
    
+    # Send players their cards:
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
     emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
@@ -635,12 +627,26 @@ def deal_click():
                      room=room_map[player]) # update active players' call amts
             return
     emit('clear_bet_log', broadcast=True)
-    if 'monty' in http_ref:        
-        # If everybody, drops, emit a message so they know to ante again, and dealer knows to deal again.        
-        if len(players_active) == drops:
-             emit('all_dropped_msg', broadcast=True)
-             # clear the drop_dict
-             monty.drop_dict.clear()
+    if 'monty' in http_ref:  
+        # If everybody, drops, emit a message so they know to ante again, and dealer knows to deal again.
+        if len(monty.stage) == 0:
+            # this is for the case when all players in monty drop. If that's the case
+            # you'll see at the end of the deal_click() function we'll send a message.
+            drops = 0
+            monty_drop_real_names = {}
+            for player in monty.drop_dict.keys():
+                monty_drop_real_names[player_name_map[player]] = monty.drop_dict[player]
+                if monty.drop_dict[player] == 'drop':
+                    drops += 1
+            emit('who_dropped', {'statuses': monty_drop_real_names}, broadcast=True)
+            if len(players_active) == drops:
+                emit('all_dropped_msg', broadcast=True)
+                # clear the drop_dict
+                monty.drop_dict.clear()
+            
+        else:
+            emit('clear_hold_status_log', broadcast=True) # clears out the hold status message area
+            
 
 ##########################################################################
 ### FOLD and REVEAL

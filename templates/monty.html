@@ -107,6 +107,11 @@
                 $('#bet_log').append('<br>' + $('<div/>').text("Ante again, chicken shits!").html());
                 console.log('all_dropped_msg received a msg from server.')
             });
+            
+            // special function just for Monty. Clear the hold status log
+            socket.on('clear_hold_status_log', function(msg, cb) {
+                $('#hold_status').text($('<div/>').text('').html()); // clears out the hold status message area
+            });            
 
             // print to browser the player's stash. This also loads a chip stash image,
             // the file depending on how large each player's stash is.
@@ -316,7 +321,7 @@
                 players_cards = msg.cards
                 players = Object.keys(players_cards)
                 console.log('keys are', players)
-                console.log("player1's cards", players_cards.player1)
+                $('#hold_status').text($('<div/>').text('').html()); // clears out the hold status message area
                 
                  document.getElementById('monty_card1').src = players_cards.monty[0]
                  document.getElementById('monty_card2').src = players_cards.monty[1]
@@ -441,11 +446,23 @@
                 return false;
             });
             $('form#drop_cards').submit(function(event) {
-                socket.emit('monty_drop');                 
+                socket.emit('monty_drop'); 
+                $('#hold_status').prepend('<br>' + $('<div/>').text("Status: DROP").html());                  
                 return false;
-            }); 
+            });
+            
+            socket.on('who_dropped', function(msg, cb) {
+                players = Object.keys(msg.statuses)
+                for(player in msg.statuses){
+                    if(msg.statuses[player] != "drop"){
+                        $('#log').append('<br>' + $('<div/>').text(player + " stays").html());
+                    }                    
+                }                               
+            });
+            
             $('form#keep_cards').submit(function(event) {
-                socket.emit('monty_stay');                 
+                socket.emit('monty_stay'); 
+                $('#hold_status').prepend('<br>' + $('<div/>').text("Status: STAY").html());                
                 return false;
             }); 
             // Interval function that tests message latency by sending a "ping"
@@ -692,6 +709,7 @@
                   <input class="submit_btn2" type="submit" name="btn" value="STAY">
                </form>
              </div>
+             <div  id="hold_status"></div>
           </td>
 		  <td><img src="" id="player3_card1" width=80 height=122></td>
 		  <td><img src="" id="player3_card2" width=80 height=122></td>
