@@ -16,83 +16,81 @@
         const url_params = new URLSearchParams(window.location.search);
         const player_name = url_params.get('player');
 
-        // this function dynamically places the hold and stay buttons under the set of cards
+        // this function dynamically places the radio buttons under the set of cards
         // corresponding to the player's name in the query string of the url.
-        makeStatusButtons = function(){
+        makeRadioButtons = function(){
     
-            var stay_btn = document.createElement('input');
-            stay_btn.setAttribute("type", "submit");
-            stay_btn.setAttribute("name", "stay");
-            stay_btn.setAttribute("value", "STAY");
-            stay_btn.setAttribute("id","keep_cards");
-            stay_btn.setAttribute("class","submit_btn2");
-            stay_btn.setAttribute("onclick","player_stays()");
+            var button1 = document.createElement('input');
+            button1a.setAttribute("type", "radio");
+            button1a.setAttribute("name", "card1");
+            button1a.setAttribute("value", "Discard");
+            button1a.setAttribute("id","card1Hld");
+            button1a.setAttribute("checked","true");
   
-            var drop_btn = document.createElement('input')
-            drop_btn.setAttribute("type", "submit");
-            drop_btn.setAttribute("name", "drop");
-            drop_btn.setAttribute("value", "DROP");
-            drop_btn.setAttribute("id","drop_cards");
-            drop_btn.setAttribute("form","whatever");
-            drop_btn.setAttribute("class","submit_btn2");
-            drop_btn.setAttribute("onclick","player_drops()");
-         
+            var button2 = document.createElement('input')
+            button1b.setAttribute("type", "radio");
+            button1b.setAttribute("name", "card1");
+            button1b.setAttribute("value", "Hold");
+            button1b.setAttribute("id","card1Dis");
+              
+            
+ 
+            var label1 = document.createElement("label");
+            label1.appendChild(button1);
+            label1.innerHTML += "&nbsp;Hold<br>";
+  
+            var label2 = document.createElement("label");
+            label2.appendChild(button2);
+            label2.innerHTML += "&nbsp;Discard";
+  
+            
 
             if(player_name == 'player1'){ 
-                var container_stay_btn = document.getElementById('container_plyr1_stay');
-                var container_drop_btn = document.getElementById('container_plyr1_drop');
+                var container_card1 = document.getElementById('container_plyr1_card1');
+                var container_card2 = document.getElementById('container_plyr1_card2');
+                var container_card3 = document.getElementById('container_plyr1_card3');
+                var container_card4 = document.getElementById('container_plyr1_card4');
+                var container_card5 = document.getElementById('container_plyr1_card5');
             } else if(player_name == 'player2'){
-                var container_stay_btn = document.getElementById('container_plyr2_stay');
-                var container_drop_btn = document.getElementById('container_plyr2_drop');
+                var container_card1 = document.getElementById('container_plyr2_card1');
+                var container_card2 = document.getElementById('container_plyr2_card2');
+                var container_card3 = document.getElementById('container_plyr2_card3');
+                var container_card4 = document.getElementById('container_plyr2_card4');
+                var container_card5 = document.getElementById('container_plyr2_card5');
             } else if(player_name == 'player3'){
-                var container_stay_btn = document.getElementById('container_plyr3_stay');
-                var container_drop_btn = document.getElementById('container_plyr3_drop');
+                var container_card1 = document.getElementById('container_plyr3_card1');
+                var container_card2 = document.getElementById('container_plyr3_card2');
+                var container_card3 = document.getElementById('container_plyr3_card3');
+                var container_card4 = document.getElementById('container_plyr3_card4');
+                var container_card5 = document.getElementById('container_plyr3_card5');
             } else if(player_name == 'player4'){
-                var container_stay_btn = document.getElementById('container_plyr4_stay');
-                var container_drop_btn = document.getElementById('container_plyr4_drop');
+                var container_card1 = document.getElementById('container_plyr4_card1');
+                var container_card2 = document.getElementById('container_plyr4_card2');
+                var container_card3 = document.getElementById('container_plyr4_card3');
+                var container_card4 = document.getElementById('container_plyr4_card4');
+                var container_card5 = document.getElementById('container_plyr4_card5');
             } else if(player_name == 'player5'){
-                var container_stay_btn = document.getElementById('container_plyr5_stay');
-                var container_drop_btn = document.getElementById('container_plyr5_drop');
-            }            
+                var container_card1 = document.getElementById('container_plyr5_card1');
+                var container_card2 = document.getElementById('container_plyr5_card2');
+                var container_card3 = document.getElementById('container_plyr5_card3');
+                var container_card4 = document.getElementById('container_plyr5_card4');
+                var container_card5 = document.getElementById('container_plyr5_card5');
+            }
+            var container_draw_btn = document.getElementById('container_draw_btn');
 
-            container_stay_btn.appendChild(stay_btn);
-            container_drop_btn.appendChild(drop_btn );            
+            container_card1.appendChild(label1a);
+            container_card1.appendChild(label1b);
+            container_card2.appendChild(label2a);
+            container_card2.appendChild(label2b);
+            container_card3.appendChild(label3a);
+            container_card3.appendChild(label3b);
+            container_card4.appendChild(label4a);
+            container_card4.appendChild(label4b);
+            container_card5.appendChild(label5a);
+            container_card5.appendChild(label5b);
             
             return false
         }
-        
-        player_stays = function(){
-            //namespace = '/test';
-            //var socket = io(namespace);
-            if(player_name == 'player1'){
-                $('#plyr1_hold_status').text($('<div/>').text("STAY").html());
-            } else if (player_name == 'player2'){
-                $('#plyr2_hold_status').text($('<div/>').text("STAY").html());
-            } else if (player_name == 'player3'){
-                $('#plyr3_hold_status').text($('<div/>').text("STAY").html());
-            } else if (player_name == 'player4'){
-                $('#plyr4_hold_status').text($('<div/>').text("STAY").html());
-            } else if (player_name == 'player5'){
-                $('#plyr5_hold_status').text($('<div/>').text("STAY").html());
-            }
-            
-            socket.emit('monty_stay');
-        }
-        player_drops = function(){
-            if(player_name == 'player1'){
-                $('#plyr1_hold_status').text($('<div/>').text("DROP").html());
-            } else if (player_name == 'player2'){
-                $('#plyr2_hold_status').text($('<div/>').text("DROP").html());
-            } else if (player_name == 'player3'){
-                $('#plyr3_hold_status').text($('<div/>').text("DROP").html());
-            } else if (player_name == 'player4'){
-                $('#plyr4_hold_status').text($('<div/>').text("DROP").html());
-            } else if (player_name == 'player5'){
-                $('#plyr5_hold_status').text($('<div/>').text("DROP").html());
-            }
-            socket.emit('monty_drop');
-        }
-        
         // [Paul: trying this to fix constant disconnect error, from someone on stackexchange;
         // doesn't seem to help any]
         //    socket = io.connect(location.origin, {
@@ -401,11 +399,7 @@
                 players_cards = msg.cards
                 players = Object.keys(players_cards)
                 console.log('keys are', players)
-                $('#plyr1_hold_status').text($('<div/>').text('').html()); // clears out the hold status message area
-                $('#plyr2_hold_status').text($('<div/>').text('').html()); 
-                $('#plyr3_hold_status').text($('<div/>').text('').html()); 
-                $('#plyr4_hold_status').text($('<div/>').text('').html()); 
-                $('#plyr5_hold_status').text($('<div/>').text('').html()); 
+                $('#hold_status').text($('<div/>').text('').html()); // clears out the hold status message area
                 
                  document.getElementById('monty_card1').src = players_cards.monty[0]
                  document.getElementById('monty_card2').src = players_cards.monty[1]
@@ -528,7 +522,12 @@
             $('form#new_game').submit(function(event) {
                 socket.emit('new_game'); 
                 return false;
-            });           
+            });
+            $('form#drop_cards').submit(function(event) {
+                socket.emit('monty_drop'); 
+                $('#hold_status').prepend('<br>' + $('<div/>').text("Status: DROP").html());                  
+                return false;
+            });
             
             socket.on('who_dropped', function(msg, cb) {
                 players = Object.keys(msg.statuses)
@@ -537,8 +536,13 @@
                         $('#log').append('<br>' + $('<div/>').text(player + " stays").html());
                     }                    
                 }                               
-            });            
+            });
             
+            $('form#keep_cards').submit(function(event) {
+                socket.emit('monty_stay'); 
+                $('#hold_status').prepend('<br>' + $('<div/>').text("Status: STAY").html());                
+                return false;
+            }); 
             // Interval function that tests message latency by sending a "ping"
             // message. The server then responds with a "pong" message and the
             // round trip time is measured. [Paul: not sure if this helps to not
@@ -636,7 +640,7 @@
         }
     </script>
   </head>
-   <body onload="makeStatusButtons()">
+   <body>
      
     <!--#################################################################################-->
     <!--                                      DASHBOARD                                  -->
@@ -696,15 +700,9 @@
               <h3 style="color:#FFDF00;">{{names["player1"]}}</h3>
               <h1><div id="player1_stash"></div></h1>
               <img src="" id="player1_stash_img" width=80 height=80>
-              <br>
-              <div  id="plyr1_hold_status"></div>
           </th>
           <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
-		  <td valign=top>
-    		  <img src="" id="player1_card2" width=80 height=122>
-    		  <div id="container_plyr1_stay">
-    		  <div id="container_plyr1_drop">    		  
-		  </td>
+		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card3" width=80 height=122></td>
 		  <td></td><td></td><td></td>
           <td valign=top><img src="" id="monty_card1" width=80 height=122></td>
@@ -746,31 +744,19 @@
               <h1><div id="player5_stash"></div></h1>
               <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
               <img src="" id="player5_stash_img" width=80 height=80>
-              <br>
-              <div  id="plyr5_hold_status"></div>
           </th>
           <td><img src="" id="player5_card1" width=80 height=122></td>
-		  <td>
-    		  <img src="" id="player5_card2" width=80 height=122>
-    		  <div id="container_plyr5_stay">
-    		  <div id="container_plyr5_drop">
-		  </td>
+		  <td><img src="" id="player5_card2" width=80 height=122></td>
 		  <td><img src="" id="player5_card3" width=80 height=122></td>
 		  <td></td><td></td><td></td><td></td>
           <td></td><td></td><td></td>	  
           <td><img src="" id="player2_card1" width=80 height=122></td>
-		  <td>
-    		  <img src="" id="player2_card2" width=80 height=122>
-    		  <div id="container_plyr2_stay">
-    		  <div id="container_plyr2_drop">
-		  </td>
+		  <td><img src="" id="player2_card2" width=80 height=122></td>
 		  <td><img src="" id="player2_card3" width=80 height=122></td>
 		  <th valign=middle colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
               <h1><div id="player2_stash"></div></h1>
               <img src="" id="player2_stash_img" width=80 height=80>
-              <br>
-              <div  id="plyr2_hold_status"></div>
           </th>
         </tr>
         <tr>
@@ -787,33 +773,30 @@
               <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
               <h1><div id="player4_stash"></div></h1>
               <img src="" id="player4_stash_img" width=80 height=80>
-              <br>
-              <div  id="plyr4_hold_status"></div>
           </th>          
           <td><img src="" id="player4_card1" width=80 height=122></td>
-		  <td>
-    		  <img src="" id="player4_card2" width=80 height=122>
-    		  <div id="container_plyr4_stay">
-    		  <div id="container_plyr4_drop">
-		  </td>
+		  <td><img src="" id="player4_card2" width=80 height=122></td>
 		  <td><img src="" id="player4_card3" width=80 height=122></td>
 		  <td valign=bottom align=middle colspan="3">
+		     <div style="display:flex;  float:center; flex-direction: row; justify-content: center; align-items: center;"> 
+		       <form id="drop_cards" class="form" method="POST" action='#'>
+                  <input class="submit_btn2" type="submit" name="btn" value="DROP">
+               </form>
+               &nbsp&nbsp
+               <form id="keep_cards" class="form" method="POST" action='#'>
+                  <input class="submit_btn2" type="submit" name="btn" value="STAY">
+               </form>
+             </div>
              <div  id="hold_status"></div>
           </td>
 		  <td><img src="" id="player3_card1" width=80 height=122></td>
-		  <td>
-    		  <img src="" id="player3_card2" width=80 height=122>
-    		  <div id="container_plyr3_stay">
-    		  <div id="container_plyr3_drop">
-		  </td>
+		  <td><img src="" id="player3_card2" width=80 height=122></td>
 		  <td><img src="" id="player3_card3" width=80 height=122></td>
 		  <th valign=middle colspan = "2"> 
               <br><br>             
               <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
               <h1><div id="player3_stash"></div></h1>
               <img src="" id="player3_stash_img" width=80 height=80>
-              <br>
-              <div  id="plyr3_hold_status"></div>
           </th>
           <td></td><td></td>
         </tr>

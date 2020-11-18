@@ -349,10 +349,9 @@ def reveal_monty():
 
 @socketio.on('monty_drop', namespace='/test')
 def monty_drop():
-    print('\nfrom monty_drop() fn:')
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'{requesting_player} wants to drop.')
+    print(f'\nfrom monty_drop(): {requesting_player} wants to drop.')
     monty.drop_dict[requesting_player] = 'drop'
     monty_fold_hand = [monty.card_back] * 3
     emit('monty_drop', {'cards': monty_fold_hand}, room=room_map[requesting_player])
@@ -360,10 +359,9 @@ def monty_drop():
 @socketio.on('monty_stay', namespace='/test')
 def monty_stay():
     global hands
-    print('\nfrom monty_stay() fn:')
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'{requesting_player} wants to stay.')
+    print(f'\nfrom monty_stay(): {requesting_player} wants to stay.')
     monty.drop_dict[requesting_player] = ''
     monty_keep_hand = hands[requesting_player]
     emit('monty_drop', {'cards': monty_keep_hand}, room=room_map[requesting_player])
@@ -414,14 +412,12 @@ def deal_click():
         if 'monty' in http_ref: # no call validation
             return 'continue_deal'
         if 'holdem' in http_ref and len(holdem.stage) == 0: # no call validation bec of blinds
-            print('from validate_call_equity, holdem.stage = 0, pot_claimed = ', pot_claimed)
             return 'continue_deal'   
         if has_bet_set == players_active_set:
             # create a new dict of bets of just the active players
             active_player_round_bets = {}
             for p in players_active:
                 active_player_round_bets[p] = round_bets[p]
-            #print('here are the current active player bets:', active_player_round_bets)
             if list(active_player_round_bets.values()) != [max(active_player_round_bets.values())] *len(players_active):                        
                 players_no_call = []
                 for p in active_player_round_bets.keys():
@@ -482,10 +478,9 @@ def deal_click():
         print(f'Game is Monty, boys. stage = {monty.stage}')
         if len(monty.stage) == 0:            
             # the three lines below prevent players from accidentally starting a new game
-            # without someone's claiming the previous pot. 
-            
-            # but for Monty, this won't work. Here we just enforce taking of the pot
-            # when either new game is clicked or when trying to link to another game,
+            # without someone's claiming the previous pot. But for Monty, this won't work. 
+            # Here we just enforce taking of the pot before either 
+            # new game is clicked or trying to link to another game,
             # but do not enforce pot claiming before deal() is clicked even if len(stage)==0
             # since it always is for Monty.
             
@@ -495,7 +490,6 @@ def deal_click():
             pot_claimed = False
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the msg area
-            # pot_update(-pot_amount) # if beginning of game, clear pot amount. Nope--removes antes also
             
         hands = monty.deal(players_active)
         pg1_tmp = monty.get_display(hands, 'player1')              
