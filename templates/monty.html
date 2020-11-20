@@ -66,6 +66,24 @@
             //var socket = io(namespace);
             if(player_name == 'player1'){
                 $('#plyr1_hold_status').text($('<div/>').text("STAY").html());
+                var tmp = document.getElementById('container_plyr1_stay') 
+                //var tmp_keys = tmp.getAttribute(tmp);
+                //console.log('container attributes', tmp.attributes) ;
+                //console.log('tmp id', tmp.getAttribute("id")) ;
+                for (var att, i = 0, atts = tmp.attributes, n = atts.length; i < n; i++){
+                    att = atts[i];
+                    console.log('atts[i]', att)
+                }
+                //console.log('tmp NamedNodeMap', tmp.getAttribute("NamedNodeMap"));
+                //console.log('tmp ownerElement', tmp.getAttribute("ownerElement"));
+                //console.log('tmp length', tmp.getAttribute("length"));
+                //console.log('tmp Child, tmp.getAttribute("Child"));
+                //console.log('tmp firstElementChild', tmp.getAttribute("firstElementChild")) ;
+                //console.log('tmp name', tmp.getAttribute("name"));
+                //console.log('tmp value', tmp.getAttribute("value"));
+                //console.log('tmp lastChild', tmp.getAttribute("lastChild"));
+                
+                //console.log('container properties', tmp.id.attributes);
             } else if (player_name == 'player2'){
                 $('#plyr2_hold_status').text($('<div/>').text("STAY").html());
             } else if (player_name == 'player3'){
