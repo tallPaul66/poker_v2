@@ -639,7 +639,7 @@ def deal_click():
                 monty.drop_dict.clear()
             
         else:
-            emit('clear_hold_status_log', broadcast=True) # clears out the hold status message area
+            emit('clear_hold_status', broadcast=True) # clears out the hold status message area
             
 
 ##########################################################################

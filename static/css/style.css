@@ -100,11 +100,22 @@ h3 {
 .hold_drop_btn {
  -webkit-appearance: none; /* without this, doesn't work right*/
   height: 2em; 
-  width: 3.7em;  
+  width: 3.9em;  
   background: #778899;
   color: white;
   border-style: outset;
   border-color: #778899;
+  font: bold 18px Didot;
+}
+
+.hold_drop_btn_selected {
+ -webkit-appearance: none; /* without this, doesn't work right*/
+  height: 2em; 
+  width: 3.9em;  
+  background: #006400;
+  color: white;
+  border-style: outset;
+  border-color: #006400;
   font: bold 18px Didot;
 }
 
