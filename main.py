@@ -22,6 +22,7 @@ import omaha
 import monty 
 import spit 
 import holdem
+import cross
     
 
 #~~~~~~~~~~~~~~~~~~~ Config Stuff ~~~~~~~~~~~~~~~~~
@@ -318,6 +319,20 @@ def redirect_to_omaha():
     requesting_player = http_ref[http_ref.find('player=')+7:]
     return redirect(url_for('omaha_play', player=requesting_player))
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Fiery Cross     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@app.route('/cross', methods = ['GET', 'POST'])
+def cross_play():
+    # makes sure that the game starts from scratch if it was 
+    # left in a state stage != []
+    cross.stage.clear()
+    return render_template('cross.html', names = player_name_map)
+
+@app.route('/link_to_cross')
+def redirect_to_cross():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    return redirect(url_for('cross_play', player=requesting_player))
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     7-card stud     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/seven_card_stud', methods = ['GET', 'POST'])
 def seven_card_play():
@@ -588,6 +603,22 @@ def deal_click():
         pg4_tmp = omaha.get_display(hands, 'player4')
         pg5_tmp = omaha.get_display(hands, 'player5')
         pg6_tmp = omaha.get_display(hands, 'player6')
+    if 'cross' in http_ref:        
+        print(f'Game is Fiery cross, boys. stage = {cross.stage}; max_bet is {max_bet}')
+        if len(cross.stage) == 0: # re-activate all tonight's players
+            if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
+                emit('money_left_alert', {}, room=room_map[requesting_player]) 
+                return None
+            pot_claimed = False
+            players_active = players_tonight.copy()
+            emit('clear_log',{}, broadcast = True)  # clear the msg area  
+        hands = cross.deal(players_active)
+        pg1_tmp = cross.get_display(hands, 'player1')
+        pg2_tmp = cross.get_display(hands, 'player2')
+        pg3_tmp = cross.get_display(hands, 'player3')
+        pg4_tmp = cross.get_display(hands, 'player4')
+        pg5_tmp = cross.get_display(hands, 'player5')
+        pg6_tmp = cross.get_display(hands, 'player6')
         
     for key in pg1_tmp.keys():
         cards_player1_pg[key] = pg1_tmp[key]        
@@ -659,6 +690,7 @@ def fold():
     draw.hands[requesting_player] = [draw.card_back] * hand_len
     spit.hands[requesting_player] = [spit.card_back] * hand_len
     holdem.hands[requesting_player] = [holdem.card_back] * hand_len
+    cross.hands[requesting_player] = [cross.card_back] * hand_len
     
     players_active.remove(requesting_player) # should add try/catch here in case player not in list
     if requesting_player in has_bet_this_round:
@@ -793,6 +825,8 @@ def start_new_game():
         seven_card_stud.new_game(players = players_tonight)
     elif 'omaha' in http_ref:
         omaha.new_game(players = players_tonight)
+    elif 'cross' in http_ref:
+        cross.new_game(players = players_tonight)
     elif 'monty' in http_ref:
         monty.new_game(players = players_tonight)
     elif 'spit' in http_ref:
@@ -930,6 +964,7 @@ def claim_pot(default_winner = None):
     spit.stage.clear()
     monty.stage.clear()
     holdem.stage.clear()
+    cross.stage.clear()
         
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     pot_tmp = pot_amount

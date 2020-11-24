@@ -435,6 +435,8 @@
                     window.location.href = "{{ url_for('redirect_to_holdem') }}";
                 } else if (msg.new_game=='omaha'){
                     window.location.href = "{{ url_for('redirect_to_omaha') }}";
+                } else if (msg.new_game=='cross'){
+                    window.location.href = "{{ url_for('redirect_to_cross') }}";
                 }
             });
             /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~            
@@ -553,6 +555,11 @@
                      socket.emit('change_game', {new_game:'omaha'})                     
                  }
             } 
+            else if (game=='cross'){
+                 if(window.confirm("Take all players to Fiery Cross?")){
+                     socket.emit('change_game', {new_game:'cross'})                     
+                 }
+            } 
             else if (game=='monty'){
                  if(window.confirm("Take all players to 3-Card Monty?")){
                      socket.emit('change_game', {new_game:'monty'})                     
@@ -617,6 +624,7 @@
     		&nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_monty') }}" onclick="check_pot('monty'); return false;" style="color:red; font-size:20px;">Monty</a> 
     		&nbsp&nbsp<a href="{{ url_for('redirect_to_seven_card_stud') }}" onclick="check_pot('scs'); return false;" style="color:red; font-size:20px;">7-Card Stud</a> 
     		&nbsp&nbsp<a href="{{ url_for('redirect_to_holdem') }}" onclick="check_pot('holdem'); return false;" style="color:red; font-size:20px;">Hold Em</a>
+    		&nbsp&nbsp<a href="{{ url_for('redirect_to_cross') }}" onclick="check_pot('cross'); return false;" style="color:red; font-size:20px;">Fiery Cross</a>
         </div>    	 
 	 </fieldset>
 	 <br>
