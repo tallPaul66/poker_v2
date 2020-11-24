@@ -71,8 +71,8 @@ def get_display(hands_tuple, whose_pg):
     for key in hands_list.keys():
         hands_list[key] = list(hands_tuple[key])
     
-    # convert card pics to card back pics if 
-    # player is not 'whose_pg'
+    # convert card pics to card-back pics for players who aren't  
+    # 'whose_pg'
     for key in hands_list.keys():
         cards = hands_list[key]
         if key not in ['comm', whose_pg]:
@@ -81,5 +81,4 @@ def get_display(hands_tuple, whose_pg):
     num_comm_cards = len(hands_list['comm'])
     if num_comm_cards < 5:
         display_hands['comm'].extend([card_back]*(5-num_comm_cards))
-    # convert fucking lists back to fucking tuples...
     return display_hands
