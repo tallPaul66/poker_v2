@@ -366,7 +366,6 @@ def reveal_monty():
 def monty_drop():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'\nfrom monty_drop(): {requesting_player} wants to drop.')
     monty.drop_dict[requesting_player] = 'drop'
     monty_fold_hand = [monty.card_back] * 3
     emit('monty_drop', {'cards': monty_fold_hand}, room=room_map[requesting_player])
@@ -376,7 +375,6 @@ def monty_stay():
     global hands
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'\nfrom monty_stay(): {requesting_player} wants to stay.')
     monty.drop_dict[requesting_player] = ''
     monty_keep_hand = hands[requesting_player]
     emit('monty_drop', {'cards': monty_keep_hand}, room=room_map[requesting_player])
