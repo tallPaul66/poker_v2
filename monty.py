@@ -26,7 +26,10 @@ as starting over, except for the money in the pot, but that too is handled
 by the players in the betting app.
 """
 
-
+monty_match = 0
+monty_winner = ''
+match_amt = 0
+players_staying = []
 hands = {}
 drop_dict = {}
 card_back = new_deck.card_back
@@ -41,6 +44,14 @@ reveal_cards = False
 def new_game(players):
     global deck 
     global reveal_cards
+    global monty_match
+    global monty_winner
+    global match_amt
+    global players_staying
+    monty_match = 0
+    monty_winner = ''
+    match_amt = 0
+    players_staying.clear()
     # generate a new, shuffled deck    
     deck = new_deck.make_deck()
     
@@ -68,40 +79,28 @@ def deal(players):
                 hands[key].append(deck.pop())            
         for i in range(3): # get monty's cards
             hands['monty'].append(deck.pop())
-        hands_tuple = hands.copy()
-        for key in hands_tuple.keys():
-            hands_tuple[key] = tuple(hands[key])
         stage.append(1)
-        return hands_tuple
+        return hands
     else:
         reveal_cards = True
         stage.clear()
         return hands
+  
 
-        
-def get_display(hands_tuple, whose_pg):
+def get_display(hands, whose_pg):
     display_hands = {}
-    # convert fucking tuples back to fucking lists...
-    hands_list = hands_tuple.copy()
-    for key in hands_list.keys():
-        hands_list[key] = list(hands_tuple[key])
-    # convert card pics to card back pic if 
-    # player is not 'whose_pg'
-    for key in hands_list.keys():
-        cards = hands_list[key]
+    for key in hands.keys():
+        cards = hands[key]
         if key != whose_pg:
             cards = [card_back] * 3
         display_hands[key] = cards
-        if whose_pg in list(hands_list.keys()) and drop_dict[whose_pg] != 'hold': # display the player's own hand
-            display_hands[whose_pg] = hands_list[whose_pg]
+        if whose_pg in hands.keys() and drop_dict[whose_pg] != 'hold': # display the player's own hand
+            display_hands[whose_pg] = hands[whose_pg]
     if reveal_cards == True:
         for key in drop_dict.keys():
             if drop_dict[key] != 'drop':
-                display_hands[key] = hands_list[key]
+                display_hands[key] = hands[key]
             else:
                 display_hands[key] = [card_back] *3
-    return display_hands
-    
-
-    
+    return display_hands 
     

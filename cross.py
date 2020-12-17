@@ -40,7 +40,6 @@ def deal(players):
         for key in players:
             for i in range(4):
                 hands[key].append(deck.pop())
-        # sending dict to html requires values be tuples, not lists...
         hands['comm'].append(deck.pop())
         stage.append('one')
         return hands

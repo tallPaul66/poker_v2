@@ -407,6 +407,8 @@ def deal_click():
     global round_bets
     global pot_claimed
     global has_bet_this_round
+    global pot_amount
+   # global monty_winner
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     print('\ndeal_click() got called! coming from ', requesting_player,
@@ -422,8 +424,31 @@ def deal_click():
     # Hold 'em is also more complicated, so needs a clause to omit first round in
     # this validation.
     def enforce_call_equity():
-        if 'monty' in http_ref: # no call validation
-            return 'continue_deal'
+        if 'monty' in http_ref: # no call validation            
+            if monty.monty_match == 1:
+                if len(monty.players_staying) == 1: # just one person stayed in
+                    lost_to_monty = monty.players_staying[0]
+                    if round_bets[lost_to_monty] != monty.match_amt: # problem: loser didn't match pot
+                        emit('bets_needed_alert', {'negligent_bettors': [player_name_map[lost_to_monty]], 
+                                                   'fault_type': 'no_match'}, 
+                                 room=room_map[requesting_player])
+                        return 'no_deal'
+                    else:
+                        return 'continue_deal'
+                else:
+                    yet_to_match = []
+                    for p in monty.players_staying:                       
+                        if p != monty.monty_winner and round_bets[p] != monty.match_amt: # problem: loser didn't match pot
+                            yet_to_match.append(player_name_map[p])
+                    if len(yet_to_match) > 0:
+                         emit('bets_needed_alert', {'negligent_bettors': yet_to_match, 
+                                 'fault_type': 'no_match'}, room=room_map[requesting_player])
+                         return 'no_deal'
+                    else:
+                         return 'continue_deal'
+            
+            if len(monty.stage) > 0 and monty.monty_match == 0:
+                return 'continue_deal'
         if 'holdem' in http_ref and len(holdem.stage) == 0: # no call validation bec of blinds
             return 'continue_deal'   
         if has_bet_set == players_active_set:
@@ -456,8 +481,8 @@ def deal_click():
                 emit('bets_needed_alert', {'negligent_bettors': players_no_bet, 'fault_type': 'no_bet'}, 
                      room=room_map[requesting_player])
                 return 'no_deal'
-    vce = enforce_call_equity()
-    if vce == 'no_deal':
+    ece = enforce_call_equity()
+    if ece == 'no_deal':
         return
 
     # if all is well so far, reset everybody's round bet value to 0
@@ -661,11 +686,17 @@ def deal_click():
                 monty_drop_real_names[player_name_map[player]] = monty.drop_dict[player]
                 if monty.drop_dict[player] == 'drop':
                     drops += 1
+                else:
+                    if (player in monty.players_staying) == False:
+                        monty.players_staying.append(player)
             emit('who_dropped', {'statuses': monty_drop_real_names}, broadcast=True)
             if len(players_active) == drops:
                 emit('all_dropped_msg', broadcast=True)
                 # clear the drop_dict
                 monty.drop_dict.clear()
+            else:
+                monty.monty_match = 1
+                monty.match_amt = pot_amount
             
         else:
             emit('clear_hold_status', broadcast=True) # clears out the hold status message area
@@ -739,48 +770,27 @@ def reveal_cards():
     global reveal_players_monty
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'\nreveal_cards() got called...')
-    
-    # REVEAL in Monty means something different from in the other games:
-    # here it is the dealer's right to reveal the cards of everyone 
-    # who holds, to everyone playing.
-    if 'monty' in http_ref:
-        print('"REVEAL" for all holders in Monty has been invoked')
-        print(f'contents of monty.hold_dict: {monty.hold_dict}')
-        for player in monty.hold_dict.keys(): 
-            print(f'value for monty.hold_dict[{player}] is {monty.hold_dict[player]}')
-            if monty.hold_dict[player] == 'hold':
-                cards_player1_pg[player] = hands[player]
-                cards_player2_pg[player] = hands[player]
-                cards_player3_pg[player] = hands[player]
-                cards_player4_pg[player] = hands[player]
-                cards_player5_pg[player] = hands[player]
-                cards_player6_pg[player] = hands[player]
-            else:
-                print(f'{player} does not want to hold')  
-        print(f'from reveal_cards(), reveal_players_monty = {reveal_players_monty}')
-                    
-    else:
-        print(f'...we thus conclude that {requesting_player} ({player_name_map[requesting_player]})' +
-              ' wants to reveal their cards.')
-        cards_player1_pg[requesting_player] = hands[requesting_player]        
-        cards_player2_pg[requesting_player] = hands[requesting_player]
-        cards_player3_pg[requesting_player] = hands[requesting_player]
-        cards_player4_pg[requesting_player] = hands[requesting_player]
-        cards_player5_pg[requesting_player] = hands[requesting_player]
-        cards_player6_pg[requesting_player] = hands[requesting_player]
-        if requesting_player == 'player1':
-            cards_player1_pg['player1'] = hands['player1']
-        if requesting_player == 'player2':
-            cards_player2_pg['player2'] = hands['player2']
-        if requesting_player == 'player3':
-            cards_player3_pg['player3'] = hands['player3']
-        if requesting_player == 'player4':
-            cards_player4_pg['player4'] = hands['player4']
-        if requesting_player == 'player5':
-            cards_player5_pg['player5'] = hands['player5']
-        if requesting_player == 'player6':
-            cards_player6_pg['player6'] = hands['player6']
+    print(f'\nreveal_cards() got called...')    
+    print(f'...we thus conclude that {requesting_player} ({player_name_map[requesting_player]})' +
+          ' wants to reveal their cards.')
+    cards_player1_pg[requesting_player] = hands[requesting_player]        
+    cards_player2_pg[requesting_player] = hands[requesting_player]
+    cards_player3_pg[requesting_player] = hands[requesting_player]
+    cards_player4_pg[requesting_player] = hands[requesting_player]
+    cards_player5_pg[requesting_player] = hands[requesting_player]
+    cards_player6_pg[requesting_player] = hands[requesting_player]
+    if requesting_player == 'player1':
+        cards_player1_pg['player1'] = hands['player1']
+    if requesting_player == 'player2':
+        cards_player2_pg['player2'] = hands['player2']
+    if requesting_player == 'player3':
+        cards_player3_pg['player3'] = hands['player3']
+    if requesting_player == 'player4':
+        cards_player4_pg['player4'] = hands['player4']
+    if requesting_player == 'player5':
+        cards_player5_pg['player5'] = hands['player5']
+    if requesting_player == 'player6':
+        cards_player6_pg['player6'] = hands['player6']
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
     emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
@@ -929,6 +939,8 @@ def receive_bet(message):
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
                     'player_by_number':requesting_player, 'amt': amt, 'fold': 'no'},
                        broadcast=True) # broadcast latest player's bet
+   # if 'monty' in http_ref:
+      #  if
     for player in players_tonight:
         if player in players_active:
             emit('pot_msg', {'amt': pot_amount, 'call': max_bet - round_bets[player]}, 
@@ -974,11 +986,25 @@ def claim_pot(default_winner = None):
         
     emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, 
          broadcast=True) # broadcast pot update
-    # In Monty, it's nice to have a record of how much the winner just took, for matching.
+    
     if 'monty' in http_ref:
+        # get names of players who stayed in
+        for p in monty.drop_dict:
+            if monty.drop_dict[p] == '' and (p in monty.players_staying) == False:
+                monty.players_staying.append(p) 
+        if len(monty.players_staying) == 1: # if the only player staying claimed the pot, then
+            monty.monty_match = 0           # reset these variables]
+            monty.match_amt = 0
+            monty.monty_winner = ''
+        if len(monty.players_staying) > 1: # we must force the remaining players to match the pot before another round
+                               # is dealt            
+            monty.monty_match = 1
+            monty.match_amt = pot_tmp
+            monty.monty_winner = requesting_player
+        # In Monty, it's nice to have a record of how much the winner just took, for matching.
         emit('pot_msg', {'amt': pot_amount, 'call': max_bet, 'winner': player_name_map[requesting_player],
                 'winnings': pot_tmp}, broadcast=True) # broadcast pot update
-        
+             
     # Without doing this here, if an ante is entered in the next game,
     # pre-deal, players who folded in previous game won't see the pot amt when
     # they ante. Not crucial, but it will feel a little weird to them not to see the pot.

@@ -386,7 +386,26 @@
                 document.getElementById(plyr_card1).src = msg.cards[0]
                 document.getElementById(plyr_card2).src = msg.cards[1]
                 document.getElementById(plyr_card3).src = msg.cards[2]
-            });            
+            });  
+            
+            socket.on('bets_needed_alert', function(msg,cb) {
+                var players = msg.negligent_bettors
+                if(players.length==1){
+                    has_verb = "has"
+                    need_verb = "needs"
+                } else {
+                    has_verb = "have"
+                    need_verb = "need"
+                }
+                var fault_type = msg.fault_type
+                console.log('lenth of players', players.length)
+                if(fault_type == "no_match"){
+                    window.alert(players + " " + need_verb + " to match the pot.");
+                } else if (fault_type == "no_bet"){
+                    window.alert(players + " " + has_verb + " not bet.");
+                }
+                
+            });          
             
             socket.on('get_cards', function(msg, cb) {
                 players_cards = msg.cards
