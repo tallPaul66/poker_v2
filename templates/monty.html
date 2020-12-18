@@ -393,14 +393,18 @@
                 if(players.length==1){
                     has_verb = "has"
                     need_verb = "needs"
+                    owes_verb = "owes"
                 } else {
                     has_verb = "have"
                     need_verb = "need"
+                    owes_verb = "owe"
                 }
                 var fault_type = msg.fault_type
                 console.log('lenth of players', players.length)
                 if(fault_type == "no_match"){
                     window.alert(players + " " + need_verb + " to match the pot.");
+                } else if(fault_type == "no_call"){
+                    window.alert(players + " " + owes_verb + " money to the pot.");
                 } else if (fault_type == "no_bet"){
                     window.alert(players + " " + has_verb + " not bet.");
                 }
