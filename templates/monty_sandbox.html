@@ -1,19 +1,89 @@
 <html>
   <style>
-	body{ background-image:url("/static/card_pics/table_top_20b.jpg");
+	body{ background-image:url("/static/card_pics/table_top_22b.jpg");
 		width: 100%;
 	    height: 100%;
 	    max-height: 100%;
-		background-size: 100% 100%;
+		background-size: 100% 100%;;
 		background-repeat: no-repeat;}
   </style>
   <head>
-    <title>Cross</title>
+    <title>Monty</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
-    <script src="{{url_for('static', filename='poker_v2_general.js')}}"></script>
+    <script src="chip_stash_test.js" type="text/javascript"></script> 
     <script type="text/javascript" charset="utf-8">
+        const url_params = new URLSearchParams(window.location.search);
+        const player_name = url_params.get('player');
+        
+        // Construt the drop and stay buttons for Monty. We place them here to have
+        // global access to their properties. For example, I want to change the appearance
+        // of whichever button the player clicks, to visually indicate their hold/drop status
+        var stay_btn = document.createElement('input');  
+        var drop_btn = document.createElement('input')
+            
+
+        // this function dynamically places the hold and stay buttons under the set of cards
+        // corresponding to the player's name in the query string of the url.
+        makeStatusButtons = function(){
+            stay_btn.setAttribute("type", "submit");
+            stay_btn.setAttribute("name", "stay");
+            stay_btn.setAttribute("value", "STAY");
+            stay_btn.setAttribute("id","keep_cards");
+            stay_btn.setAttribute("class","hold_drop_btn");
+            stay_btn.setAttribute("onclick","player_stays()");
+            
+            
+            drop_btn.setAttribute("type", "submit");
+            drop_btn.setAttribute("name", "drop");
+            drop_btn.setAttribute("value", "DROP");
+            drop_btn.setAttribute("id","drop_cards");
+            drop_btn.setAttribute("form","whatever");
+            drop_btn.setAttribute("class","hold_drop_btn");
+            drop_btn.setAttribute("onclick","player_drops()");
+            
+            if(player_name == 'player1'){ 
+                var container_stay_btn = document.getElementById('container_plyr1_stay');
+                var container_drop_btn = document.getElementById('container_plyr1_drop');
+            } else if(player_name == 'player2'){
+                var container_stay_btn = document.getElementById('container_plyr2_stay');
+                var container_drop_btn = document.getElementById('container_plyr2_drop');
+            } else if(player_name == 'player3'){
+                var container_stay_btn = document.getElementById('container_plyr3_stay');
+                var container_drop_btn = document.getElementById('container_plyr3_drop');
+            } else if(player_name == 'player4'){
+                var container_stay_btn = document.getElementById('container_plyr4_stay');
+                var container_drop_btn = document.getElementById('container_plyr4_drop');
+            } else if(player_name == 'player5'){
+                var container_stay_btn = document.getElementById('container_plyr5_stay');
+                var container_drop_btn = document.getElementById('container_plyr5_drop');
+            }            
+
+            container_stay_btn.appendChild(stay_btn);
+            container_drop_btn.appendChild(drop_btn );            
+            
+            return false
+        }
+        
+        player_stays = function(){
+            // Change the appearance of the stay button to indicate player's STAY status
+            stay_btn.setAttribute("class", "hold_drop_btn_selected")
+            // In case the drop_btn appearance needs to be reset...
+            drop_btn.setAttribute("class", "hold_drop_btn")
+            
+            socket.emit('monty_stay');
+        }
+        
+        player_drops = function(){
+            // Change the appearance of the stay button to indicate player's STAY status
+            drop_btn.setAttribute("class", "hold_drop_btn_selected")
+            // In case the stay_btn appearance needs to be reset...
+            stay_btn.setAttribute("class", "hold_drop_btn")
+            
+            socket.emit('monty_drop');
+        }
+        
         // [Paul: trying this to fix constant disconnect error, from someone on stackexchange;
         // doesn't seem to help any]
         //    socket = io.connect(location.origin, {
@@ -81,35 +151,43 @@
                     if(amt==0){
                         $('#bet_log').append('<br>' + $('<div/>').text(player + " checks").html());
                     } else {
-                        $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
+                        $('#bet_log').append('<br>' + $('<div/>').text(player + " adds " + amt).html());
                     }
                 } else {
                     $('#bet_log').append('<br>' + $('<div/>').text(player + " folds").html());
                 }                               
-            });
-            
-            // if all players but one have folded, print this message and main.py will
-            // push the pot amount to the winning player
-            socket.on('all_folded_msg', function(msg, cb) {
-                var winner = msg.winner
-                $('#bet_log').append('<br><br>' + $('<div/>').text("Everyone else folded. " + winner + " collects $" + pot_value + "!").html());                                             
-            });
-            
-            // global variable to keep track of amount in pot
+            });            
+                    
+            // global variable to keep track of amount in pot   
             pot_value = 0
             // print to browser the total pot
              socket.on('pot_msg', function(msg, cb) {
                 $('#pot_total').text($('<div/>').text('$' + msg.amt).html());
-                $('#call_amt').text($('<div/>').text('call: ' + '$' + msg.call).html()); 
+                $('#call_amt').text($('<div/>').text('call: ' + '$' + msg.call).html());
+                if (msg.winnings > 0){
+                    $('#bet_log').text($('<div/>').text(msg.winner + " scores $" + msg.winnings + "!").html());
+                } 
                 pot_value = msg.amt // global variable for use when user tries to click a link
                 console.log('pot_value', pot_value)                
+
+            });
+            // special function just for Monty. If everybody drops, put a message in
+            // the bet_log so the dealer knows to hit "DEAL" again.
+            socket.on('all_dropped_msg', function(msg, cb) {
+                $('#bet_log').append('<br>' + $('<div/>').text("Everybody dropped.").html());
+                $('#bet_log').append('<br>' + $('<div/>').text("Monty sez Ante again, chicken shits!").html());
+                console.log('all_dropped_msg received a msg from server.')
             });
             
+            // special function just for Monty. Reset the STAY & HOLD buttons back to neutral color
+            socket.on('clear_hold_status', function(msg, cb) {
+                drop_btn.setAttribute("class", "hold_drop_btn")            
+                stay_btn.setAttribute("class", "hold_drop_btn")
+            });            
+
             // print to browser the player's stash. This also loads a chip stash image,
             // the file depending on how large each player's stash is.
-            socket.on('stash_msg', function(msg, cb){
-                chip_image_display(msg)  //this function is defined in an external .js file
-            });
+            socket.on('stash_msg', chip_stash_test());
             
             // print to browser when somebody folds
             socket.on('who_folded', function(msg, cb) {
@@ -121,97 +199,109 @@
             socket.on('hand_in_till', function(msg, cb) {
                 $('#log').append('<br>' + $('<div/>').text(msg.err).html());               
             });  
-                        
+            
             // alert message if money still in the pot and user tries to start a new game
             socket.on('money_left_alert', function(msg, cb) {
                 window.alert("There's a non-0 amount in the pot. Someone must claim it before a new game can be started.");
+            });            
+           
+            socket.on('show_monty', function(msg, cb){
+                console.log('show_monty msg', msg)
+                document.getElementById('monty_card1').src = msg.cards[0]
+                document.getElementById('monty_card2').src = msg.cards[1]
+                document.getElementById('monty_card3').src = msg.cards[2]
             });
             
-            // alert message if player trying to bet and not in active players list, hopefully only because s/he folded
-            socket.on('illegal_bet_alert', function(msg, cb) {
-                window.alert("You can't place a bet because you're not in the acitve players list.");
-            });
-              
+            socket.on('monty_drop', function(msg, cb){
+                const url_params = new URLSearchParams(window.location.search);
+                const player_name = url_params.get('player');
+                var plyr_card1 = player_name + '_card1'
+                var plyr_card2 = player_name + '_card2'
+                var plyr_card3 = player_name + '_card3'
+                document.getElementById(plyr_card1).src = msg.cards[0]
+                document.getElementById(plyr_card2).src = msg.cards[1]
+                document.getElementById(plyr_card3).src = msg.cards[2]
+            });  
+            
             socket.on('bets_needed_alert', function(msg,cb) {
-               negligent_bettor_alert(msg)  // this fn stored in external .js file           
-            }); 
-             
+                var players = msg.negligent_bettors
+                if(players.length==1){
+                    has_verb = "has"
+                    need_verb = "needs"
+                    owes_verb = "owes"
+                } else {
+                    has_verb = "have"
+                    need_verb = "need"
+                    owes_verb = "owe"
+                }
+                var fault_type = msg.fault_type
+                console.log('lenth of players', players.length)
+                if(fault_type == "no_match"){
+                    window.alert(players + " " + need_verb + " to match the pot.");
+                } else if(fault_type == "no_call"){
+                    window.alert(players + " " + owes_verb + " money to the pot.");
+                } else if (fault_type == "no_bet"){
+                    window.alert(players + " " + has_verb + " not bet.");
+                }
+                
+            });          
+            
             socket.on('get_cards', function(msg, cb) {
                 players_cards = msg.cards
                 players = Object.keys(players_cards)
                 console.log('keys are', players)
-                console.log("player1's cards", players_cards.player1)
                 
-                //these are the cards the player sees in the middle
-                var comm_card1 = players_cards.comm[0]
-                var comm_card2 = players_cards.comm[1]
-                var comm_card3 = players_cards.comm[2]
-                var comm_card4 = players_cards.comm[3]
-                var comm_card5 = players_cards.comm[4]
-                
-                document.getElementById('comm_card1').src = comm_card1;
-                document.getElementById('comm_card2').src = comm_card2;
-                document.getElementById('comm_card3').src = comm_card3;
-                document.getElementById('comm_card4').src = comm_card4;
-                document.getElementById('comm_card5').src = comm_card5;
-                
+                document.getElementById('monty_card1').src = players_cards.monty[0]
+                document.getElementById('monty_card2').src = players_cards.monty[1]
+                document.getElementById('monty_card3').src = players_cards.monty[2]
+                              
                 if("player1" in players_cards){
                     var player1_card1 = players_cards.player1[0];
                     var player1_card2 = players_cards.player1[1];
                     var player1_card3 = players_cards.player1[2];
-                    var player1_card4 = players_cards.player1[3];
                     
                     document.getElementById('player1_card1').src = player1_card1;
                     document.getElementById('player1_card2').src = player1_card2;
                     document.getElementById('player1_card3').src = player1_card3;
-                    document.getElementById('player1_card4').src = player1_card4;
                 }
                 
                 if("player2" in players_cards){
                     var player2_card1 = players_cards.player2[0];
                     var player2_card2 = players_cards.player2[1];
                     var player2_card3 = players_cards.player2[2];
-                    var player2_card4 = players_cards.player2[3];
                     
                     document.getElementById('player2_card1').src = player2_card1;
                     document.getElementById('player2_card2').src = player2_card2;
                     document.getElementById('player2_card3').src = player2_card3;
-                    document.getElementById('player2_card4').src = player2_card4;
                 }
                 if("player3" in players_cards){
                     var player3_card1 = players_cards.player3[0];
                     var player3_card2 = players_cards.player3[1];
                     var player3_card3 = players_cards.player3[2];
-                    var player3_card4 = players_cards.player3[3];
                     
                     document.getElementById('player3_card1').src = player3_card1;
                     document.getElementById('player3_card2').src = player3_card2;
                     document.getElementById('player3_card3').src = player3_card3;
-                    document.getElementById('player3_card4').src = player3_card4;
                 }
                 
                 if("player4" in players_cards){
                     var player4_card1 = players_cards.player4[0];
                     var player4_card2 = players_cards.player4[1];
                     var player4_card3 = players_cards.player4[2];
-                    var player4_card4 = players_cards.player4[3];
                     
                     document.getElementById('player4_card1').src = player4_card1;
                     document.getElementById('player4_card2').src = player4_card2;
                     document.getElementById('player4_card3').src = player4_card3;
-                    document.getElementById('player4_card4').src = player4_card4;
                 }
                 
                 if("player5" in players_cards){
                     var player5_card1 = players_cards.player5[0];
                     var player5_card2 = players_cards.player5[1];
                     var player5_card3 = players_cards.player5[2];
-                    var player5_card4 = players_cards.player5[3];
                 
                     document.getElementById('player5_card1').src = player5_card1;
                     document.getElementById('player5_card2').src = player5_card2;
                     document.getElementById('player5_card3').src = player5_card3;
-                    document.getElementById('player5_card4').src = player5_card4;
                 }
                 // below is from Miguel Grinberg's original code; I don't know what it does
                 if (cb)
@@ -223,8 +313,25 @@
             // emits the game to the server, which then broadcasts the game name to all
             // connected players and is handled by this function, which takes the client
             // to whatever game was clicked by the originalplayer.
-            socket.on('redirect_all_players', function(msg, cb){ 
-                redirect_all(msg)     // this fn is defined in a separate .js file
+            socket.on('redirect_all_players', function(msg, cb){
+                console.log('new_game got called!', msg.new_game)
+                if(msg.new_game == 'draw'){
+                    window.location.href = "{{ url_for('redirect_to_draw') }}";
+                } else if(msg.new_game == 'spit') {
+                    window.location.href = "{{ url_for('redirect_to_spit') }}";
+                } else if (msg.new_game=='fcs'){
+                    window.location.href = "{{ url_for('redirect_to_five_card_stud') }}";
+                } else if (msg.new_game=='scs'){
+                    window.location.href = "{{ url_for('redirect_to_seven_card_stud') }}";
+                } else if (msg.new_game=='monty'){
+                    window.location.href = "{{ url_for('redirect_to_monty') }}";
+                } else if (msg.new_game=='holdem'){
+                    window.location.href = "{{ url_for('redirect_to_holdem') }}";
+                } else if (msg.new_game=='omaha'){
+                    window.location.href = "{{ url_for('redirect_to_omaha') }}";
+                } else if (msg.new_game=='cross'){
+                    window.location.href = "{{ url_for('redirect_to_cross') }}";
+                }
             });
             /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~            
                      Handlers for the different forms in the page.
@@ -259,15 +366,25 @@
                 socket.emit('fold'); 
                 return false;
             });
-             $('form#reveal').submit(function(event) {
-                socket.emit('reveal'); 
+             $('form#reveal_monty').submit(function(event) {
+                socket.emit('reveal_monty'); 
                 return false;
             });
+            
             $('form#new_game').submit(function(event) {
                 socket.emit('new_game'); 
                 return false;
-            });
-             
+            });           
+            
+            socket.on('who_dropped', function(msg, cb) {
+                players = Object.keys(msg.statuses)
+                for(player in msg.statuses){
+                    if(msg.statuses[player] != "drop"){
+                        $('#log').append('<br>' + $('<div/>').text(player + " stays").html());
+                    }                    
+                }                               
+            });            
+            
             // Interval function that tests message latency by sending a "ping"
             // message. The server then responds with a "pong" message and the
             // round trip time is measured. [Paul: not sure if this helps to not
@@ -295,9 +412,7 @@
                 return false;
             });
         });
-        // Need a global variable to tell us what the current pot value is
-        var pot_value = 0
-        // For the betting and clear buttons to enter the values
+        // This is for the betting and clear buttons to enter the values
         // into the betting amount text box
         function writeNumbers(x) {
             var txt = document.getElementById("bet_entered");
@@ -321,10 +436,58 @@
         // clients and the clients are redirected to that link.
         namespace = '/test';
         var socket = io(namespace);        
-        check_pot(game)      // fn defined in external .js file
+        function check_pot(game) {
+            if(pot_value != 0){
+                window.alert("There's still money in the pot. Links won't work until it's claimed.");
+            } 
+            else if (game=='draw'){
+                 if(window.confirm("Take all players to Draw Poker?")){
+                     socket.emit('change_game', {new_game:'draw'})                     
+                 }                 
+            } 
+            else if (game=='fcs'){
+                 if(window.confirm("Take all players to Five Card Stud?")){
+                     socket.emit('change_game', {new_game:'fcs'})                     
+                 }
+            } 
+            else if (game=='scs'){
+                 if(window.confirm("Take all players to Seven Card Stud?")){
+                     socket.emit('change_game', {new_game:'scs'})                     
+                 }
+            } 
+            else if (game=='spit'){
+                 if(window.confirm("Take all players to Spit/Hootenanny?")){
+                     socket.emit('change_game', {new_game:'spit'})                     
+                 }
+            } 
+            else if (game=='omaha'){
+                 if(window.confirm("Take all players to Omaha?")){
+                     socket.emit('change_game', {new_game:'omaha'})                     
+                 }
+            } 
+            else if (game=='cross'){
+                 if(window.confirm("Take all players to Fiery Cross?")){
+                     socket.emit('change_game', {new_game:'cross'})                     
+                 }
+            }
+            else if (game=='monty'){
+                 if(window.confirm("Take all players to 3-Card Monty?")){
+                     socket.emit('change_game', {new_game:'monty'})                     
+                 }
+            }
+            else if (game=='holdem'){
+                 if(window.confirm("Take all players to Hold 'em?")){
+                     socket.emit('change_game', {new_game:'holdem'})                     
+                 }
+            } 
+            else {
+                window.alert("from check_pot() function: The game selected is not associated with any link.");
+            }
+            return false;
+        }
     </script>
   </head>
-   <body>
+   <body onload="makeStatusButtons()">
      
     <!--#################################################################################-->
     <!--                                      DASHBOARD                                  -->
@@ -335,20 +498,15 @@
         <form style="margin-right:3px; margin-top: 14px;" id= "new_game" class="form" method="POST" action='#'>     
              <input  class = "new_game_btn" type="submit" name="btn" value="NEW GAME" >
         </form>
-        <form style= "margin-right:20px; margin-top: 14px;" id="deal" class="form" method="POST" action='#'>
+        <form style= "margin-right:3px; margin-top: 14px;" id="deal" class="form" method="POST" action='#'>
              <input  class = "deal_btn" type="submit" name="btn" value="D E A L" > 
         </form>
+        <form style= "margin-right:20px; margin-top: 14px;" id= "reveal_monty" class = "form" method="POST" action='#'> 
+	         <input class="submit_btn1" type="submit" name="btn" value="REVEAL MONTY">
+        </form>   
         <hr class="vertical" />
         <hr class="vertical" />
-        <form style= "margin-left:20px; margin-right:3px; margin-top: 14px;" id= "fold" class = "form" method="POST" action='#'> 
-             <input class="submit_btn1" type="submit" name="btn" value="FOLDY-DOLDY">
-        </form>
-        <form style= "margin-right:20px; margin-top: 14px;" id= "reveal" class = "form" method="POST" action='#'> 
-	         <input class="submit_btn1" type="submit" name="btn" value="REVEAL">
-        </form>            
-        
-        <hr class="vertical" />
-        <hr class="vertical" />
+                
         <input style= "margin-left:20px;" type="image" src="static/card_pics/white_chip_small.png" width=55 height=55 name="bet_1" id="bet_1" onclick="writeNumbers(1);"/>
         <input style= "margin-left:3px;" type="image" src="static/card_pics/red_chip_small.png" width=55 height=55  name="bet_2" id="bet_2" onclick="writeNumbers(2);"/>
         <input style= "margin-left:3px;" type="image" src="static/card_pics/blue_chip_small.png" width=55 height=55  name="bet_5" id="bet_5" onclick="writeNumbers(5);"/>
@@ -369,13 +527,13 @@
         	&nbsp&nbsp<a href="{{ url_for('redirect_to_spit') }}" onclick="check_pot('spit'); return false;" style="color:red; font-size:20px;">Spit</a> 
             <br><br>
     		&nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_monty') }}" onclick="check_pot('monty'); return false;" style="color:red; font-size:20px;">Monty</a> 
-    		&nbsp&nbsp<a href="{{ url_for('redirect_to_seven_card_stud') }}" onclick="check_pot('scs'); return false;" style="color:red; font-size:20px;">7-Card Stud</a>
-    		&nbsp&nbsp<a href="{{ url_for('redirect_to_holdem') }}" onclick="check_pot('holdem'); return false;" style="color:red; font-size:20px;">Hold Em</a>
+    		&nbsp&nbsp<a href="{{ url_for('redirect_to_seven_card_stud') }}" onclick="check_pot('scs'); return false;" style="color:red; font-size:20px;">7-Card Stud</a> 
+    		&nbsp&nbsp<a href="{{ url_for('redirect_to_holdem') }}" onclick="check_pot('holdem'); return false;" style="color:red; font-size:20px;">Hold Em</a> 
     		&nbsp&nbsp<a href="{{ url_for('redirect_to_cross') }}" onclick="check_pot('cross'); return false;" style="color:red; font-size:20px;">Fiery Cross</a>
         </div>    	 
 	 </fieldset>
 	 <br>
-	 <h1 style="color:#FFDF00; text-align: center;">~ FIERY CROSS ~</h1>
+	 <h1 style="color:#FFDF00; text-align: center;">~ 3-CARD MONTY ~</h1>
      <br><br><br>
     <!--#################################################################################-->
     <!--                                The Poker Table                                  -->
@@ -384,7 +542,7 @@
     <br>	
 	  <table width="500px"  height="50%">
         <tr>
-          <td></td><td></td><td></td>
+          <td></td><td></td><td></td><td></td>
           <td></td>
           <th valign=middle colspan = "2">                
               <h3 style="color:#FFDF00;">{{names["player1"]}}</h3>
@@ -392,26 +550,28 @@
               <img src="" id="player1_stash_img" width=80 height=80>
           </th>
           <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
-		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>
+		  <td valign=top><img src="" id="player1_card2" width=80 height=122> </td>
 		  <td valign=top><img src="" id="player1_card3" width=80 height=122></td>
-		  <td valign=top><img src="" id="player1_card4" width=80 height=122></td>		  
-          <td></td><td></td><td></td><td></td>
-          <td></td><td></td><td></td>
+		  <td align=right>
+    		  <div id="container_plyr1_stay">
+    		  <div id="container_plyr1_drop">
+		  </td>
+		  <td></td><td></td>
+          <td valign=top><img src="" id="monty_card1" width=80 height=122></td>
+		  <td valign=top><img src="" id="monty_card2" width=80 height=122></td>
+		  <td valign=top><img src="" id="monty_card3" width=80 height=122></td>
+		  <th valign=middle><h3 style="color:#FFDF00;">Monty</h3></th>          
         </tr>
         <tr>
-          <th valign=bottom colspan = "2">              
-              <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
-              <h1><div id="player5_stash"></div></h1>
-              <img src="" id="player5_stash_img" width=80 height=80>
-          </th>
+          <td></td> 
           <th colspan = "3" valign=top>
     		  <div style="color:#F0FFFF;" id="log"></div>
 		  </th>
-          <td></td><td></td> <td></td>
-          <td><img src="" id="comm_card2" width=80 height=122></td>
+          <td></td><td></td><td></td><td></td>
     <!--####################################################################-->
     <!--                                 BETTING                            -->
     <!--####################################################################-->
+		  
 		  <th colspan="2" valign=top>
 		     <br> 
              <h1><div id="pot_total"></div></h1>
@@ -421,71 +581,81 @@
              <form style='float: center; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     
                      <input  class = "claim_btn" type="submit" name="claim_pot" value="CLAIM" >
              </form> 
-		  </th>		  
-		  <th colspan = "3" valign=top  align=right>
+		  </th>
+		  <th colspan = "3" valign=top align=right>
         		  <br>
         		  <div style="color:#F0FFFF;" id="bet_log"></div>
 		  </th>
     <!--####################################################################-->
     <!--                                                                    -->
     <!--####################################################################-->    
-          
-          <td></td>         
-          <th valign=bottom colspan = "2">              
+          <td></td><td></td><td></td><td></td>                   
+        </tr>
+        <tr>
+          <th valign=middle colspan = "2">
+              <h1><div id="player5_stash"></div></h1>
+              <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
+              <img src="" id="player5_stash_img" width=80 height=80>
+          </th>
+          <td><img src="" id="player5_card1" width=80 height=122></td>
+		  <td><img src="" id="player5_card2" width=80 height=122></td>
+		  <td><img src="" id="player5_card3" width=80 height=122></td>
+		  <td align=right>
+    		  <div id="container_plyr5_stay">
+    		  <div id="container_plyr5_drop">
+		  </td>
+		  <td></td><td></td><td></td>
+          <td></td><td></td>
+          <td>
+              <div id="container_plyr2_stay">
+    		  <div id="container_plyr2_drop">
+          </td>	  
+          <td><img src="" id="player2_card1" width=80 height=122></td>
+		  <td><img src="" id="player2_card2" width=80 height=122></td>
+		  <td><img src="" id="player2_card3" width=80 height=122></td>
+		  <th valign=middle colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
               <h1><div id="player2_stash"></div></h1>
               <img src="" id="player2_stash_img" width=80 height=80>
           </th>
-         </tr>
-         <tr>
-          <td><img src="" id="player5_card1" width=80 height=122></td>
-		  <td><img src="" id="player5_card2" width=80 height=122></td>
-		  <td><img src="" id="player5_card3" width=80 height=122></td>
-		  <td><img src="" id="player5_card4" width=80 height=122></td>
-		  <td></td><td></td>
-          <td><img src="" id="comm_card1" width=80 height=122></td>
-          <td></td>
-          <td><img src="" id="comm_card5" width=80 height=122></td>
-          <td></td>
-          <td><img src="" id="comm_card3" width=80 height=122></td>
-		  <td></td><td></td>
-          <td><img src="" id="player2_card1" width=80 height=122></td>
-		  <td><img src="" id="player2_card2" width=80 height=122></td>
-		  <td><img src="" id="player2_card3" width=80 height=122></td>
-		  <td><img src="" id="player2_card4" width=80 height=122></td>		  
+        </tr>
+        <tr>
+          <td></td><td></td><td></td><td></td>                    
+          <td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td><td></td>          
+          <td></td><td></td><td></td><td></td> 
+          <td></td> 
         </tr>
         <tr>
           <td></td><td></td>
-          <th valign=bottom colspan = "2">
-              <br><br>
+          <th valign=middle colspan = "2"> 
+              <br><br>         
               <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
               <h1><div id="player4_stash"></div></h1>
               <img src="" id="player4_stash_img" width=80 height=80>
           </th>          
-          <td></td><td></td><td></td><td></td>
-          <td><img src="" id="comm_card4" width=80 height=122></td>
-          <td></td><td></td><td></td>
-          <td></td>
-          <th valign=bottom align="right" colspan = "2">  
-              <br><br>            
+          <td><img src="" id="player4_card1" width=80 height=122></td>
+		  <td><img src="" id="player4_card2" width=80 height=122></td>
+		  <td><img src="" id="player4_card3" width=80 height=122></td>
+		  <td align=right>
+    		  <div id="container_plyr4_stay">
+    		  <div id="container_plyr4_drop">
+		  </td>
+		  <td></td>
+		  <td>
+             <div id="container_plyr3_stay">
+    		  <div id="container_plyr3_drop">
+          </td>
+		  <td><img src="" id="player3_card1" width=80 height=122></td>
+		  <td><img src="" id="player3_card2" width=80 height=122></td>
+		  <td><img src="" id="player3_card3" width=80 height=122></td>
+		  <th valign=middle colspan = "2"> 
+              <br><br>             
               <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
               <h1><div id="player3_stash"></div></h1>
               <img src="" id="player3_stash_img" width=80 height=80>
           </th>
           <td></td><td></td>
-        </tr>
-        <tr>
-          <td></td><td></td><td></td>          
-          <td><img src="" id="player4_card1" width=80 height=122></td>
-		  <td><img src="" id="player4_card2" width=80 height=122></td>
-		  <td><img src="" id="player4_card3" width=80 height=122></td>
-		  <td><img src="" id="player4_card4" width=80 height=122></td>
-		  <td></td><td></td>
-		  <td><img src="" id="player3_card1" width=80 height=122></td>
-		  <td><img src="" id="player3_card2" width=80 height=122></td>
-		  <td><img src="" id="player3_card3" width=80 height=122></td>
-		  <td><img src="" id="player3_card4" width=80 height=122></td>
-		  <td></td><td></td><td></td><td></td>
         </tr>
 	  </table> 		
    </body>
