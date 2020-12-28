@@ -55,17 +55,11 @@ def deal(players):
         return hands 
 
 
-def get_display(hands_tuple, whose_pg):
+def get_display(hands, whose_pg):
     display_hands = {}
-    # convert fucking tuples back to fucking lists...
-    hands_list = hands_tuple.copy()
-    for key in hands_list.keys():
-        hands_list[key] = list(hands_tuple[key])
-    
-    # convert card pics to card back pic if 
     # player is not 'whose_pg'
-    for key in hands_list.keys():
-        cards = hands_list[key]
+    for key in hands.keys():
+        cards = hands[key]
         if key != whose_pg:
             cards = [card_back] * 5
         display_hands[key] = cards

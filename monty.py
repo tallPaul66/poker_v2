@@ -69,7 +69,6 @@ def new_game(players):
         drop_dict[p] = ''
     hands['monty'] = []
 
-
 def deal(players):
     global reveal_cards
     if len(stage)==0:
