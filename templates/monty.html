@@ -175,7 +175,7 @@
             // the bet_log so the dealer knows to hit "DEAL" again.
             socket.on('all_dropped_msg', function(msg, cb) {
                 $('#bet_log').append('<br>' + $('<div/>').text("Everybody dropped.").html());
-                $('#bet_log').append('<br>' + $('<div/>').text("Monty sez Ante again, chicken shits!").html());
+                $('#bet_log').append('<br>' + $('<div/>').text("Monty sez: Ante again, chicken shits!").html());
                 console.log('all_dropped_msg received a msg from server.')
             });
             

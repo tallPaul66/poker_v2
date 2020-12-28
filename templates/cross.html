@@ -129,7 +129,7 @@
             
             // alert message if player trying to bet and not in active players list, hopefully only because s/he folded
             socket.on('illegal_bet_alert', function(msg, cb) {
-                window.alert("You can't place a bet because you're not in the acitve players list.");
+                window.alert("Bet disallowed: you're not in the acitve players list.");
             });
               
             socket.on('bets_needed_alert', function(msg,cb) {
