@@ -63,17 +63,12 @@ def deal(players):
         stage.clear()
         return hands
         
-def get_display(hands_tuple, whose_pg):
+def get_display(hands_list, whose_pg):
     display_hands = {}
-    # convert fucking tuples back to fucking lists...
-    hands_list = hands_tuple.copy()
-    for key in hands_list.keys():
-        hands_list[key] = list(hands_tuple[key])
-    
     # convert card pics to card-back pics for players who aren't  
     # 'whose_pg'
     for key in hands_list.keys():
-        cards = hands_list[key]
+        cards = hands_list[key].copy()
         if key not in ['comm', whose_pg]:
             cards = [card_back] * 4
         display_hands[key] = cards
