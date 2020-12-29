@@ -68,20 +68,13 @@ def deal(players):
         stage.clear()
         return hands #hands_tuple
 
-# we have players' hands, but we don't want to display all cards
-# to all players (of course). So show card backs for hole cards
-# as appropriate
-def get_display(hands_tuple, whose_pg):
+def get_display(hands_list, whose_pg):
     display_hands = {}
-    # convert fucking tuples back to fucking lists...
-    hands_list = hands_tuple.copy()
-    for key in hands_list.keys():
-        hands_list[key] = list(hands_tuple[key])
     
     # convert 1st, 2nd and 7th card pics to card back pic if 
     # player is not 'whose_pg'
     for key in hands_list.keys():
-        cards = hands_list[key]
+        cards = hands_list[key].copy() # without this, global hands gets modified somehow
         num_cards = len(cards)
         if key != whose_pg:
             cards[0] = card_back
@@ -91,10 +84,6 @@ def get_display(hands_tuple, whose_pg):
         if num_cards < 7: # add fancy card place holder graphics 
             cards.extend([cd_plc_holder_img]*(7-num_cards))
         display_hands[key] = cards
-    
-    # convert fucking lists back to fucking tuples...
-    for key in display_hands.keys():
-        display_hands[key] = tuple(display_hands[key])
     return display_hands
             
             
