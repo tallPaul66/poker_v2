@@ -14,10 +14,13 @@
     <body>
        <div class="home">
 		   <h1>Poker v2!</h1>
-		   <p>Let's play!</p>
 	   </div>
        <p>Async mode is: <b>{{ async_mode }}</b></p>
-       <h2>Please enter the players' names for tonight's game and hit "Submit."</h2>
+       <h2>Please enter the players' names for tonight's game and hit "Submit." <br>
+           If fewer than six players, just leave relevant fields blank.
+       </h2>
+       <br>
+       <br>
        <form method="post">
             <label for="player1" style="color:#FFDF00; font-weight:bold;">Player 1: &nbsp</label>
                 <input id="player1" name="player1" style = "font-size:20px;" value="Booboo">
@@ -29,7 +32,7 @@
                 <input id="player3" name="player3" style = "font-size:20px;" value="Master Chafe">
             <br>
             <label for="player4" style="color:#FFDF00; font-weight:bold;">Player 4: &nbsp</label>
-                <input id="player4" name="player4" style = "font-size:20px;" value="Dr. Algorithm">
+                <input id="player4" name="player4" style = "font-size:20px;" value="Dr. B">
             <br>
             <label for="player5" style="color:#FFDF00; font-weight:bold;">Player 5: &nbsp</label>
                 <input id="player5" name="player5" style = "font-size:20px;">
@@ -38,7 +41,20 @@
                 <input id="player6" name="player6" style = "font-size:20px;">
             <br>
             <br>
-            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+            <br>
+            <h2>Enter buy-in amount, in dollars:</h2>
+            <br>
+            
+                <h2>
+                &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+                $<input type="number" id="buyin" name="buyin" style="vertical-align:middle; width: 60px; 
+                      font-size:20px; text-align:center;"  value=80>
+                </h2>
+            <br>
+            <br>
+            <br>
+            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+            
             <input type="submit" class="submit_btn1" name="btn" value="Submit">
        </form>
     </body>

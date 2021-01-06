@@ -77,7 +77,7 @@ room_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'',
              'player5':'', 'player6':''}
 pot_amount = 0
 max_bet = 0
-buy_in = 100
+buy_in = ''
 
 # games that require choices on the player's part beyond folding or staying in
 choice_games = ['draw', 'monty', 'spit']
@@ -114,12 +114,13 @@ print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/', methods=['GET', 'POST'])
 def home():
     global players_active
+    global buy_in
     # This method gets called any time someone clicks the submit
     # button on the home pg.    
     
     if request.method == 'POST':
         players_tonight.clear()
-
+        buy_in = int(float(request.form.get('buyin'))) # amount players buy in for is entered in the home form
         player_name_map['player1'] = request.form.get('player1') 
         player_name_map['player2'] = request.form.get('player2')
         player_name_map['player3'] = request.form.get('player3')
@@ -146,9 +147,9 @@ def home():
 
     return render_template('home.html', async_mode=socketio.async_mode)
 
-##########################################################################
+##############################################################################################
 ### GAMES
-##########################################################################
+##############################################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Draw   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 @app.route('/draw', methods = ['GET', 'POST'])
@@ -395,9 +396,9 @@ def redirect_to_holdem():
     return redirect(url_for('holdem_play', player=requesting_player))
 
 
-##########################################################################
+##############################################################################################
 ### DEAL
-##########################################################################
+##############################################################################################
 
 @socketio.on('deal', namespace='/test')
 def deal_click():  
@@ -497,11 +498,6 @@ def deal_click():
             if pot_claimed == False:
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
-            # we disable the validation in this if clause to allow deal to start even
-            # if pot_claimed == False. We just don't want to allow a new game to start.
-            #if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
-            #    emit('money_left_alert', {}, room=room_map[requesting_player]) 
-            #    return None            
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the msg area
         hands = holdem.deal(players_active)
@@ -1011,9 +1007,10 @@ def claim_pot(default_winner = None):
     players_active = players_tonight.copy()
     # the following are for logging purposes: will print to online log files and can then
     # retrieve at the end of the evening or later to get the player stashes
-    print(f'\n{requesting_player} has just claimed the pot.')
-    print(f'player_stash_map: {player_stash_map}')
-    print(f'player_name_map: {player_name_map}')
+    print(f'\n{requesting_player} has just claimed the pot.\n Current player stashes:\n')
+    for p in player_name_map.keys():
+        if p in players_tonight:
+            print(player_name_map[p]+ ':  ' + str(player_stash_map[p]))
 
 ##########################################################################
 ### Connection Handlers
