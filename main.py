@@ -105,7 +105,7 @@ def background_thread():
                       {'data': 'Server generated msg', 'count': count},
                       namespace='/test')
 
-print('what the fuck')
+
 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ NEW SESSION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
@@ -172,7 +172,7 @@ def redirect_to_draw():
 def draw_cards_draw(message):
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print('hold statuses: ', message['data'])
+    
     hold_statuses = [message['data']['card1'], message['data']['card2'], 
                      message['data']['card3'], message['data']['card4'], 
                      message['data']['card5']]
@@ -241,7 +241,7 @@ def redirect_to_spit():
 def draw_cards_spit(message):
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print('hold statuses: ', message['data'])
+    
     hold_statuses = [message['data']['card1'], message['data']['card2'], 
                      message['data']['card3'], message['data']['card4'], 
                      message['data']['card5']]
@@ -303,7 +303,6 @@ def five_card_play():
 def redirect_to_five_card_stud():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'msg from link_to_five_card_stud(): requesting_player is {requesting_player}')
     return redirect(url_for('five_card_play', player=requesting_player))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     omaha     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -344,7 +343,6 @@ def seven_card_play():
 def redirect_to_seven_card_stud():
      http_ref = request.environ['HTTP_REFERER']
      requesting_player = http_ref[http_ref.find('player=')+7:]
-     print(f'msg from redirect_to_seven_card(): requesting_player is {requesting_player}')
      return redirect(url_for('seven_card_play', player=requesting_player))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Monty   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -392,7 +390,6 @@ def holdem_play():
 def redirect_to_holdem():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'msg from redirect_to_holdem(): requesting_player is {requesting_player}')
     return redirect(url_for('holdem_play', player=requesting_player))
 
 
@@ -412,8 +409,6 @@ def deal_click():
    # global monty_winner
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print('\ndeal_click() got called! coming from ', requesting_player,
-          'and his request.sid is ', request.sid)
     
     # logic for making sure everyone bet in previous round before continuing
     has_bet_set = set(has_bet_this_round)
@@ -703,11 +698,8 @@ def deal_click():
 ##########################################################################
 @socketio.on('fold', namespace='/test')
 def fold():
-    print(f'\nfrom fold(): request.eviron["HTTP_REFERER"]:{request.environ["HTTP_REFERER"]} ')
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'We thus conclude that {requesting_player} ({player_name_map[requesting_player]})' +
-          ' wants to fold, so I will fold them!...')
     hand_len = len(hands[requesting_player])
     seven_card_stud.hands[requesting_player] = [seven_card_stud.card_back] * hand_len
     five_card_stud.hands[requesting_player] = [five_card_stud.card_back] * hand_len
@@ -766,8 +758,7 @@ def reveal_cards():
     global reveal_players_monty
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    print(f'\nreveal_cards() got called...')    
-    print(f'...we thus conclude that {requesting_player} ({player_name_map[requesting_player]})' +
+    print(f'\n{requesting_player} ({player_name_map[requesting_player]})' +
           ' wants to reveal their cards.')
     cards_player1_pg[requesting_player] = hands[requesting_player]        
     cards_player2_pg[requesting_player] = hands[requesting_player]
@@ -861,7 +852,7 @@ def start_new_game():
 
 @socketio.on('change_game', namespace='/test')
 def change_game(new_game):
-    print('change_game(new_game) got called on the server, argument passed: "', new_game['new_game'], '"')
+    print('change_game(new_game) got called on the server, argument passed: "' + new_game['new_game'] + '"')
     emit('redirect_all_players', {'new_game': new_game['new_game']}, broadcast = True)
 ##########################################################################
 ### Betting Handlers
@@ -876,10 +867,6 @@ def receive_bet(message):
     global players_active
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    #print('from receive_bet(), players_active: ' , players_active, '; \nroom_map: ', room_map, 
-    #      '; \nplayer_map[requesting_player]: ', room_map[requesting_player])
-    
-    # first let's make sure the player is allowed to bet, IOW, hasn't folded
     if requesting_player in players_active:
         bet_allowed = True # this is a dummy that does nothing
     else: # disallow bet: send window alert to client, return out of receive_bet()
@@ -908,7 +895,6 @@ def receive_bet(message):
          broadcast=True)
     # hold em gets its own bet logic
     if 'holdem' in http_ref:
-        print('from receive_bet(), holdem.stage: ', holdem.stage)
         if len(holdem.stage) == 0:
             if pot_claimed == True:
                 holdem_stage = 0

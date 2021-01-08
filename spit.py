@@ -42,7 +42,6 @@ def new_game(players, community_game = True):
 
 def deal(players):
     global show_spit
-    print(f'from spit.deal(players), stage is now {stage}')
     stage_len = len(stage)
     if stage_len == 0:
         new_game(players)
