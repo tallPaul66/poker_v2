@@ -414,9 +414,9 @@ def deal_click():
     has_bet_set = set(has_bet_this_round)
     players_active_set = set(players_active)
     
-    # before allowing a deal event, we'll to check that all active players' 
+    # before allowing a deal event, we'll check that all active players' 
     # accounts are up to date. If not, dealer will get an alert message.
-    # Monty is more complicated once the game gets going, so skipping for now
+    # Monty is more complicated once the game gets going.
     # Hold 'em is also more complicated, so needs a clause to omit first round in
     # this validation.
     def enforce_call_equity():
@@ -539,7 +539,6 @@ def deal_click():
             pot_claimed = False
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the msg area
-            # pot_update(-pot_amount) # if beginning of game, clear pot amount. Nope--removes antes also
         hands = draw.deal(players_active)
         pg1_tmp = draw.get_display(hands, 'player1')              
         pg2_tmp = draw.get_display(hands, 'player2')
