@@ -13,6 +13,8 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 #import gevent
 import get_best_hand
+from datetime import date, datetime
+import math
 
 # Import games. Be sure to clear game stage in claim_pot(), add line in fold(), and in new_game()
 import draw
@@ -105,12 +107,32 @@ def background_thread():
                       {'data': 'Server generated msg', 'count': count},
                       namespace='/test')
 
+hr = datetime.now().hour
+minutes = datetime.now().minute
+if hr >= 12:
+    ampm = 'pm'
+    hr = hr - 12
+    current_time =  str(hr) + ':' + str(minutes) + ' ' + ampm
+else:
+    ampm = 'am'
+    if minutes < 10:
+        mins = '0' + str(minutes)
+    else:
+        mins = str(minutes)
+    current_time = str(hr) + ':' + mins + ' ' + ampm
 
+date_spacer_len = (76 - len(date.today().strftime("%B %d, %Y")) - 2)/2
+time_spacer_len = (76 - len(current_time) - 2)/2
+new_session_len = (76 - 11 - 2)/2
 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ NEW SESSION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print('~'*math.ceil(new_session_len) + ' NEW SESSION ' + '~'*math.floor(new_session_len))
+print('~'* math.ceil(date_spacer_len) + ' ' + date.today().strftime("%B %d, %Y") + ' ' +
+          '~'* math.floor(date_spacer_len) )
+print('~'* math.ceil(time_spacer_len) + ' ' + current_time  + ' ' + '~'* math.floor(time_spacer_len) )
 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
     global players_active
@@ -556,7 +578,6 @@ def deal_click():
             pot_claimed = False
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the msg area
-            #pot_update(-pot_amount) # if beginning of game, clear pot amount
         hands = spit.deal(players_active)
         pg1_tmp = spit.get_display(hands, 'player1')
         pg2_tmp = spit.get_display(hands, 'player2')
@@ -573,8 +594,7 @@ def deal_click():
                 return None
             pot_claimed = False
             players_active = players_tonight.copy() # re-activate all tonight's players
-            emit('clear_log',{}, broadcast = True)  # clear the msg area
-            #pot_update(-pot_amount) # if beginning of game, clear pot amount            
+            emit('clear_log',{}, broadcast = True)  # clear the msg area           
         hands = five_card_stud.deal(players_active)
         pg1_tmp = five_card_stud.get_display(hands, 'player1')
         pg2_tmp = five_card_stud.get_display(hands, 'player2')
@@ -653,7 +673,8 @@ def deal_click():
     emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': buy_in}, 
          broadcast=True)    
     
-    emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) # broadcast pot update
+    # broadcast pot update
+    emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) 
    
     # clear everybody's bet log unless it's Hold 'em first round
     if 'holdem' in http_ref:
