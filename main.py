@@ -107,6 +107,9 @@ def background_thread():
                       {'data': 'Server generated msg', 'count': count},
                       namespace='/test')
 
+########### Print formatting announcing new session ################
+# This stuff is all to print out in nice format that a new session
+# has been started and the date and time of starting
 hr = datetime.now().hour
 minutes = datetime.now().minute
 if hr >= 12:
@@ -132,6 +135,7 @@ print('~'* math.ceil(date_spacer_len) + ' ' + date.today().strftime("%B %d, %Y")
 print('~'* math.ceil(time_spacer_len) + ' ' + current_time  + ' ' + '~'* math.floor(time_spacer_len) )
 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+########### End print formatting of new session ##################
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -158,14 +162,6 @@ def home():
         print(f'from home(), form submitted, players set for tonight: {players_tonight}')
         print(player_name_map)
         print(player_stash_map)
-        
-        ''' we do the below regardless of who is playing tonight. That way, if someone
-        is later removed from the night's lineup, when someone calls get_img()
-        that someone's cards will be blank, no matter what is going on in the
-        game or what stage things are at. I.e., this resets the now-missing
-        player's cards to null, which would not have happened if you simply
-        remove the player from the lineup (unless everyone clicks New Game).'''
-
 
     return render_template('home.html', async_mode=socketio.async_mode)
 
@@ -183,12 +179,11 @@ def draw_play():
 
 @app.route('/link_to_draw')
 def redirect_to_draw():
-    # start_new_game() # this causes error
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]    
     return redirect(url_for('draw_play', player=requesting_player))
 
-# special function draw poker and spit to register discards for each
+# special function for draw poker (and spit( to register discards for each
 # player
 @socketio.on('draw_cards_draw', namespace='/test')
 def draw_cards_draw(message):
@@ -244,7 +239,7 @@ def draw_cards_draw(message):
                        'player': player_name_map[requesting_player] + ' takes '},
                        broadcast=True)
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Spit   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    Spit   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
 @app.route('/spit', methods = ['GET', 'POST'])
 def spit_play():
@@ -327,7 +322,7 @@ def redirect_to_five_card_stud():
     requesting_player = http_ref[http_ref.find('player=')+7:]
     return redirect(url_for('five_card_play', player=requesting_player))
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     omaha     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     Omaha     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/omaha', methods = ['GET', 'POST'])
 def omaha_play():
     # makes sure that the game starts from scratch if it was 
@@ -400,7 +395,7 @@ def monty_stay():
     monty_keep_hand = hands[requesting_player]
     emit('monty_drop', {'cards': monty_keep_hand}, room=room_map[requesting_player])
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     omaha     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Holed 'em  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/holdem', methods = ['GET', 'POST'])
 def holdem_play():
     # makes sure that the game starts from scratch if it was 
@@ -436,11 +431,12 @@ def deal_click():
     has_bet_set = set(has_bet_this_round)
     players_active_set = set(players_active)
     
-    # before allowing a deal event, we'll check that all active players' 
-    # accounts are up to date. If not, dealer will get an alert message.
-    # Monty is more complicated once the game gets going.
-    # Hold 'em is also more complicated, so needs a clause to omit first round in
-    # this validation.
+    '''
+    Before allowing a deal event, we'll check that all active players' 
+    accounts are up to date. If not, dealer will get an alert message.
+    Monty is more complicated once the game gets going.
+    Hold 'em is also more complicated, so needs a clause to omit first round in
+    this validation.'''
     def enforce_call_equity():
         if 'monty' in http_ref: # no call validation            
             if monty.monty_match == 1:
@@ -739,21 +735,7 @@ def fold():
     cards_player4_pg[requesting_player] = [draw.card_back] * hand_len
     cards_player5_pg[requesting_player] = [draw.card_back] * hand_len
     cards_player6_pg[requesting_player] = [draw.card_back] * hand_len
-    
-    if 'draw' in http_ref or 'spit' in http_ref:  # for draw and spit we'll just blank out the display in the center
-        if requesting_player == 'player1':
-            cards_player1_pg['requesting_player'] = [None] * 5
-        if requesting_player == 'player2':
-            cards_player2_pg['requesting_player'] = [None] * 5
-        if requesting_player == 'player3':
-            cards_player3_pg['requesting_player'] = [None] * 5
-        if requesting_player == 'player4':
-            cards_player4_pg['requesting_player'] = [None] * 5
-        if requesting_player == 'player5':
-            cards_player5_pg['requesting_player'] = [None] * 5
-        if requesting_player == 'player6':
-            cards_player6_pg['requesting_player'] = [None] * 5
-    
+        
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
     emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
@@ -941,8 +923,7 @@ def receive_bet(message):
     emit('bet_msg',{'player':  player_name_map[requesting_player], 
                     'player_by_number':requesting_player, 'amt': amt, 'fold': 'no'},
                        broadcast=True) # broadcast latest player's bet
-   # if 'monty' in http_ref:
-      #  if
+
     for player in players_tonight:
         if player in players_active:
             emit('pot_msg', {'amt': pot_amount, 'call': max_bet - round_bets[player]}, 
