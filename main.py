@@ -438,7 +438,7 @@ def deal_click():
     Hold 'em is also more complicated, so needs a clause to omit first round in
     this validation.'''
     def enforce_call_equity():
-        if 'monty' in http_ref: # no call validation            
+        if 'monty' in http_ref:        
             if monty.monty_match == 1:
                 if len(monty.players_staying) == 1: # just one person stayed in
                     lost_to_monty = monty.players_staying[0]
@@ -796,6 +796,27 @@ def start_new_game():
     global round_bets
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
+    if 'monty' in http_ref: # Monty requires additional validation: prevent change_game if
+                            # players who are supposed to match the pot have not matched it.
+                            
+        if monty.monty_match == 1:
+            if len(monty.players_staying) == 1: # just one person stayed in
+                lost_to_monty = monty.players_staying[0]
+                if round_bets[lost_to_monty] != monty.match_amt: # problem: loser didn't match pot
+                    emit('bets_needed_alert', 
+                         {'negligent_bettors': [player_name_map[lost_to_monty]], 
+                            'fault_type': 'no_match'}, 
+                         room=room_map[requesting_player])
+                    return 
+            else:
+                yet_to_match = []
+                for p in monty.players_staying:                       
+                    if p != monty.monty_winner and round_bets[p] != monty.match_amt: # problem: loser didn't match pot
+                        yet_to_match.append(player_name_map[p])
+                    if len(yet_to_match) > 0:
+                        emit('bets_needed_alert', {'negligent_bettors': yet_to_match, 
+                                 'fault_type': 'no_match'}, room=room_map[requesting_player])
+                        return
     if pot_amount > 0: # and pot_claimed==False: # disallow staring new game 
         emit('money_left_alert', {}, room=room_map[requesting_player]) 
         return None
@@ -854,6 +875,30 @@ def start_new_game():
 
 @socketio.on('change_game', namespace='/test')
 def change_game(new_game):
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    if 'monty' in http_ref: # Monty requires additional validation: prevent change_game if
+                            # players who are supposed to match the pot have not matched it.
+                            
+        if monty.monty_match == 1:
+            if len(monty.players_staying) == 1: # just one person stayed in
+                lost_to_monty = monty.players_staying[0]
+                if round_bets[lost_to_monty] != monty.match_amt: # problem: loser didn't match pot
+                    emit('bets_needed_alert', 
+                         {'negligent_bettors': [player_name_map[lost_to_monty]], 
+                            'fault_type': 'no_match'}, 
+                         room=room_map[requesting_player])
+                    return 
+            else:
+                yet_to_match = []
+                for p in monty.players_staying:                       
+                    if p != monty.monty_winner and round_bets[p] != monty.match_amt: # problem: loser didn't match pot
+                        yet_to_match.append(player_name_map[p])
+                    if len(yet_to_match) > 0:
+                        emit('bets_needed_alert', {'negligent_bettors': yet_to_match, 
+                                 'fault_type': 'no_match'}, room=room_map[requesting_player])
+                        return
+
     print('change_game(new_game) got called on the server, argument passed: "' + new_game['new_game'] + '"')
     emit('redirect_all_players', {'new_game': new_game['new_game']}, broadcast = True)
 ##########################################################################
