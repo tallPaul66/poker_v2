@@ -77,15 +77,15 @@ cards_player6_pg = {}
 
 room_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'', 
              'player5':'', 'player6':''}
-pot_amount = 0
-max_bet = 0
+pot_amount = 0.
+max_bet = 0.
 buy_in = ''
 
 # games that require choices on the player's part beyond folding or staying in
 choice_games = ['draw', 'monty', 'spit']
 
 def pot_update(amt):
-    amt = int(amt)
+    amt = float(amt)
     global pot_amount
     global max_bet    
     if amt > max_bet: # increase call amt
@@ -504,7 +504,7 @@ def deal_click():
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
     has_bet_this_round_tmp = has_bet_this_round.copy() # for holdem, can't reset this after first round
     has_bet_this_round.clear()
-    max_bet = 0  # reset the call amount
+    max_bet = 0.  # reset the call amount
     if 'holdem' in http_ref:        
         print(f'Game is Hold \'em, boys. stage = {holdem.stage}; max_bet is {max_bet}')
         if len(holdem.stage) == 0: # re-activate all tonight's players
@@ -797,18 +797,9 @@ def start_new_game():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     if 'monty' in http_ref: # Monty requires additional validation: prevent change_game if
-                            # players who are supposed to match the pot have not matched it.
-                            
+                            # players who are supposed to match the pot have not matched it.                            
         if monty.monty_match == 1:
-            if len(monty.players_staying) == 1: # just one person stayed in
-                lost_to_monty = monty.players_staying[0]
-                if round_bets[lost_to_monty] != monty.match_amt: # problem: loser didn't match pot
-                    emit('bets_needed_alert', 
-                         {'negligent_bettors': [player_name_map[lost_to_monty]], 
-                            'fault_type': 'no_match'}, 
-                         room=room_map[requesting_player])
-                    return 
-            else:
+            if len(monty.players_staying) > 1: 
                 yet_to_match = []
                 for p in monty.players_staying:                       
                     if p != monty.monty_winner and round_bets[p] != monty.match_amt: # problem: loser didn't match pot
@@ -821,7 +812,7 @@ def start_new_game():
         emit('money_left_alert', {}, room=room_map[requesting_player]) 
         return None
     round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
-    max_bet = 0
+    max_bet = 0.
     print('\n start_new_game() has been called.')
     http_ref = request.environ['HTTP_REFERER']
     #no need to clear pot amount anymore, since if it's > 0, cannot have gotten this far
@@ -878,18 +869,9 @@ def change_game(new_game):
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     if 'monty' in http_ref: # Monty requires additional validation: prevent change_game if
-                            # players who are supposed to match the pot have not matched it.
-                            
+                            # players who are supposed to match the pot have not matched it.                            
         if monty.monty_match == 1:
-            if len(monty.players_staying) == 1: # just one person stayed in
-                lost_to_monty = monty.players_staying[0]
-                if round_bets[lost_to_monty] != monty.match_amt: # problem: loser didn't match pot
-                    emit('bets_needed_alert', 
-                         {'negligent_bettors': [player_name_map[lost_to_monty]], 
-                            'fault_type': 'no_match'}, 
-                         room=room_map[requesting_player])
-                    return 
-            else:
+            if len(monty.players_staying) > 1: 
                 yet_to_match = []
                 for p in monty.players_staying:                       
                     if p != monty.monty_winner and round_bets[p] != monty.match_amt: # problem: loser didn't match pot
@@ -920,14 +902,14 @@ def receive_bet(message):
         emit('illegal_bet_alert', {}, room = room_map[requesting_player])
         return
     has_bet_this_round.append(requesting_player)
-    amt = int(message['amt'])
+    amt = float(message['amt'])
     # first let's validate bet to ensure player is not entering a negative amt
     # that is larger magnitude that what he's bet. Negative amounts are allowed to 
     # correct input errors, but not to get "free money."
     player_tot_bet = round_bets[requesting_player]
     if amt < 0 and abs(amt) > player_tot_bet:
         print(f'{requesting_player} just tried to take out more from the pot than he put in: {amt}')
-        emit('hand_in_till', {'err': 'error code 212: Your hand in till. Can\'t take out more than you put in'},
+        emit('hand_in_till', {'err': 'error: Get your hand out of the till. Can\'t take out more than you put in'},
              room=room_map[requesting_player])
         return None
     
@@ -937,7 +919,7 @@ def receive_bet(message):
     print(f'{requesting_player} just bet ${amt}.')
     
     # decrement player's stash, and send new stash amount to the player
-    player_stash_map[requesting_player] = player_stash_map[requesting_player] - int(amt)
+    player_stash_map[requesting_player] = player_stash_map[requesting_player] - float(amt)
     emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': buy_in}, 
          broadcast=True)
     # hold em gets its own bet logic
@@ -958,7 +940,7 @@ def receive_bet(message):
                        broadcast=True) # broadcast latest player's bet
         for player in players_tonight:
             if len(holdem.stage) == 0 and pot_claimed == True:
-                call_amt = 0
+                call_amt = 0.0
             else:
                 call_amt = max_bet - round_bets[player]
             emit('pot_msg', {'amt': pot_amount, 'call': call_amt}, 
@@ -984,7 +966,7 @@ def claim_pot(default_winner = None):
     global round_bets
     global pot_claimed
     global players_active
-    max_bet = 0
+    max_bet = 0.
     pot_claimed = True
     has_bet_this_round.clear()
     http_ref = request.environ['HTTP_REFERER']
@@ -992,7 +974,7 @@ def claim_pot(default_winner = None):
 
     if default_winner != None: # this occurs when all players but one fold. Push the pot to remaining player.
         requesting_player = default_winner
-    player_stash_map[requesting_player] = player_stash_map[requesting_player] + int(pot_amount)
+    player_stash_map[requesting_player] = player_stash_map[requesting_player] + float(pot_amount)
     
     # if a pot is claimed the game is over, whether or not the game has been
     # dealt to completion, so reset stage of all games
@@ -1004,7 +986,7 @@ def claim_pot(default_winner = None):
     holdem.stage.clear()
     cross.stage.clear()
         
-    round_bets = {x: 0 for x in round_bets.keys()} # clear out previous round bets
+    round_bets = {x: 0. for x in round_bets.keys()} # clear out previous round bets
     pot_tmp = pot_amount
     pot_update(-pot_amount) # clear pot amount
      # show everyone the winner's increased stash
