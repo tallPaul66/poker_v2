@@ -475,14 +475,7 @@
                 return false;
             });
         });
-        // This is for the betting and clear buttons to enter the values
-        // into the betting amount text box
-        function writeNumbers(x) {
-            var txt = document.getElementById("bet_entered");
-            var bet_amt = parseInt(x, 10);
-            if(txt.value==""){ txt.value = 0 + bet_amt}
-            else {txt.value = parseInt(txt.value, 10) + bet_amt;}
-        }
+        
         function c() {
             var txt = document.getElementById("bet_entered");
             txt.value = 0;
@@ -499,7 +492,8 @@
         // clients and the clients are redirected to that link.
         namespace = '/test';
         var socket = io(namespace);        
-        check_pot(game)      // fn defined in external .js file
+        check_pot(game)      // fn defined in external .js file        
+        writeNumbers(x, currency_factor)      // fn defined in external .js file
     </script>
   </head>
    <body onload="makeRadioButtons()">
@@ -519,7 +513,7 @@
         <hr class="vertical" />
         <hr class="vertical" />
         <form style= "margin-left:20px; margin-right:3px; margin-top: 14px;" id= "fold" class = "form" method="POST" action='#'> 
-             <input class="submit_btn1" type="submit" name="btn" value="FOLDY-DOLDY">
+             <input class="submit_btn1" type="submit" name="btn" value="FOLD">
         </form>
         <form style= "margin-right:20px; margin-top: 14px;" id= "reveal" class = "form" method="POST" action='#'> 
 	         <input class="submit_btn1" type="submit" name="btn" value="REVEAL">
@@ -527,12 +521,12 @@
         
         <hr class="vertical" />
         <hr class="vertical" />        
-        <input style= "margin-left:20px;" type="image" src="static/card_pics/white_chip_small.png" width=55 height=55 name="bet_1" id="bet_1" onclick="writeNumbers(1);"/>
-        <input style= "margin-left:3px;" type="image" src="static/card_pics/red_chip_small.png" width=55 height=55  name="bet_2" id="bet_2" onclick="writeNumbers(2);"/>
-        <input style= "margin-left:3px;" type="image" src="static/card_pics/blue_chip_small.png" width=55 height=55  name="bet_5" id="bet_5" onclick="writeNumbers(5);"/>
+        <input style= "margin-left:20px;" type="image" src="static/card_pics/white_chip_small.png" width=55 height=55 name="bet_1" id="bet_1" onclick="writeNumbers(1, {{currency_factor}}); return false;"/>
+        <input style= "margin-left:3px;" type="image" src="static/card_pics/red_chip_small.png" width=55 height=55  name="bet_2" id="bet_2" onclick="writeNumbers(2, {{currency_factor}}); return false;"/>
+        <input style= "margin-left:3px;" type="image" src="static/card_pics/blue_chip_small.png" width=55 height=55  name="bet_5" id="bet_5" onclick="writeNumbers(5, {{currency_factor}}); return false;"/>
    		  
    		<form style="margin-top: 14px; margin-left:20px; margin-right:20px;" id="bet" method="POST" action='#'>
-            <input id="bet_entered" type="text" name="bet_entered" style="vertical-align:middle; width: 35px; border: 2px outset; height: 52px; text-align:center; font-size:25px;" value=0>
+            <input id="bet_entered" type="text" name="bet_entered" style="vertical-align:middle; width: 50px; border: 2px outset; height: 52px; text-align:center; font-size:20px;" value=0>
             <button style="margin-left:2px; margin-right:10px" id="clr_bet" class="button" type="button" onclick=c()>CLEAR</button>
             <input syle= "margin-left:10px;" type="submit" class = "place_bet_btn" value="PLACE BET">
         </form>        

@@ -260,12 +260,13 @@ function redirect_all(msg){
 } 
 
 // this function writes values into the betting text box according to which icon player clicks
-function writeNumbers(x){
-    var factor = 0.25
-    var y = parseFloat(x)
-    y = y*factor
+function writeNumbers(x, currency_factor){
+    console.log('currency_factor', currency_factor)
+    currency_factor = parseFloat(currency_factor);
+    var y = parseFloat(x);    
+    y = y*currency_factor;
     var txt = document.getElementById("bet_entered");
     var bet_amt = y;
-    if(txt.value==""){ txt.value = 0 + bet_amt}
+    if(txt.value==""){ txt.value = 0 + bet_amt;}
     else {txt.value = parseFloat(txt.value) + bet_amt;}
 }

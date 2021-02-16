@@ -80,6 +80,8 @@ room_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'',
 pot_amount = 0.
 max_bet = 0.
 buy_in = ''
+currency_factor = 1.0 # this will determine the values the three poker chip icons write to the 
+                      # textbox in the web browsers when the player clicks them
 
 # games that require choices on the player's part beyond folding or staying in
 choice_games = ['draw', 'monty', 'spit']
@@ -112,16 +114,16 @@ def background_thread():
 # has been started and the date and time of starting
 hr = datetime.now().hour
 minutes = datetime.now().minute
+if minutes < 10:
+    mins = '0' + str(minutes)
+else:
+    mins = str(minutes)
 if hr >= 12:
     ampm = 'pm'
     hr = hr - 12
-    current_time =  str(hr) + ':' + str(minutes) + ' ' + ampm
+    current_time =  str(hr) + ':' + mins + ' ' + ampm
 else:
-    ampm = 'am'
-    if minutes < 10:
-        mins = '0' + str(minutes)
-    else:
-        mins = str(minutes)
+    ampm = 'am'    
     current_time = str(hr) + ':' + mins + ' ' + ampm
 
 date_spacer_len = (76 - len(date.today().strftime("%B %d, %Y")) - 2)/2
@@ -141,12 +143,15 @@ print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def home():
     global players_active
     global buy_in
+    global currency_factor
     # This method gets called any time someone clicks the submit
     # button on the home pg.    
     
-    if request.method == 'POST':
-        players_tonight.clear()
+    if request.method == 'POST':        
         buy_in = int(float(request.form.get('buyin'))) # amount players buy in for is entered in the home form
+        currency_factor = float(request.form.get('currency_factor'))
+        
+        players_tonight.clear()
         player_name_map['player1'] = request.form.get('player1') 
         player_name_map['player2'] = request.form.get('player2')
         player_name_map['player3'] = request.form.get('player3')
@@ -172,10 +177,11 @@ def home():
 
 @app.route('/draw', methods = ['GET', 'POST'])
 def draw_play():
+    global currency_factor
     # makes sure that the game starts from scratch if it was 
     # left in a state stage != []
     draw.stage.clear()
-    return render_template('draw.html', names = player_name_map)
+    return render_template('draw.html', names = player_name_map, currency_factor=currency_factor)
 
 @app.route('/link_to_draw')
 def redirect_to_draw():
@@ -246,7 +252,8 @@ def spit_play():
     # makes sure that the game starts from scratch if it was 
     # left in a state stage != []
     spit.stage.clear()
-    return render_template('spit_in_the_ocean.html', names = player_name_map)
+    return render_template('spit_in_the_ocean.html', names = player_name_map, 
+                           currency_factor=currency_factor)
 
 @app.route('/link_to_spit')
 def redirect_to_spit():
@@ -314,7 +321,8 @@ def five_card_play():
     # makes sure that the game starts from scratch if it was 
     # left in a state stage != []
     five_card_stud.stage.clear()    
-    return render_template('five_card_stud.html', names = player_name_map)
+    return render_template('five_card_stud.html', names = player_name_map,
+                           currency_factor=currency_factor)
 
 @app.route('/link_to_five_card_stud')
 def redirect_to_five_card_stud():
@@ -328,7 +336,8 @@ def omaha_play():
     # makes sure that the game starts from scratch if it was 
     # left in a state stage != []
     omaha.stage.clear()
-    return render_template('omaha.html', names = player_name_map)
+    return render_template('omaha.html', names = player_name_map,
+                           currency_factor=currency_factor)
 
 @app.route('/link_to_omaha')
 def redirect_to_omaha():
@@ -342,7 +351,8 @@ def cross_play():
     # makes sure that the game starts from scratch if it was 
     # left in a state stage != []
     cross.stage.clear()
-    return render_template('cross.html', names = player_name_map)
+    return render_template('cross.html', names = player_name_map,
+                           currency_factor=currency_factor)
 
 @app.route('/link_to_cross')
 def redirect_to_cross():
@@ -354,7 +364,8 @@ def redirect_to_cross():
 @app.route('/seven_card_stud', methods = ['GET', 'POST'])
 def seven_card_play():
     seven_card_stud.stage.clear()
-    return render_template('seven_card_stud.html', names = player_name_map)
+    return render_template('seven_card_stud.html', names = player_name_map,
+                           currency_factor=currency_factor)
 
 @app.route('/link_to_seven_card')
 def redirect_to_seven_card_stud():
@@ -366,7 +377,8 @@ def redirect_to_seven_card_stud():
 @app.route('/monty', methods = ['GET', 'POST'])
 def monty_play():   
     monty.stage.clear()
-    return render_template('monty.html', names = player_name_map)
+    return render_template('monty.html', names = player_name_map,
+                           currency_factor=currency_factor)
 
 @app.route('/link_to_monty')
 def redirect_to_monty():
@@ -401,7 +413,8 @@ def holdem_play():
     # makes sure that the game starts from scratch if it was 
     # left in a state stage != []
     holdem.stage.clear()
-    return render_template('holdem.html', names = player_name_map)
+    return render_template('holdem.html', names = player_name_map,
+                           currency_factor=currency_factor)
 
 @app.route('/link_to_holdem')
 def redirect_to_holdem():
