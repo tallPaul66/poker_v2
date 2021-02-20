@@ -478,6 +478,8 @@ def deal_click():
                 return 'continue_deal'
         if 'holdem' in http_ref and len(holdem.stage) == 0: # no call validation bec of blinds
             return 'continue_deal'   
+        
+        # General validation for insuring betting equity before dealing is allowed
         if has_bet_set == players_active_set:
             # create a new dict of bets of just the active players
             active_player_round_bets = {}
@@ -492,9 +494,12 @@ def deal_click():
                     # get the players actual names.
                     players_no_call[i] = player_name_map[players_no_call[i]]
                 # emit a message that someone is under call amt
-                emit('bets_needed_alert', {'negligent_bettors': players_no_call, 'fault_type': 'no_call'}, 
+                if len(players_no_call) > 0:
+                    emit('bets_needed_alert', {'negligent_bettors': players_no_call, 'fault_type': 'no_call'}, 
                      room=room_map[requesting_player])            
-                return 'no_deal'
+                    return 'no_deal'
+                else:
+                    return 'continue_deal'
             else:
                 return 'continue_deal'
         else: # emit a message that triggers an alert to the dealer that someone hasn't bet

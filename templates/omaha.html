@@ -334,7 +334,7 @@
         <hr class="vertical" />
         <hr class="vertical" />
         <form style= "margin-left:20px; margin-right:3px; margin-top: 14px;" id= "fold" class = "form" method="POST" action='#'> 
-             <input class="submit_btn1" type="submit" name="btn" value="FOLDY">
+             <input class="submit_btn1" type="submit" name="btn" value="FOLD">
         </form>
         <form style= "margin-right:20px; margin-top: 14px;" id= "reveal" class = "form" method="POST" action='#'> 
 	         <input class="submit_btn1" type="submit" name="btn" value="REVEAL">
@@ -382,12 +382,12 @@
           <th valign=middle colspan = "2">                
               <h3 style="color:#FFDF00;">{{names["player1"]}}</h3>
               <h1><div id="player1_stash"></div></h1>
-              <img src="" id="player1_stash_img" width=80 height=80>
+              <img src="" id="player1_stash_img" width=60 height=80>
           </th>
-          <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
-		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>
-		  <td valign=top><img src="" id="player1_card3" width=80 height=122></td>
-		  <td valign=top><img src="" id="player1_card4" width=80 height=122></td>		  
+          <td valign=top><img src="" id="player1_card1" width=60 height=91.5></td>
+		  <td valign=top><img src="" id="player1_card2" width=60 height=91.5></td>
+		  <td valign=top><img src="" id="player1_card3" width=60 height=91.5></td>
+		  <td valign=top><img src="" id="player1_card4" width=60 height=91.5></td>		  
           <td></td><td></td><td></td><td></td>
           <td></td><td></td><td></td>
         </tr>
@@ -395,7 +395,7 @@
           <th valign=bottom colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
               <h1><div id="player5_stash"></div></h1>
-              <img src="" id="player5_stash_img" width=80 height=80>
+              <img src="" id="player5_stash_img" width=60 height=80>
           </th>
           <th colspan = "3" valign=top>
     		  <div style="color:#F0FFFF;" id="log"></div>
@@ -405,9 +405,7 @@
     <!--                                 BETTING                            -->
     <!--####################################################################-->
 		  <th colspan="2" valign=top>
-		     <br> 
              <h1><div id="pot_total"></div></h1>
-             <br> 
              <div  id="call_amt"></div>
              <br>
              <form style='float: center; padding: 5px;' id= "claim_pot" class="form" method="POST" action='#'>     
@@ -426,25 +424,25 @@
           <th valign=bottom colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
               <h1><div id="player2_stash"></div></h1>
-              <img src="" id="player2_stash_img" width=80 height=80>
+              <img src="" id="player2_stash_img" width=60 height=80>
           </th>
          </tr>
          <tr>
-          <td><img src="" id="player5_card1" width=80 height=122></td>
-		  <td><img src="" id="player5_card2" width=80 height=122></td>
-		  <td><img src="" id="player5_card3" width=80 height=122></td>
-		  <td><img src="" id="player5_card4" width=80 height=122></td>
+          <td><img src="" id="player5_card1" width=60 height=91.5></td>
+		  <td><img src="" id="player5_card2" width=60 height=91.5></td>
+		  <td><img src="" id="player5_card3" width=60 height=91.5></td>
+		  <td><img src="" id="player5_card4" width=60 height=91.5></td>
 		  <td></td><td></td>
-		  <td><img src="" id="comm_card1" width=80 height=122></td>
-          <td><img src="" id="comm_card2" width=80 height=122></td>
-          <td><img src="" id="comm_card3" width=80 height=122></td>
-          <td><img src="" id="comm_card4" width=80 height=122></td>
-          <td><img src="" id="comm_card5" width=80 height=122></td>
+		  <td><img src="" id="comm_card1" width=60 height=91.5></td>
+          <td><img src="" id="comm_card2" width=60 height=91.5></td>
+          <td><img src="" id="comm_card3" width=60 height=91.5></td>
+          <td><img src="" id="comm_card4" width=60 height=91.5></td>
+          <td><img src="" id="comm_card5" width=60 height=91.5></td>
 		  <td></td><td></td>
-          <td><img src="" id="player2_card1" width=80 height=122></td>
-		  <td><img src="" id="player2_card2" width=80 height=122></td>
-		  <td><img src="" id="player2_card3" width=80 height=122></td>
-		  <td><img src="" id="player2_card4" width=80 height=122></td>		  
+          <td><img src="" id="player2_card1" width=60 height=91.5></td>
+		  <td><img src="" id="player2_card2" width=60 height=91.5></td>
+		  <td><img src="" id="player2_card3" width=60 height=91.5></td>
+		  <td><img src="" id="player2_card4" width=60 height=91.5></td>		  
         </tr>
         <tr>
           <td></td><td></td>
@@ -452,7 +450,7 @@
               <br><br>
               <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
               <h1><div id="player4_stash"></div></h1>
-              <img src="" id="player4_stash_img" width=80 height=80>
+              <img src="" id="player4_stash_img" width=60 height=80>
           </th>          
           <td></td><td></td><td></td><td></td>
           <td></td><td></td><td></td><td></td>
@@ -461,21 +459,21 @@
               <br><br>            
               <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
               <h1><div id="player3_stash"></div></h1>
-              <img src="" id="player3_stash_img" width=80 height=80>
+              <img src="" id="player3_stash_img" width=60 height=80>
           </th>
           <td></td><td></td>
         </tr>
         <tr>
           <td></td><td></td><td></td>          
-          <td><img src="" id="player4_card1" width=80 height=122></td>
-		  <td><img src="" id="player4_card2" width=80 height=122></td>
-		  <td><img src="" id="player4_card3" width=80 height=122></td>
-		  <td><img src="" id="player4_card4" width=80 height=122></td>
+          <td><img src="" id="player4_card1" width=60 height=91.5></td>
+		  <td><img src="" id="player4_card2" width=60 height=91.5></td>
+		  <td><img src="" id="player4_card3" width=60 height=91.5></td>
+		  <td><img src="" id="player4_card4" width=60 height=91.5></td>
 		  <td></td><td></td>
-		  <td><img src="" id="player3_card1" width=80 height=122></td>
-		  <td><img src="" id="player3_card2" width=80 height=122></td>
-		  <td><img src="" id="player3_card3" width=80 height=122></td>
-		  <td><img src="" id="player3_card4" width=80 height=122></td>
+		  <td><img src="" id="player3_card1" width=60 height=91.5></td>
+		  <td><img src="" id="player3_card2" width=60 height=91.5></td>
+		  <td><img src="" id="player3_card3" width=60 height=91.5></td>
+		  <td><img src="" id="player3_card4" width=60 height=91.5></td>
 		  <td></td><td></td><td></td><td></td>
         </tr>
 	  </table> 		
