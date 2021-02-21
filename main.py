@@ -47,7 +47,8 @@ app.config['SECRET_KEY'] = 'secret!'
 #logging.getLogger('engineio').setLevel(logging.ERROR)
 #logging.getLogger('geventwebsocket.handler').setLevel(logging.ERROR)
 ###
-socketio = SocketIO(app, async_mode=async_mode, ping_interval=10000, ping_timeout=25000) #,ping_interval=10, ping_timeout=60)
+socketio = SocketIO(app, async_mode=async_mode, ping_interval=10000, ping_timeout=25000,
+                    cors_allowed_origins=['http://url', 'https://url'])
 
 thread = None
 thread_lock = Lock()
