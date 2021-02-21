@@ -5,3 +5,4 @@ gunicorn==18.0.0
 eventlet==0.25.1
 requests==2.23.0
 Werkzeug==0.16.0
+numpy
