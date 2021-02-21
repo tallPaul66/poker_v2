@@ -1,5 +1,5 @@
 flask
 flask_sockets
 flask_socketio
-gunicorn
+gunicorn==18.0.0
 numpy
