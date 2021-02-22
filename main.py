@@ -148,20 +148,45 @@ def home():
     # button on the home pg.    
     
     if request.method == 'POST':        
-        buy_in = int(float(request.form.get('buyin'))) # amount players buy in for is entered in the home form
+        
         currency_factor = float(request.form.get('currency_factor'))
         
         players_tonight.clear()
-        player_name_map['player1'] = request.form.get('player1') 
-        player_name_map['player2'] = request.form.get('player2')
-        player_name_map['player3'] = request.form.get('player3')
-        player_name_map['player4'] = request.form.get('player4')
-        player_name_map['player5'] = request.form.get('player5')
+        player_name_map['player1'] = request.form.get('player1')        
+        player_name_map['player2'] = request.form.get('player2')        
+        player_name_map['player3'] = request.form.get('player3')        
+        player_name_map['player4'] = request.form.get('player4')        
+        player_name_map['player5'] = request.form.get('player5')        
         player_name_map['player6'] = request.form.get('player6')
+        
+        print('buyin1 is: ', request.form.get('buyin1'))
+        print(type(request.form.get('buyin1')))
+        player_stash_map['player1'] = float(request.form.get('buyin1'))
+        player_stash_map['player2'] = float(request.form.get('buyin2'))
+        player_stash_map['player3'] = float(request.form.get('buyin3'))
+        player_stash_map['player4'] = float(request.form.get('buyin4'))
+        player_stash_map['player5'] = float(request.form.get('buyin5'))
+        player_stash_map['player6'] = float(request.form.get('buyin6'))
+        
+        # Set up everybody's buy-in amt, based on whether individual amounts were
+        # entered in the form or just one value for all
+        
+        if all(x==0 for x in player_stash_map.values()):
+            buy_in = int(float(request.form.get('buyin'))) 
+            for p in player_stash_map.keys():
+                player_stash_map[p] = buy_in
+        else:
+            buy_in_total = 0
+            num_players = 0
+            for v in player_stash_map.values():
+                if v > 0:
+                    buy_in_total += v
+                    num_players += 1
+            buy_in = buy_in_total/num_players
+            
         for key in player_name_map.keys():
             if player_name_map[key] != '':
                 players_tonight.append(key)
-                player_stash_map[key] = buy_in
         
         players_active = players_tonight.copy()
         print(f'from home(), form submitted, players set for tonight: {players_tonight}')

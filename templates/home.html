@@ -16,39 +16,64 @@
 		   <h1>Poker v2!</h1>
 	   </div>
        <p>Async mode is: <b>{{ async_mode }}</b></p>
-       <h2>Please enter the players' names for tonight's game and hit "Submit." <br>
+       <h2>Please enter the players' names for tonight's game. For each player, you can enter
+           a specific buy-in amount or just one value for all. <br>
            If fewer than six players, just leave relevant fields blank.
        </h2>
        <br>
        <br>
-       <form method="post">
+       <form method="post">            
             <label for="player1" style="color:#FFDF00; font-weight:bold;">Player 1: &nbsp</label>
-                <input id="player1" name="player1" style = "font-size:20px;" value="Stever M.">
+                <input id="player1" name="player1" style = "font-size:20px;" value="Sir Luke">
+            &nbsp&nbsp&nbsp
+            <label for="buyin1" style="color:#FFDF00; font-weight:bold;">Buy-in: &nbsp</label>
+                $<input type="number" id="buyin1" name="buyin1" style = "font-size:20px; width: 70px;" 
+                value=0 step="0.25">
             <br>
             <label for="player2" style="color:#FFDF00; font-weight:bold;">Player 2: &nbsp</label>
                 <input id="player2" name="player2" style = "font-size:20px;" value="Fast Eddie">
+            &nbsp&nbsp&nbsp
+            <label for="buyin2" style="color:#FFDF00; font-weight:bold;">Buy-in: &nbsp</label>
+                $<input type="number" id="buyin2" name="buyin2" style = "font-size:20px; width: 70px;" 
+                value=0 step="0.25">
             <br>
             <label for="player3" style="color:#FFDF00; font-weight:bold;">Player 3: &nbsp</label>
                 <input id="player3" name="player3" style = "font-size:20px;" value="Master Chafe">
+            &nbsp&nbsp&nbsp
+            <label for="buyin3" style="color:#FFDF00; font-weight:bold;">Buy-in: &nbsp</label>
+                $<input type="number" id="buyin3" name="buyin3" style = "font-size:20px; width: 70px;" 
+                value=0 step="0.25">
             <br>
             <label for="player4" style="color:#FFDF00; font-weight:bold;">Player 4: &nbsp</label>
                 <input id="player4" name="player4" style = "font-size:20px;" value="Dr. B">
+            &nbsp&nbsp&nbsp
+            <label for="buyin4" style="color:#FFDF00; font-weight:bold;">Buy-in: &nbsp</label>
+                $<input type="number" id="buyin4" name="buyin4" style = "font-size:20px; width: 70px;" 
+                value=0 step="0.25">
             <br>
             <label for="player5" style="color:#FFDF00; font-weight:bold;">Player 5: &nbsp</label>
                 <input id="player5" name="player5" style = "font-size:20px;">
+            &nbsp&nbsp&nbsp
+            <label for="buyin5" style="color:#FFDF00; font-weight:bold;">Buy-in: &nbsp</label>
+                $<input type="number" id="buyin5" name="buyin5" style = "font-size:20px; width: 70px;" 
+                value=0 step="0.25">
             <br>
             <label for="player6" style="color:#FFDF00; font-weight:bold;">Player 6: &nbsp</label>
                 <input id="player6" name="player6" style = "font-size:20px;">
+            &nbsp&nbsp&nbsp
+            <label for="buyin6" style="color:#FFDF00; font-weight:bold;">Buy-in: &nbsp</label>
+                $<input type="number" id="buyin6" name="buyin6" style = "font-size:20px; width: 70px;" 
+                value=0 step="0.25">
             <br>
             <br>
             <br>
-            <h2>Enter buy-in amount, in dollars:</h2>
+            <h2>Enter Nominal buy-in amount, in dollars:</h2>
             <br>
             
                 <h2>
                 &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
                 $<input type="number" id="buyin" name="buyin" style="vertical-align:middle; width: 60px; 
-                      font-size:20px; text-align:center;"  value=80>
+                      font-size:20px; text-align:center;"  value=20>
                 </h2>
             <br>
             <br>
