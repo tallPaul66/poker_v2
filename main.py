@@ -159,8 +159,6 @@ def home():
         player_name_map['player5'] = request.form.get('player5')        
         player_name_map['player6'] = request.form.get('player6')
         
-        print('buyin1 is: ', request.form.get('buyin1'))
-        print(type(request.form.get('buyin1')))
         player_stash_map['player1'] = float(request.form.get('buyin1'))
         player_stash_map['player2'] = float(request.form.get('buyin2'))
         player_stash_map['player3'] = float(request.form.get('buyin3'))
@@ -183,7 +181,8 @@ def home():
                     buy_in_total += v
                     num_players += 1
             buy_in = buy_in_total/num_players
-            
+        
+        # we need to know who and how many are playing in this session
         for key in player_name_map.keys():
             if player_name_map[key] != '':
                 players_tonight.append(key)
@@ -215,7 +214,7 @@ def redirect_to_draw():
     return redirect(url_for('draw_play', player=requesting_player))
 
 # special function for draw poker (and spit( to register discards for each
-# player
+# player))
 @socketio.on('draw_cards_draw', namespace='/test')
 def draw_cards_draw(message):
     http_ref = request.environ['HTTP_REFERER']
@@ -225,7 +224,7 @@ def draw_cards_draw(message):
                      message['data']['card3'], message['data']['card4'], 
                      message['data']['card5']]
     if requesting_player == 'player1':        
-        # 1. Show card backs to player for cards selected to discard
+        # 1. Show blank images to player for cards selected to discard
         # as he/she waits for the dealer to deal the draw
         for i in range(len(cards_player1_pg['player1'])):
             if hold_statuses[i] == False:                
@@ -275,7 +274,7 @@ def draw_cards_draw(message):
 @app.route('/spit', methods = ['GET', 'POST'])
 def spit_play():
     # makes sure that the game starts from scratch if it was 
-    # left in a state stage != []
+    # left in a stage != []
     spit.stage.clear()
     return render_template('spit_in_the_ocean.html', names = player_name_map, 
                            currency_factor=currency_factor)
@@ -344,7 +343,7 @@ def draw_cards_spit(message):
 @app.route('/five_card_stud', methods = ['GET', 'POST'])
 def five_card_play():
     # makes sure that the game starts from scratch if it was 
-    # left in a state stage != []
+    # left in a stage != []
     five_card_stud.stage.clear()    
     return render_template('five_card_stud.html', names = player_name_map,
                            currency_factor=currency_factor)
@@ -359,7 +358,7 @@ def redirect_to_five_card_stud():
 @app.route('/omaha', methods = ['GET', 'POST'])
 def omaha_play():
     # makes sure that the game starts from scratch if it was 
-    # left in a state stage != []
+    # left in a stage != []
     omaha.stage.clear()
     return render_template('omaha.html', names = player_name_map,
                            currency_factor=currency_factor)
@@ -374,7 +373,7 @@ def redirect_to_omaha():
 @app.route('/cross', methods = ['GET', 'POST'])
 def cross_play():
     # makes sure that the game starts from scratch if it was 
-    # left in a state stage != []
+    # left in a stage != []
     cross.stage.clear()
     return render_template('cross.html', names = player_name_map,
                            currency_factor=currency_factor)
@@ -435,8 +434,6 @@ def monty_stay():
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Holed 'em  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/holdem', methods = ['GET', 'POST'])
 def holdem_play():
-    # makes sure that the game starts from scratch if it was 
-    # left in a state stage != []
     holdem.stage.clear()
     return render_template('holdem.html', names = player_name_map,
                            currency_factor=currency_factor)
@@ -471,7 +468,8 @@ def deal_click():
     
     '''
     Before allowing a deal event, we'll check that all active players' 
-    accounts are up to date. If not, dealer will get an alert message.
+    betting are up to date. If not, dealer will get an alert message, and
+    prevent the attempted deal.
     Monty is more complicated once the game gets going.
     Hold 'em is also more complicated, so needs a clause to omit first round in
     this validation.'''
@@ -567,16 +565,12 @@ def deal_click():
     if 'monty' in http_ref:
         print(f'Game is Monty, boys. stage = {monty.stage}')
         if len(monty.stage) == 0:            
-            # the three lines below prevent players from accidentally starting a new game
-            # without someone's claiming the previous pot. But for Monty, this won't work. 
+            # For Monty, the usual pot-claiming validation won't work. 
             # Here we just enforce taking of the pot before either 
             # new game is clicked or trying to link to another game,
             # but do not enforce pot claiming before deal() is clicked even if len(stage)==0
             # since it always is for Monty.
             
-            #if pot_amount > 0 and pot_claimed==False : # disallow staring new game 
-            #    emit('money_left_alert', {}, room=room_map[requesting_player]) 
-            #    return None
             pot_claimed = False
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the msg area
