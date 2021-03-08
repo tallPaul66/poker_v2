@@ -171,8 +171,9 @@ def home():
         
         if all(x==0 for x in player_stash_map.values()):
             buy_in = int(float(request.form.get('buyin'))) 
-            for p in player_stash_map.keys():
-                player_stash_map[p] = buy_in
+            for p in player_name_map.keys():
+                if player_name_map[p] != '':
+                    player_stash_map[p] = buy_in
         else:
             buy_in_total = 0
             num_players = 0
