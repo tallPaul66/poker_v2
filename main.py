@@ -25,6 +25,7 @@ import monty
 import spit 
 import holdem
 import cross
+import settle
     
 
 #~~~~~~~~~~~~~~~~~~~ Config Stuff ~~~~~~~~~~~~~~~~~
@@ -1063,6 +1064,10 @@ def claim_pot(default_winner = None):
     for p in player_name_map.keys():
         if p in players_tonight:
             print(player_name_map[p]+ ':  ' + str(player_stash_map[p]))
+    who_pays_whom = settle.settle_up(player_stash_map, player_name_map, buy_in)
+    print('\n If the session is over, this is how to settle up:')
+    for w in who_pays_whom:
+        print(p)
 
 ##########################################################################
 ### Connection Handlers
