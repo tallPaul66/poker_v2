@@ -1067,7 +1067,7 @@ def claim_pot(default_winner = None):
     who_pays_whom = settle.settle_up(player_stash_map, player_name_map, buy_in)
     print('\n If the session is over, this is how to settle up:')
     for w in who_pays_whom:
-        print(p)
+        print(w)
 
 ##########################################################################
 ### Connection Handlers
