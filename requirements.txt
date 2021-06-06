@@ -3,3 +3,4 @@ flask_sockets
 Flask-SocketIO==4.3.2
 gunicorn
 numpy
+pandas
