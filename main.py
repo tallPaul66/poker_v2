@@ -455,7 +455,6 @@ def redirect_to_holdem():
 def override_no_deal(msg):
     global no_deal_override
     if msg['msg'] == 'override':
-        print('override_no_deal() got called.')
         no_deal_override = 1
         
 
@@ -485,7 +484,6 @@ def deal_click():
     this validation.'''
     def enforce_call_equity():
         global no_deal_override
-        print('\nfrom enforce_call_equity(), no_deal_override =' , no_deal_override)
         if 'monty' in http_ref:        
             if monty.monty_match == 1:
                 if len(monty.players_staying) == 1: # just one person stayed in
@@ -515,7 +513,6 @@ def deal_click():
             return 'continue_deal'   
         
         # General validation for insuring betting equity before dealing is allowed
-        print(f'has_bet_set = {has_bet_set}; players_active_set = {players_active_set}')
         if has_bet_set == players_active_set:  # all active players have registered a bet
             # create a new dict of bets of just the active players
             active_player_round_bets = {}
@@ -531,12 +528,10 @@ def deal_click():
                     players_no_call[i] = player_name_map[players_no_call[i]]
                 # emit a message that someone is under call amt
                 if len(players_no_call) > 0 and no_deal_override==0: 
-                    print(f'value of no_deal_override variable is {no_deal_override}')
                     emit('bets_needed_alert', {'negligent_bettors': players_no_call, 'fault_type': 'no_call'}, 
                          room=room_map[requesting_player])            
                     return 'no_deal'
                 else:
-                    print(f'value of no_deal_override variable is {no_deal_override}')
                     no_deal_override = 0 # reset the override variable to not override
                     return 'continue_deal'
             else:
