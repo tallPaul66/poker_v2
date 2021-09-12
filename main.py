@@ -54,7 +54,7 @@ thread = None
 thread_lock = Lock()
 
 #~~~~~~~~~~~~~~~~~~~ Global Variables ~~~~~~~~~~~~~~~~~
-
+no_deal_override = 0
 pot_claimed = True
 players_tonight = []
 players_active = []
@@ -451,6 +451,14 @@ def redirect_to_holdem():
 ### DEAL
 ##############################################################################################
 
+@socketio.on('override_no_deal', namespace='/test')
+def override_no_deal(msg):
+    global no_deal_override
+    if msg['msg'] == 'override':
+        print('override_no_deal() got called.')
+        no_deal_override = 1
+        
+
 @socketio.on('deal', namespace='/test')
 def deal_click():  
     global hands
@@ -476,6 +484,8 @@ def deal_click():
     Hold 'em is also more complicated, so needs a clause to omit first round in
     this validation.'''
     def enforce_call_equity():
+        global no_deal_override
+        print('\nfrom enforce_call_equity(), no_deal_override =' , no_deal_override)
         if 'monty' in http_ref:        
             if monty.monty_match == 1:
                 if len(monty.players_staying) == 1: # just one person stayed in
@@ -505,7 +515,8 @@ def deal_click():
             return 'continue_deal'   
         
         # General validation for insuring betting equity before dealing is allowed
-        if has_bet_set == players_active_set:
+        print(f'has_bet_set = {has_bet_set}; players_active_set = {players_active_set}')
+        if has_bet_set == players_active_set:  # all active players have registered a bet
             # create a new dict of bets of just the active players
             active_player_round_bets = {}
             for p in players_active:
@@ -519,18 +530,21 @@ def deal_click():
                     # get the players actual names.
                     players_no_call[i] = player_name_map[players_no_call[i]]
                 # emit a message that someone is under call amt
-                if len(players_no_call) > 0:
+                if len(players_no_call) > 0 and no_deal_override==0: 
+                    print(f'value of no_deal_override variable is {no_deal_override}')
                     emit('bets_needed_alert', {'negligent_bettors': players_no_call, 'fault_type': 'no_call'}, 
-                     room=room_map[requesting_player])            
+                         room=room_map[requesting_player])            
                     return 'no_deal'
                 else:
+                    print(f'value of no_deal_override variable is {no_deal_override}')
+                    no_deal_override = 0 # reset the override variable to not override
                     return 'continue_deal'
             else:
                 return 'continue_deal'
         else: # emit a message that triggers an alert to the dealer that someone hasn't bet
             if len(players_active_set) == 0:
                 return 'continue_deal'
-            if len(has_bet_set) > 0:
+            if len(has_bet_set) > 0 and no_deal_override==0:
                 players_no_bet = list(players_active_set - has_bet_set)
                 for i in range(len(players_no_bet)):
                     # get the players actual names.
@@ -538,6 +552,9 @@ def deal_click():
                 emit('bets_needed_alert', {'negligent_bettors': players_no_bet, 'fault_type': 'no_bet'}, 
                      room=room_map[requesting_player])
                 return 'no_deal'
+            else:
+                no_deal_override = 0 # reset this variable, in case its being 1 was reason for allowing deal
+                return 'continue_deal'
     ece = enforce_call_equity()
     if ece == 'no_deal':
         return

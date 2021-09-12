@@ -181,11 +181,26 @@ function negligent_bettor_alert(msg) {
     var fault_type = msg.fault_type
     console.log('lenth of players', players.length)
     if(fault_type == "no_match"){
-        window.alert(players + " " + need_verb + " to match the pot.");
+        //window.alert(players + " " + need_verb + " to match the pot.");
+        var result = window.confirm(players + " " + need_verb + " to match the pot. You can " +
+        "override and continue the deal by pressing \'OK\', otherwise click \'Cancel\'");
+            if (result === true) {
+                socket.emit('override_no_deal', {msg: 'override'});
+            } 
     } else if(fault_type == "no_call"){
-        window.alert(players + " " + owes_verb + " money to the pot.");
+        //window.alert(players + " " + owes_verb + " money to the pot.");
+        var result = window.confirm(players + " " + owes_verb + " money to the pot. You can " +
+        "override and continue the deal by pressing \'OK\', otherwise click \'Cancel\'");
+            if (result === true) {
+                socket.emit('override_no_deal', {msg: 'override'});
+            } 
     } else if (fault_type == "no_bet"){
-        window.alert(players + " " + has_verb + " not bet.");
+        //window.alert(players + " " + has_verb + " not bet.");        
+        var result = window.confirm(players + " " + has_verb + " not bet. You can " +
+        "override and continue the deal by pressing \'OK\', otherwise click \'Cancel\'");
+            if (result === true) {
+                socket.emit('override_no_deal', {msg: 'override'});
+            } 
     }
 }
 function check_pot(game) {
