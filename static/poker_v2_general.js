@@ -1,5 +1,52 @@
 const url_params = new URLSearchParams(window.location.search);
 
+// this function handles where the DEALER badge is shown, i.e., 
+// it determines  who the dealer is and then places the dealer
+// badge image (currently "static/dealer_img2_small") under the
+// dealer's name
+function dealer_badge_show(msg) {
+    const player_name = url_params.get('player');
+    dlr = msg.dealer;
+    console.log('dealer is', dlr);
+    dlr_img = "static/dealer_img2_small.png";
+    if ( dlr == "player1"){
+        document.getElementById('player1_dlr_img').src = dlr_img;
+        document.getElementById('player2_dlr_img').src = "no_img.png";
+        document.getElementById('player3_dlr_img').src = "no_img.png";
+        document.getElementById('player4_dlr_img').src = "no_img.png";
+        document.getElementById('player5_dlr_img').src = "no_img.png";
+    } else if ( dlr == "player2"){
+        document.getElementById('player2_dlr_img').src = dlr_img;
+        document.getElementById('player1_dlr_img').src = "no_img.png";
+        document.getElementById('player3_dlr_img').src = "no_img.png";
+        document.getElementById('player4_dlr_img').src = "no_img.png";
+        document.getElementById('player5_dlr_img').src = "no_img.png";
+    } else if ( dlr == "player3"){
+        document.getElementById('player3_dlr_img').src = dlr_img;
+        document.getElementById('player1_dlr_img').src = "no_img.png";
+        document.getElementById('player2_dlr_img').src = "no_img.png";
+        document.getElementById('player4_dlr_img').src = "no_img.png";
+        document.getElementById('player5_dlr_img').src = "no_img.png";
+    } else if ( dlr == "player4"){
+        document.getElementById('player4_dlr_img').src = dlr_img;
+        document.getElementById('player1_dlr_img').src = "no_img.png";
+        document.getElementById('player2_dlr_img').src = "no_img.png";
+        document.getElementById('player3_dlr_img').src = "no_img.png";
+        document.getElementById('player5_dlr_img').src = "no_img.png";
+    } else if ( dlr == "player5"){
+        document.getElementById('player5_dlr_img').src = dlr_img;
+        document.getElementById('player1_dlr_img').src = "no_img.png";
+        document.getElementById('player2_dlr_img').src = "no_img.png";
+        document.getElementById('player3_dlr_img').src = "no_img.png";
+        document.getElementById('player4_dlr_img').src = "no_img.png"; 
+    }
+}
+
+function dummy_test_fn(msg){
+    console.log('dealer is ', msg.dealer)
+}
+
+
 function chip_image_display(msg) {
     const player_name = url_params.get('player');
     var stash_map = msg.stash_map

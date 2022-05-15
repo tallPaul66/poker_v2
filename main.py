@@ -718,7 +718,12 @@ def deal_click():
     
     # show everyone their current stash amt
     emit('stash_msg', {'stash_map': player_stash_map, 'buy_in': buy_in}, 
-         broadcast=True)    
+         broadcast=True)
+    
+     # show everyone who's dealing by showing the dealer badge next to
+     # the dealer's name
+    emit('show_dealer', {'dealer': requesting_player}, 
+         broadcast=True) 
     
     # broadcast pot update
     emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) 
