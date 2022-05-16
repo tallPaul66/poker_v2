@@ -20,6 +20,9 @@
         //        'timeout': 120000 // Increasing connection timeout.
         //    })
         $(document).ready(function() {
+            const url_params = new URLSearchParams(window.location.search);            
+            const player_name = url_params.get('player');
+            
             // Use a "/test" namespace.
             // An application can open a connection on multiple namespaces, and
             // Socket.IO will multiplex all those connections on a single
@@ -35,9 +38,7 @@
             // Event handler for new connections.
             // The callback function is invoked when a connection with the
             // server is established.
-            socket.on('connect', function() {
-                const url_params = new URLSearchParams(window.location.search);
-                const player_name = url_params.get('player');
+            socket.on('connect', function() {                
                 socket.emit('my_event', {data: 'Client connected!', player: player_name});
             });
              
@@ -110,12 +111,14 @@
             // the file depending on how large each player's stash is.
             socket.on('stash_msg', function(msg, cb){
                 chip_image_display(msg)  //this function is defined in an external .js file
-            });
-            
+            });            
+                        
+            dlr_is = "" // global variable to keep track of the current dealer
             // show in browser who the dealer is.
             socket.on('show_dealer', function(msg, cb){
-               dealer_badge_show(msg)  //this function is defined in an external .js file
-            });
+                dlr_is = msg.dealer
+                dealer_badge_show(msg)  //this function is defined in an external .js file                   
+            });                   
             
             // print to browser when somebody folds
             socket.on('who_folded', function(msg, cb) {
@@ -234,9 +237,9 @@
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
             
             // This doesn't work, as far as I can tell
-            $('form#connect_btn').submit(function(event) {
-                var url_params = new URLSearchParams(window.location.search);
-                var player_name = url_params.get('player');
+            $('form#connect_btn').submit(function(event) {                
+                
+                //var player_name = url_params.get('player');
                 socket.emit('my_event', {data: 'Client connected!', player: player_name});
                 return false;            
             });
@@ -387,7 +390,7 @@
               <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player1"]}}</h3>
               <h1><div id="player1_stash"></div></h1>
               <img src="" id="player1_stash_img" width=80 height=80>
-              <img src="" id="player1_dlr_img" width=80 height=80>
+              <img src="" id="player1_dlr_img">
           </th>
           <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card2" width=80 height=122></td>
@@ -402,7 +405,7 @@
               <h3 style="color:#FFDF00; margin-top: 0; margin-bottom: 0;">{{names["player5"]}}</h3>
               <h1><div id="player5_stash"></div></h1>
               <img src="" id="player5_stash_img" width=80 height=80>
-              <img src="" id="player5_dlr_img" width=80 height=80>
+              <img src="" id="player5_dlr_img">
           </th>
           <th colspan = "3" valign=top>
     		  <div style="color:#F0FFFF;" id="log"></div>

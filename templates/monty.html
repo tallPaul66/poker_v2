@@ -191,6 +191,13 @@
                 chip_image_display(msg)  //this function is defined in an external .js file
             });
             
+            dlr_is = "" // global variable to keep track of the current dealer
+            // show in browser who the dealer is.
+            socket.on('show_dealer', function(msg, cb){
+                dlr_is = msg.dealer
+                dealer_badge_show(msg)  //this function is defined in an external .js file                   
+            });
+            
             // print to browser when somebody folds
             socket.on('who_folded', function(msg, cb) {
                 $('#log').append('<br>' + $('<div/>').text(msg.player ).html());               
@@ -463,6 +470,7 @@
               <h3 style="color:#FFDF00;">{{names["player1"]}}</h3>
               <h1><div id="player1_stash"></div></h1>
               <img src="" id="player1_stash_img" width=80 height=80>
+              <img src="" id="player1_dlr_img">
           </th>
           <td valign=top><img src="" id="player1_card1" width=80 height=122></td>
 		  <td valign=top><img src="" id="player1_card2" width=80 height=122> </td>
@@ -511,6 +519,7 @@
               <h1><div id="player5_stash"></div></h1>
               <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
               <img src="" id="player5_stash_img" width=80 height=80>
+              <img src="" id="player5_dlr_img">
           </th>
           <td><img src="" id="player5_card1" width=80 height=122></td>
 		  <td><img src="" id="player5_card2" width=80 height=122></td>
@@ -532,6 +541,7 @@
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
               <h1><div id="player2_stash"></div></h1>
               <img src="" id="player2_stash_img" width=80 height=80>
+              <img src="" id="player2_dlr_img">
           </th>
         </tr>
         <tr>
@@ -548,6 +558,7 @@
               <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
               <h1><div id="player4_stash"></div></h1>
               <img src="" id="player4_stash_img" width=80 height=80>
+              <img src="" id="player4_dlr_img">
           </th>          
           <td><img src="" id="player4_card1" width=80 height=122></td>
 		  <td><img src="" id="player4_card2" width=80 height=122></td>
@@ -569,6 +580,7 @@
               <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
               <h1><div id="player3_stash"></div></h1>
               <img src="" id="player3_stash_img" width=80 height=80>
+              <img src="" id="player3_dlr_img">
           </th>
           <td></td><td></td>
         </tr>
