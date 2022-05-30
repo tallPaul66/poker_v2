@@ -9,6 +9,7 @@ import random
 import numpy as np
 
 card_back = 'static/card_pics/blue_back_3.jpg'
+card_back_fold = 'static/fold_7_small_head.png'
 # suits with just the initials
 suits = ['S', 'C', 'H', 'D']
 

@@ -26,6 +26,7 @@ import spit
 import holdem
 import cross
 import settle
+import new_deck
     
 
 #~~~~~~~~~~~~~~~~~~~ Config Stuff ~~~~~~~~~~~~~~~~~
@@ -203,7 +204,6 @@ def home():
 
 @app.route('/draw', methods = ['GET', 'POST'])
 def draw_play():
-    global currency_factor
     # makes sure that the game starts from scratch if it was 
     # left in a state stage != []
     draw.stage.clear()
@@ -212,7 +212,7 @@ def draw_play():
 @app.route('/link_to_draw')
 def redirect_to_draw():
     http_ref = request.environ['HTTP_REFERER']
-    requesting_player = http_ref[http_ref.find('player=')+7:]    
+    requesting_player = http_ref[http_ref.find('player=')+7:]
     return redirect(url_for('draw_play', player=requesting_player))
 
 # special function for draw poker (and spit( to register discards for each
@@ -560,6 +560,7 @@ def deal_click():
     has_bet_this_round_tmp = has_bet_this_round.copy() # for holdem, can't reset this after first round
     has_bet_this_round.clear()
     max_bet = 0.  # reset the call amount
+    whos_folded = set(players_tonight) - set(players_active) # who has folded
     if 'holdem' in http_ref:        
         print(f'Game is Hold \'em, boys. stage = {holdem.stage}; max_bet is {max_bet}')
         if len(holdem.stage) == 0: # re-activate all tonight's players
@@ -567,14 +568,15 @@ def deal_click():
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
             players_active = players_tonight.copy()
+            whos_folded = []
             emit('clear_log',{}, broadcast = True)  # clear the msg area
         hands = holdem.deal(players_active)
-        pg1_tmp = holdem.get_display(hands, 'player1')
-        pg2_tmp = holdem.get_display(hands, 'player2')
-        pg3_tmp = holdem.get_display(hands, 'player3')
-        pg4_tmp = holdem.get_display(hands, 'player4')
-        pg5_tmp = holdem.get_display(hands, 'player5')
-        pg6_tmp = holdem.get_display(hands, 'player6') 
+        pg1_tmp = holdem.get_display(hands, 'player1', whos_folded)
+        pg2_tmp = holdem.get_display(hands, 'player2', whos_folded)
+        pg3_tmp = holdem.get_display(hands, 'player3', whos_folded)
+        pg4_tmp = holdem.get_display(hands, 'player4', whos_folded)
+        pg5_tmp = holdem.get_display(hands, 'player5', whos_folded)
+        pg6_tmp = holdem.get_display(hands, 'player6', whos_folded) 
         pot_claimed = False
     if 'monty' in http_ref:
         print(f'Game is Monty, boys. stage = {monty.stage}')
@@ -606,15 +608,16 @@ def deal_click():
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
             pot_claimed = False
+            whos_folded = []
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the msg area
         hands = draw.deal(players_active)
-        pg1_tmp = draw.get_display(hands, 'player1')              
-        pg2_tmp = draw.get_display(hands, 'player2')
-        pg3_tmp = draw.get_display(hands, 'player3')
-        pg4_tmp = draw.get_display(hands, 'player4')
-        pg5_tmp = draw.get_display(hands, 'player5')
-        pg6_tmp = draw.get_display(hands, 'player6')
+        pg1_tmp = draw.get_display(hands, 'player1', whos_folded)           
+        pg2_tmp = draw.get_display(hands, 'player2', whos_folded)
+        pg3_tmp = draw.get_display(hands, 'player3', whos_folded)
+        pg4_tmp = draw.get_display(hands, 'player4', whos_folded)
+        pg5_tmp = draw.get_display(hands, 'player5', whos_folded)
+        pg6_tmp = draw.get_display(hands, 'player6', whos_folded)
     
     if 'spit' in http_ref:
         print(f'Game is spit in the ocean, boys. stage = {spit.stage}')
@@ -623,15 +626,16 @@ def deal_click():
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
             pot_claimed = False
+            whos_folded = []
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the msg area
         hands = spit.deal(players_active)
-        pg1_tmp = spit.get_display(hands, 'player1')
-        pg2_tmp = spit.get_display(hands, 'player2')
-        pg3_tmp = spit.get_display(hands, 'player3')
-        pg4_tmp = spit.get_display(hands, 'player4')
-        pg5_tmp = spit.get_display(hands, 'player5')
-        pg6_tmp = spit.get_display(hands, 'player6')
+        pg1_tmp = spit.get_display(hands, 'player1', whos_folded)
+        pg2_tmp = spit.get_display(hands, 'player2', whos_folded)
+        pg3_tmp = spit.get_display(hands, 'player3', whos_folded)
+        pg4_tmp = spit.get_display(hands, 'player4', whos_folded)
+        pg5_tmp = spit.get_display(hands, 'player5', whos_folded)
+        pg6_tmp = spit.get_display(hands, 'player6', whos_folded)
         
     if 'five_card_stud' in http_ref:
         print(f'Game is 5-card stud, boys. stage = {five_card_stud.stage}; max_bet is {max_bet}')
@@ -640,15 +644,17 @@ def deal_click():
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
             pot_claimed = False
+            whos_folded = []
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the msg area           
-        hands = five_card_stud.deal(players_active)
-        pg1_tmp = five_card_stud.get_display(hands, 'player1')
-        pg2_tmp = five_card_stud.get_display(hands, 'player2')
-        pg3_tmp = five_card_stud.get_display(hands, 'player3')
-        pg4_tmp = five_card_stud.get_display(hands, 'player4')
-        pg5_tmp = five_card_stud.get_display(hands, 'player5')
-        pg6_tmp = five_card_stud.get_display(hands, 'player6')
+       
+        hands = five_card_stud.deal(players_active)       
+        pg1_tmp = five_card_stud.get_display(hands, 'player1', whos_folded)
+        pg2_tmp = five_card_stud.get_display(hands, 'player2', whos_folded)
+        pg3_tmp = five_card_stud.get_display(hands, 'player3', whos_folded)
+        pg4_tmp = five_card_stud.get_display(hands, 'player4', whos_folded)
+        pg5_tmp = five_card_stud.get_display(hands, 'player5', whos_folded)
+        pg6_tmp = five_card_stud.get_display(hands, 'player6', whos_folded)
 
     if 'seven_card_stud' in http_ref:
         print(f'Game is 7-card stud, boys. stage = {seven_card_stud.stage}; max_bet is {max_bet}')
@@ -657,15 +663,16 @@ def deal_click():
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
             pot_claimed = False
+            whos_folded = []
             players_active = players_tonight.copy() # re-activate all tonight's players
             emit('clear_log',{}, broadcast = True)  # clear the msg area
-        hands = seven_card_stud.deal(players_active)
-        pg1_tmp = seven_card_stud.get_display(hands, 'player1')
-        pg2_tmp = seven_card_stud.get_display(hands, 'player2')
-        pg3_tmp = seven_card_stud.get_display(hands, 'player3')
-        pg4_tmp = seven_card_stud.get_display(hands, 'player4')
-        pg5_tmp = seven_card_stud.get_display(hands, 'player5')
-        pg6_tmp = seven_card_stud.get_display(hands, 'player6')
+        hands = seven_card_stud.deal(players_active)       
+        pg1_tmp = seven_card_stud.get_display(hands, 'player1', whos_folded)
+        pg2_tmp = seven_card_stud.get_display(hands, 'player2', whos_folded)
+        pg3_tmp = seven_card_stud.get_display(hands, 'player3', whos_folded)
+        pg4_tmp = seven_card_stud.get_display(hands, 'player4', whos_folded)
+        pg5_tmp = seven_card_stud.get_display(hands, 'player5', whos_folded)
+        pg6_tmp = seven_card_stud.get_display(hands, 'player6', whos_folded)
     
     if 'omaha' in http_ref:        
         print(f'Game is Omaha, boys. stage = {omaha.stage}; max_bet is {max_bet}')
@@ -674,15 +681,16 @@ def deal_click():
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
             pot_claimed = False
+            whos_folded = []
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the msg area  
         hands = omaha.deal(players_active)
-        pg1_tmp = omaha.get_display(hands, 'player1')
-        pg2_tmp = omaha.get_display(hands, 'player2')
-        pg3_tmp = omaha.get_display(hands, 'player3')
-        pg4_tmp = omaha.get_display(hands, 'player4')
-        pg5_tmp = omaha.get_display(hands, 'player5')
-        pg6_tmp = omaha.get_display(hands, 'player6')
+        pg1_tmp = omaha.get_display(hands, 'player1', whos_folded)
+        pg2_tmp = omaha.get_display(hands, 'player2', whos_folded)
+        pg3_tmp = omaha.get_display(hands, 'player3', whos_folded)
+        pg4_tmp = omaha.get_display(hands, 'player4', whos_folded)
+        pg5_tmp = omaha.get_display(hands, 'player5', whos_folded)
+        pg6_tmp = omaha.get_display(hands, 'player6', whos_folded)
     if 'cross' in http_ref:        
         print(f'Game is Fiery cross, boys. stage = {cross.stage}; max_bet is {max_bet}')
         if len(cross.stage) == 0: # re-activate all tonight's players
@@ -690,15 +698,16 @@ def deal_click():
                 emit('money_left_alert', {}, room=room_map[requesting_player]) 
                 return None
             pot_claimed = False
+            whos_folded = []
             players_active = players_tonight.copy()
             emit('clear_log',{}, broadcast = True)  # clear the msg area  
         hands = cross.deal(players_active)
-        pg1_tmp = cross.get_display(hands, 'player1')
-        pg2_tmp = cross.get_display(hands, 'player2')
-        pg3_tmp = cross.get_display(hands, 'player3')
-        pg4_tmp = cross.get_display(hands, 'player4')
-        pg5_tmp = cross.get_display(hands, 'player5')
-        pg6_tmp = cross.get_display(hands, 'player6')
+        pg1_tmp = cross.get_display(hands, 'player1', whos_folded)
+        pg2_tmp = cross.get_display(hands, 'player2', whos_folded)
+        pg3_tmp = cross.get_display(hands, 'player3', whos_folded)
+        pg4_tmp = cross.get_display(hands, 'player4', whos_folded)
+        pg5_tmp = cross.get_display(hands, 'player5', whos_folded)
+        pg6_tmp = cross.get_display(hands, 'player6', whos_folded)
         
     for key in pg1_tmp.keys():
         cards_player1_pg[key] = pg1_tmp[key]        
@@ -773,24 +782,24 @@ def fold():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     hand_len = len(hands[requesting_player])
-    seven_card_stud.hands[requesting_player] = [seven_card_stud.card_back] * hand_len
-    five_card_stud.hands[requesting_player] = [five_card_stud.card_back] * hand_len
-    omaha.hands[requesting_player] = [omaha.card_back] * hand_len
-    draw.hands[requesting_player] = [draw.card_back] * hand_len
-    spit.hands[requesting_player] = [spit.card_back] * hand_len
-    holdem.hands[requesting_player] = [holdem.card_back] * hand_len
-    cross.hands[requesting_player] = [cross.card_back] * hand_len
+    seven_card_stud.hands[requesting_player] = [new_deck.card_back_fold] * hand_len
+    five_card_stud.hands[requesting_player] = [new_deck.card_back_fold] * hand_len
+    omaha.hands[requesting_player] = [new_deck.card_back_fold] * hand_len
+    draw.hands[requesting_player] = [new_deck.card_back_fold] * hand_len
+    spit.hands[requesting_player] = [new_deck.card_back_fold] * hand_len
+    holdem.hands[requesting_player] = [new_deck.card_back_fold] * hand_len
+    cross.hands[requesting_player] = [new_deck.card_back_fold] * hand_len
     
     players_active.remove(requesting_player) # should add try/catch here in case player not in list
     if requesting_player in has_bet_this_round:
         has_bet_this_round.remove(requesting_player)
         
-    cards_player1_pg[requesting_player] = [draw.card_back] * hand_len
-    cards_player2_pg[requesting_player] = [draw.card_back] * hand_len
-    cards_player3_pg[requesting_player] = [draw.card_back] * hand_len
-    cards_player4_pg[requesting_player] = [draw.card_back] * hand_len
-    cards_player5_pg[requesting_player] = [draw.card_back] * hand_len
-    cards_player6_pg[requesting_player] = [draw.card_back] * hand_len
+    cards_player1_pg[requesting_player] = [new_deck.card_back_fold] * hand_len
+    cards_player2_pg[requesting_player] = [new_deck.card_back_fold] * hand_len
+    cards_player3_pg[requesting_player] = [new_deck.card_back_fold] * hand_len
+    cards_player4_pg[requesting_player] = [new_deck.card_back_fold] * hand_len
+    cards_player5_pg[requesting_player] = [new_deck.card_back_fold] * hand_len
+    cards_player6_pg[requesting_player] = [new_deck.card_back_fold] * hand_len
         
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
@@ -1081,10 +1090,14 @@ def claim_pot(default_winner = None):
     for p in player_name_map.keys():
         if p in players_tonight:
             print(player_name_map[p]+ ':  ' + str(player_stash_map[p]))
-    who_pays_whom = settle.settle_up(player_stash_map, player_name_map, buy_in)
-    print('\n If the session is over, this is how to settle up:')
-    for w in who_pays_whom:
-        print(w)
+    
+    who_pays_whom = settle.settle_up(player_stash_map, player_name_map, buy_in)    
+    if len(who_pays_whom) > 0:
+        print('\n If the session is over, this is how to settle up:')
+        for w in who_pays_whom:
+            print(w)
+    else:
+        print('Apparently everybody is even-Steven--all players broke even.')
 
 ##########################################################################
 ### Connection Handlers

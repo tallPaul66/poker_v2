@@ -55,7 +55,7 @@ def deal(players):
         return hands 
 
 
-def get_display(hands, whose_pg):
+def get_display(hands, whose_pg, whos_folded):
     display_hands = {}
     # player is not 'whose_pg'
     for key in hands.keys():
@@ -63,4 +63,11 @@ def get_display(hands, whose_pg):
         if key != whose_pg:
             cards = [card_back] * 5
         display_hands[key] = cards
+    # need additional code to show the special card
+    # backs for players who've folded
+    for p in whos_folded:
+        num_cards = len(hands[p])
+        display_hands[p] = [new_deck.card_back_fold]*num_cards
     return display_hands
+
+

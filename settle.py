@@ -22,6 +22,8 @@ def settle_up(player_stash_map, player_name_map, buy_in):
                     'stash': list(player_stash_map.values())})
     df_settle['d'] = df_settle['stash']  - buy_in
     df_settle = df_settle[df_settle.d != -buy_in]
+    if len(df_settle==0): 
+        return []
     ### 1st consolidate the losers and their payments
     df_losers = df_settle[df_settle.d < 0].copy()
     df_losers.sort_values(by = 'd', ascending=False, inplace=True)

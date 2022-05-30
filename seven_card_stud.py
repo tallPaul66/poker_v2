@@ -68,7 +68,7 @@ def deal(players):
         stage.clear()
         return hands #hands_tuple
 
-def get_display(hands_list, whose_pg):
+def get_display(hands_list, whose_pg, whos_folded):
     display_hands = {}
     
     # convert 1st, 2nd and 7th card pics to card back pic if 
@@ -84,6 +84,11 @@ def get_display(hands_list, whose_pg):
         if num_cards < 7: # add fancy card place holder graphics 
             cards.extend([cd_plc_holder_img]*(7-num_cards))
         display_hands[key] = cards
+    # need additional code to show the special card
+    # backs for players who've folded
+    for p in whos_folded:
+        num_cards = len(hands[p])
+        display_hands[p] = [new_deck.card_back_fold]*num_cards
     return display_hands
             
             

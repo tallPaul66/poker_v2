@@ -51,7 +51,7 @@ def deal(players):
             stage.clear()
         return hands
     
-def get_display(hands_list, whose_pg):
+def get_display(hands_list, whose_pg, whos_folded):
     display_hands = {}
     for key in hands_list.keys():
         cards = hands_list[key].copy() # without this statement, somehow global hands gets altered
@@ -61,4 +61,9 @@ def get_display(hands_list, whose_pg):
         if num_cards < 5: # add fancy card place holder graphics 
             cards.extend([cd_plc_holder_img]*(5-num_cards))
         display_hands[key] = cards
+    # need additional code to show the special card
+    # backs for players who've folded
+    for p in whos_folded:
+        num_cards = len(hands_list[p])
+        display_hands[p] = [new_deck.card_back_fold]*num_cards        
     return display_hands
