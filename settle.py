@@ -16,13 +16,19 @@ import pandas as pd
 #player_name_map = {'player1': 'Bobster', 'player2': 'Laszlo', 'player3': 'Chafe', 
 #                   'player4': 'Dr. B', 'player5': 'Jeff', 'player6': 'Steve'}
 
-def settle_up(player_stash_map, player_name_map, buy_in):
+def settle_up(player_stash_map_raw, player_name_map, buy_in):
+    
+    # drop any key-value pairs where the value is an empty string
+    player_stash_map = {}
+    for p in player_name_map:
+        if player_name_map[p] != '':
+            player_stash_map[p] = player_stash_map_raw[p]
     # create a dataframe containing players' names and their stashes and surpluses or debits
     df_settle =  pd.DataFrame({'player': list(player_stash_map.keys()), 
                     'stash': list(player_stash_map.values())})
     df_settle['d'] = df_settle['stash']  - buy_in
-    df_settle = df_settle[df_settle.d != -buy_in]
-    if len(df_settle==0): 
+    df_settle = df_settle[df_settle.d != 0]
+    if len(df_settle) == 0: # Everybody broke even 
         return []
     ### 1st consolidate the losers and their payments
     df_losers = df_settle[df_settle.d < 0].copy()
@@ -48,5 +54,4 @@ def settle_up(player_stash_map, player_name_map, buy_in):
                         player_name_map[df_winners.player.iloc[1]] + ' $' + str(-df_winners.d.iloc[0]))
         df_winners.loc[df_winners['player'] == df_winners.player.iloc[1], 'd'] = df_winners.d.iloc[0] + df_winners.d.iloc[1]
         df_winners.drop([df_winners.index[0]], inplace=True)
-
     return(payments)

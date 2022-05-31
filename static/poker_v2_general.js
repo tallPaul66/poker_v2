@@ -12,8 +12,8 @@ function dealer_badge_show(msg) {
     blank_img = "static/blank_img.png"
     if ( dlr == "player1"){
         document.getElementById('player1_dlr_img').src = dlr_img;
-        document.getElementById('player1_dlr_img').style.width="80px";
-        document.getElementById('player1_dlr_img').style.height="80px"; 
+        document.getElementById('player1_dlr_img').style.width="60px";
+        document.getElementById('player1_dlr_img').style.height="60px"; 
         // I want no image to appear where the dealer badge goes for
         // players who aren't the dealer; this is the best way i could think of   
         document.getElementById('player2_dlr_img').src = blank_img;
@@ -30,8 +30,8 @@ function dealer_badge_show(msg) {
         document.getElementById('player5_dlr_img').style.height="0px";
     } else if ( dlr == "player2"){
         document.getElementById('player2_dlr_img').src = dlr_img;
-        document.getElementById('player2_dlr_img').style.width="80px";
-        document.getElementById('player2_dlr_img').style.height="80px";
+        document.getElementById('player2_dlr_img').style.width="60px";
+        document.getElementById('player2_dlr_img').style.height="60px";
         document.getElementById('player1_dlr_img').src = blank_img;
         document.getElementById('player1_dlr_img').style.width="0px";
         document.getElementById('player1_dlr_img').style.height="0px";
@@ -46,8 +46,8 @@ function dealer_badge_show(msg) {
         document.getElementById('player5_dlr_img').style.height="0px";
     } else if ( dlr == "player3"){
         document.getElementById('player3_dlr_img').src = dlr_img;
-        document.getElementById('player3_dlr_img').style.width="80px";
-        document.getElementById('player3_dlr_img').style.height="80px";
+        document.getElementById('player3_dlr_img').style.width="60px";
+        document.getElementById('player3_dlr_img').style.height="60px";
         document.getElementById('player1_dlr_img').src = blank_img;
         document.getElementById('player1_dlr_img').style.width="0px";
         document.getElementById('player1_dlr_img').style.height="0px";
@@ -62,8 +62,8 @@ function dealer_badge_show(msg) {
         document.getElementById('player5_dlr_img').style.height="0px";
     } else if ( dlr == "player4"){
         document.getElementById('player4_dlr_img').src = dlr_img;
-        document.getElementById('player4_dlr_img').style.width="80px";
-        document.getElementById('player4_dlr_img').style.height="80px";
+        document.getElementById('player4_dlr_img').style.width="60px";
+        document.getElementById('player4_dlr_img').style.height="60px";
         document.getElementById('player2_dlr_img').src = blank_img;
         document.getElementById('player2_dlr_img').style.width="0px";
         document.getElementById('player2_dlr_img').style.height="0px";
@@ -78,8 +78,8 @@ function dealer_badge_show(msg) {
         document.getElementById('player5_dlr_img').style.height="0px";
     } else if ( dlr == "player5"){
         document.getElementById('player5_dlr_img').src = dlr_img;
-        document.getElementById('player5_dlr_img').style.width="80px";
-        document.getElementById('player5_dlr_img').style.height="80px";
+        document.getElementById('player5_dlr_img').style.width="60px";
+        document.getElementById('player5_dlr_img').style.height="60px";
         document.getElementById('player2_dlr_img').src = blank_img;
         document.getElementById('player2_dlr_img').style.width="0px";
         document.getElementById('player2_dlr_img').style.height="0px";
