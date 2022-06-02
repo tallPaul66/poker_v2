@@ -76,7 +76,7 @@
         }
         
         player_drops = function(){
-            // Change the appearance of the stay button to indicate player's STAY status
+            // Change the appearance of the drop button to indicate player's STAY status
             drop_btn.setAttribute("class", "hold_drop_btn_selected")
             // In case the stay_btn appearance needs to be reset...
             stay_btn.setAttribute("class", "hold_drop_btn")
@@ -331,7 +331,7 @@
                 return false;
             });
             
-            $('form#deal').submit(function(event) {
+            $('form#deal').submit(function(event) {                
                 socket.emit('deal'); 
                 return false;
             });
@@ -356,7 +356,11 @@
                         $('#log').append('<br>' + $('<div/>').text(player + " stays").html());
                     }                    
                 }                               
-            });            
+            }); 
+            
+            socket.on('choice_made_notification', function(msg, cb){
+                $('#log').append('<br>' + $('<div/>').text(msg.msg).html());
+            });           
             
             // Interval function that tests message latency by sending a "ping"
             // message. The server then responds with a "pong" message and the

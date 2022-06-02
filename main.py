@@ -423,6 +423,8 @@ def monty_drop():
     monty.drop_dict[requesting_player] = 'drop'
     monty_fold_hand = [monty.card_back] * 3
     emit('monty_drop', {'cards': monty_fold_hand}, room=room_map[requesting_player])
+    emit('choice_made_notification', {'msg': player_name_map[requesting_player] + ' is set'
+                                      }, broadcast = True)
     
 @socketio.on('monty_stay', namespace='/test')
 def monty_stay():
@@ -432,6 +434,8 @@ def monty_stay():
     monty.drop_dict[requesting_player] = ''
     monty_keep_hand = hands[requesting_player]
     emit('monty_drop', {'cards': monty_keep_hand}, room=room_map[requesting_player])
+    emit('choice_made_notification', {'msg': player_name_map[requesting_player] + ' is set'
+                                      }, broadcast = True)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Holed 'em  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/holdem', methods = ['GET', 'POST'])
@@ -589,8 +593,8 @@ def deal_click():
             
             pot_claimed = False
             players_active = players_tonight.copy() # re-activate all tonight's players
-            emit('clear_log',{}, broadcast = True)  # clear the msg area
             
+        emit('clear_log',{}, broadcast = True)  # clear the msg area    
         hands = monty.deal(players_active)
         pg1_tmp = monty.get_display(hands, 'player1')              
         pg2_tmp = monty.get_display(hands, 'player2')
