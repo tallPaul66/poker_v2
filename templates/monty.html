@@ -358,6 +358,10 @@
                 }                               
             }); 
             
+            // this function places a message in the log area when
+            // any player makes a drop/stay choice on their own page--it lets
+            // all the players know who has committed and is ready for the
+            // reveal            
             socket.on('choice_made_notification', function(msg, cb){
                 $('#log').append('<br>' + $('<div/>').text(msg.msg).html());
             });           
