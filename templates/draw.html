@@ -217,6 +217,13 @@
                 if (cb)
                     cb();
             });
+            
+            // function to reset the "reveal" button back to un-clicked state
+            socket.on('reset_reveal_button', function(msg, cb){
+                var rvl_button = document.getElementById('reveal');
+                rvl_button.setAttribute("class", "submit_btn1")
+            });
+            
             // function to clear the log of messages on new game
             socket.on('clear_log', function(msg, cb) {                
                 $('#log').text($('<div/>').text('').html());
@@ -253,7 +260,7 @@
             // global variable to keep track of amount in pot   
             pot_value = 0
             // print to browser the total pot
-             socket.on('pot_msg', function(msg, cb) {
+            socket.on('pot_msg', function(msg, cb) {
                 $('#pot_total').text($('<div/>').text('$' + msg.amt).html());
                 $('#call_amt').text($('<div/>').text('call: ' + '$' + msg.call).html()); 
                 pot_value = msg.amt // global variable for use when user tries to click a link
@@ -430,10 +437,13 @@
                 socket.emit('fold'); 
                 return false;
             });
-             $('form#reveal').submit(function(event) {
-                socket.emit('reveal'); 
+             $('form#reveal').submit(function(event) {  
+                var rvl_button = document.getElementById("reveal");
+                rvl_button.setAttribute("class", "submit_btn1_selected");     
+                socket.emit('reveal');                
                 return false;
             });
+            
             $('form#new_game').submit(function(event) {
                 socket.emit('new_game'); 
                 return false;
@@ -523,7 +533,7 @@
         <form style= "margin-left:20px; margin-right:3px; margin-top: 14px;" id= "fold" class = "form" method="POST" action='#'> 
              <input class="submit_btn1" type="submit" name="btn" value="FOLD">
         </form>
-        <form style= "margin-right:20px; margin-top: 14px;" id= "reveal" class = "form" method="POST" action='#'> 
+        <form style= "margin-right:20px; margin-top: 14px;" id="reveal" class = "form" method="POST" action='#'> 
 	         <input class="submit_btn1" type="submit" name="btn" value="REVEAL">
         </form>       
         

@@ -740,6 +740,9 @@ def deal_click():
     
     # broadcast pot update
     emit('pot_msg', {'amt': pot_amount, 'call': max_bet}, broadcast=True) 
+    
+    # reset everybody's "reveal" buttons in case they had clicked them
+    emit('reset_reveal_button', {}, broadcast=True)
    
     # clear everybody's bet log unless it's Hold 'em first round
     if 'holdem' in http_ref:
@@ -855,6 +858,8 @@ def reveal_cards():
     emit('get_cards', {'cards': cards_player4_pg}, room=room_map['player4'])
     emit('get_cards', {'cards': cards_player5_pg}, room=room_map['player5'])
     emit('get_cards', {'cards': cards_player6_pg}, room=room_map['player6'])
+    
+   # emit('set_reveal_button_clicked', {}, room=room_map[requesting_player])
 
 ##########################################################################
 ### New Game

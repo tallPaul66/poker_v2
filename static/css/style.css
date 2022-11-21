@@ -80,12 +80,24 @@ h3 {
  -webkit-appearance: none; /* without this, doesn't work right*/
   height: 3em; 
   width: 10em;  
-  background: #0066A2;
+  background-color: #0066A2;
   color: white;
   border-style: outset;
   border-color: #0066A2;
   font: bold 18px Didot;
 }
+
+.submit_btn1_selected {
+ -webkit-appearance: none; /* without this, doesn't work right*/
+  height: 3em; 
+  width: 10em;  
+  background-color: #006400;
+  color: white;
+  border-style: outset;
+  border-color: #006400;
+  font: bold 18px Didot;
+}
+
 .submit_btn2 {
  -webkit-appearance: none; /* without this, doesn't work right*/
   height: 2em; 

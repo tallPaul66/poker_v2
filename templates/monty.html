@@ -183,8 +183,8 @@
             socket.on('clear_hold_status', function(msg, cb) {
                 drop_btn.setAttribute("class", "hold_drop_btn")            
                 stay_btn.setAttribute("class", "hold_drop_btn")
-            });            
-
+            });  
+            
             // print to browser the player's stash. This also loads a chip stash image,
             // the file depending on how large each player's stash is.
             socket.on('stash_msg', function(msg, cb){
