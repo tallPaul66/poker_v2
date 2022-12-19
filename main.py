@@ -17,6 +17,7 @@ from datetime import date, datetime
 import math
 
 # Import games. Be sure to clear game stage in claim_pot(), add line in fold(), and in new_game()
+import smear
 import draw
 import five_card_stud
 import seven_card_stud
@@ -66,6 +67,8 @@ player_stash_map = {'player1':'', 'player2':'', 'player3':'', 'player4':'',
 round_bets = {'player1':0, 'player2':0, 'player3':0, 'player4':0, 
              'player5':0, 'player6':0} # keep track of players' bets in a single round
 has_bet_this_round = [] # keep track of who has bet in the current round
+smear_tricks = {'player1':[], 'player2':[], 'player3':[], 'player4':[], 
+             'player5':[], 'player6':[]} # keep track of players' tricks in smear hand
 
 # declaring these global variables here so they're available 
 # in case someone clicks the New Game button before any hands 
@@ -85,6 +88,8 @@ buy_in = ''
 currency_factor = 1.0 # this will determine the values the three poker chip icons write to the 
                       # textbox in the web browsers when the player clicks them
 
+
+trump_suit = ''   # for smear...
 # games that require choices on the player's part beyond folding or staying in
 choice_games = ['draw', 'monty', 'spit']
 
@@ -406,12 +411,6 @@ def monty_play():
     return render_template('monty.html', names = player_name_map,
                            currency_factor=currency_factor)
 
-@app.route('/link_to_monty')
-def redirect_to_monty():
-    http_ref = request.environ['HTTP_REFERER']
-    requesting_player = http_ref[http_ref.find('player=')+7:]
-    return redirect(url_for('monty_play', player=requesting_player))
-
 @socketio.on('reveal_monty', namespace='/test')
 def reveal_monty():
     emit('show_monty',  {'cards': hands['monty']}, broadcast=True)
@@ -437,7 +436,12 @@ def monty_stay():
     emit('choice_made_notification', {'msg': player_name_map[requesting_player] + ' is set'
                                       }, broadcast = True)
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Holed 'em  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@app.route('/link_to_monty')
+def redirect_to_monty():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    return redirect(url_for('monty_play', player=requesting_player))
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Hold 'em  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/holdem', methods = ['GET', 'POST'])
 def holdem_play():
     holdem.stage.clear()
@@ -451,6 +455,107 @@ def redirect_to_holdem():
     return redirect(url_for('holdem_play', player=requesting_player))
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Smear  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@app.route('/smear', methods = ['GET', 'POST'])
+def smear_play():
+    smear.stage.clear()
+    return render_template('smear.html', names = player_name_map,
+                           currency_factor=currency_factor)
+
+@socketio.on('smear_play_card', namespace='/test')
+def smear_play_card(message):
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    
+    # grab the index of the card as it relates to the
+    # player's six cards layed out left to right in
+    # smear.html
+    card_played_index = int(message['card'][-1]) - 1
+   
+    
+    # reset the picture for the played card to just blank for all players
+    if requesting_player == 'player1':
+        card_played = cards_player1_pg[requesting_player][card_played_index]
+    elif requesting_player == 'player2':
+        card_played = cards_player2_pg[requesting_player][card_played_index]
+    elif requesting_player == 'player3':
+        card_played = cards_player3_pg[requesting_player][card_played_index]
+    elif requesting_player == 'player4':
+        card_played = cards_player4_pg[requesting_player][card_played_index]        
+    else:
+        print('player number not recognized, i.e., not player1 - player4')
+    
+    print(f'{requesting_player} played {card_played}')
+    # if it's the first trick, record the trump suit
+    if smear.trick_counter == 0 and smear.cards_played == {} :
+        suit_abbrev = card_played[-5]
+        if suit_abbrev == 'H':
+            trump_suit = 'HEARTS'
+        elif suit_abbrev == 'D':
+            trump_suit = 'DIAMONDS'
+        elif suit_abbrev == 'S':
+            trump_suit = 'SPADES'
+        else:
+            trump_suit = 'CLUBS'
+        emit('clear_log',{}, broadcast = True)  # clear the msg area
+        emit('get_trump_suit',{'trump_suit': trump_suit}, broadcast=True)
+    
+    smear.cards_played[requesting_player] = card_played
+    emit('get_played_cards', {'cards_played': smear.cards_played}, broadcast = True)
+      
+    # now we need to display a blank where the card the player just played was
+    cards_player1_pg[requesting_player][card_played_index] = smear.card_plc_holder_imgs[0]
+    cards_player2_pg[requesting_player][card_played_index] = smear.card_plc_holder_imgs[0]
+    cards_player3_pg[requesting_player][card_played_index] = smear.card_plc_holder_imgs[0]
+    cards_player4_pg[requesting_player][card_played_index] = smear.card_plc_holder_imgs[0]
+        
+    # Update players' cards to show the new blank in requesting player's hand:
+    emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
+    emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
+    emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
+    emit('get_cards', {'cards': cards_player4_pg}, room=room_map['player4'])
+  
+@socketio.on('smear_claim_trick', namespace='/test')
+def smear_claim_trick(message):
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    smear.trick_counter += 1
+    cards_in_play = []
+    for player in smear.cards_played.keys():
+        cards_in_play.append(smear.cards_played[player])
+    smear.tricks[requesting_player].extend(cards_in_play)
+    
+    emit('trick_taken_by',{'player':  player_name_map[requesting_player]}, broadcast=True)
+    # put in logic here that credits the cards in the trick to the 
+    # requesting player
+    print(f'{requesting_player} claimed a trick')
+    smear.cards_played.clear()
+    emit('get_played_cards', {'cards_played': smear.cards_played}, broadcast = True)
+    
+@app.route('/show_trick_cards')
+def redirect_to_show_tricks():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    return redirect(url_for('show_tricks_page', player=requesting_player))
+
+@app.route('/tricks', methods = ['GET', 'POST'])
+def show_tricks_page():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    #emit('show_trick_cards', {'cards': smear.tricks[requesting_player]})
+    return render_template('smear_tricks_page.html', names = player_name_map,
+                           currency_factor=currency_factor)
+@socketio.on('show_player_tricks', namespace='/test')
+def show_player_tricks():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    emit('get_player_tricks', {'cards': smear.tricks[requesting_player] }, room=room_map[requesting_player])
+# Need this?
+#@app.route('/link_to_smear')
+#def redirect_to_smear():
+#    http_ref = request.environ['HTTP_REFERER']
+#    requesting_player = http_ref[http_ref.find('player=')+7:]
+#    return redirect(url_for('smear_play', player=requesting_player))
 ##############################################################################################
 ### DEAL
 ##############################################################################################
@@ -471,6 +576,7 @@ def deal_click():
     global pot_claimed
     global has_bet_this_round
     global pot_amount
+    global cards_played
    # global monty_winner
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
@@ -481,13 +587,16 @@ def deal_click():
     
     '''
     Before allowing a deal event, we'll check that all active players' 
-    betting are up to date. If not, dealer will get an alert message, and
+    bets are up to date. If not, dealer will get an alert message, and
     prevent the attempted deal.
+    
     Monty is more complicated once the game gets going.
     Hold 'em is also more complicated, so needs a clause to omit first round in
     this validation.'''
     def enforce_call_equity():
         global no_deal_override
+        if 'smear' in http_ref:
+            return 'continue_deal'
         if 'monty' in http_ref:        
             if monty.monty_match == 1:
                 if len(monty.players_staying) == 1: # just one person stayed in
@@ -565,6 +674,27 @@ def deal_click():
     has_bet_this_round.clear()
     max_bet = 0.  # reset the call amount
     whos_folded = set(players_tonight) - set(players_active) # who has folded
+    if 'smear' in http_ref:
+        print('\n\n~~~~~ NEW SMEAR GAME DEALT ~~~~~.')
+        
+        hands = smear.deal(players_active) # calling smear.deal() is supposed to reset the 
+                                           # cards_played dict, but it only partially does
+                                           # so, and exhibits really weird behavior, so:
+        smear.cards_played.clear()
+        smear.trick_counter = 0
+        
+        # this resets every body's played slot to a blank, just
+        # in case there are any card pics remaining in them
+        emit('get_played_cards', {'cards_played': smear.cards_played}, broadcast = True)
+        emit('clear_log',{}, broadcast = True)  # clear the msg area
+        
+        pg1_tmp = smear.get_display(hands, 'player1')
+        pg2_tmp = smear.get_display(hands, 'player2')
+        pg3_tmp = smear.get_display(hands, 'player3')
+        pg4_tmp = smear.get_display(hands, 'player4')
+        pg5_tmp = smear.get_display(hands, 'player5')
+        pg6_tmp = smear.get_display(hands, 'player6')
+        
     if 'holdem' in http_ref:        
         print(f'Game is Hold \'em, boys. stage = {holdem.stage}; max_bet is {max_bet}')
         if len(holdem.stage) == 0: # re-activate all tonight's players
@@ -582,6 +712,7 @@ def deal_click():
         pg5_tmp = holdem.get_display(hands, 'player5', whos_folded)
         pg6_tmp = holdem.get_display(hands, 'player6', whos_folded) 
         pot_claimed = False
+   
     if 'monty' in http_ref:
         print(f'Game is Monty, boys. stage = {monty.stage}')
         if len(monty.stage) == 0:            

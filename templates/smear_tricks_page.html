@@ -1,0 +1,219 @@
+<html>
+  <style>
+	body{ background-image:url("/static/card_pics/table_top_15.jpeg");
+		width: 100%;
+	    height: 100%;
+	    max-height: 100%;
+		background-size: 100% 100%;;
+		background-repeat: no-repeat;}
+  </style>
+  <head>
+    <title>Smear</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="//code.jquery.com/jquery-1.12.4.min.js"></script> 
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    
+    <script src="{{url_for('static', filename='poker_v2_general.js')}}"></script>
+    <script type="text/javascript" charset="utf-8">
+        
+        const player_name = url_params.get('player');  //url_params is defined in separate .js file
+
+        
+        $(document).ready(function() {
+            // Use a "/test" namespace.
+            // An application can open a connection on multiple namespaces, and
+            // Socket.IO will multiplex all those connections on a single
+            // physical channel. If you don't care about multiple channels, you
+            // can set the namespace to an empty string.
+            namespace = '/test';
+
+            // Connect to the Socket.IO server.
+            // The connection URL has the following format, relative to the current page:
+            //     http[s]://<domain>:<port>[/<namespace>]
+            var socket = io(namespace);
+
+            // Event handler for new connections.
+            // The callback function is invoked when a connection with the
+            // server is established.
+            socket.on('connect', function() {
+                const url_params = new URLSearchParams(window.location.search);
+                const player_name = url_params.get('player');
+                socket.emit('my_event', {data: 'Client connected!', player: player_name});
+            });
+             
+            /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~            
+                     Event handlers for server sent data.
+            The callback function is invoked whenever the server emits data
+            to the client.
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+             socket.on('join_msg', function(msg, cb) {
+                // this doesnt append, just inserts a new msg, overwriting any previous text
+                //$('#log').text('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+                // but this appends....
+                $('#log').append('<br>' + $('<div/>').text(msg.count + ' ' + msg.data).html());               
+                if (cb)
+                    cb();
+            });
+            
+             $('form#get_tricks').submit(function(event) {
+                socket.emit('show_player_tricks'); 
+                return false;
+            });
+            
+             socket.on('get_player_tricks', function(msg,cb) {
+
+                document.getElementById('card1').src = msg.cards[0];
+                document.getElementById('card2').src = msg.cards[1];
+                document.getElementById('card3').src = msg.cards[2];
+                document.getElementById('card4').src = msg.cards[3];
+                document.getElementById('card5').src = msg.cards[4];
+                document.getElementById('card6').src = msg.cards[5];
+                document.getElementById('card7').src = msg.cards[6];
+                document.getElementById('card8').src = msg.cards[7];
+                document.getElementById('card9').src = msg.cards[8];
+                document.getElementById('card10').src = msg.cards[9];
+                document.getElementById('card11').src = msg.cards[10];
+                document.getElementById('card12').src = msg.cards[11];
+                document.getElementById('card13').src = msg.cards[12];
+                document.getElementById('card14').src = msg.cards[13];
+                document.getElementById('card15').src = msg.cards[14];
+                document.getElementById('card16').src = msg.cards[15];
+                document.getElementById('card17').src = msg.cards[16];
+                document.getElementById('card18').src = msg.cards[17];
+                document.getElementById('card19').src = msg.cards[18];
+                document.getElementById('card20').src = msg.cards[19];
+                document.getElementById('card21').src = msg.cards[20];
+                document.getElementById('card22').src = msg.cards[21];
+                document.getElementById('card23').src = msg.cards[22];
+                document.getElementById('card24').src = msg.cards[23];
+                document.getElementById('card25').src = msg.cards[24];
+                
+            });          
+            
+            socket.on('connect_msg', function(msg, cb) {                
+                // but this appends....
+                $('#log').append('<br>' + $('<div/>').text(msg.data + 
+                    ' player: ' + msg.player + ', sid: ' + msg.sid).html());               
+                if (cb)
+                    cb();
+            });
+                      
+            // function to clear the log of messages on new game
+            socket.on('clear_log', function(msg, cb) {                
+                $('#log').text($('<div/>').text('').html());
+                if (cb)
+                    cb();
+                                   
+           
+            });
+            // This function gets invoked whenever ANYONE clicks a game link. Upon clicking
+            // a game link, first check_pot(game) gets called in the javascript. That fn
+            // emits the game to the server, which then broadcasts the game name to all
+            // connected players and is handled by this function, which takes the client
+            // to whatever game was clicked by the originalplayer.
+            socket.on('redirect_all_players', function(msg, cb){ 
+                redirect_all(msg)     // this fn is defined in a separate .js file
+            });
+            
+            /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~            
+                     Handlers for the different forms in the page.
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+            
+            $('form#broadcast').submit(function(event) {
+                socket.emit('my_broadcast_event', {data: $('#broadcast_data').val()});
+                return false;
+            });
+           
+         
+            // Interval function that tests message latency by sending a "ping"
+            // message. The server then responds with a "pong" message and the
+            // round trip time is measured. [Paul: not sure if this helps to not
+            // disconnect from the server]
+            var ping_pong_times = [];
+            var start_time;
+            window.setInterval(function() {
+                start_time = (new Date).getTime();
+                socket.emit('my_ping');
+            }, 1000);
+            
+            // Handler for the "pong" message. When the pong is received, the
+            // time from the ping is stored, and the average of the last 30
+            // samples is average and displayed.
+            socket.on('my_pong', function() {
+            // bunch of code to get avg latency, and print in browers, which I 
+            // don't want...            
+            });
+            $('form#close').submit(function(event) {
+                socket.emit('close_room', {room: $('#close_room').val()});
+                return false;
+            });
+        });
+                
+        namespace = '/test';
+        var socket = io(namespace);        
+    </script>
+  </head>
+   <body>
+     
+    <!--#################################################################################-->
+    <!--                                      DASHBOARD                                  -->
+    <!--#################################################################################--> 
+     
+     <fieldset>
+      <div style="display:flex;  float:left; flex-direction: row; justify-content: left; align-items: center;">  
+      </div>  
+       <form style= "margin-right:20px; margin-top: 14px;" id="get_tricks" class="form" method="POST" action='#'>
+             <input  class = "deal_btn" type="submit" name="btn" value="See my Haul" > 
+        </form>      
+	 </fieldset>
+	 <br>
+	 <h1 style="color:#FFDF00; text-align: center;"> </h1>
+     <br><br><br>
+    <!--#################################################################################-->
+    <!--                                 Card Display Area                               -->
+    <!--#################################################################################-->
+    
+    <br>	
+	  <table width="500px"  height="50%">
+        <tr>
+             <td valign=top><img src="" id="card1" width=80 height=122></td>
+             <td valign=top><img src="" id="card2" width=80 height=122></td>
+             <td valign=top><img src="" id="card3" width=80 height=122></td>
+             <td valign=top><img src="" id="card4" width=80 height=122></td>
+             <td valign=top><img src="" id="card5" width=80 height=122></td>
+             <td valign=top><img src="" id="card6" width=80 height=122></td>
+             <td valign=top><img src="" id="card7" width=80 height=122></td>
+        </tr>
+        
+        <tr>
+             <td valign=top><img src="" id="card8" width=80 height=122></td>
+             <td valign=top><img src="" id="card9" width=80 height=122></td>
+             <td valign=top><img src="" id="card10" width=80 height=122></td>
+             <td valign=top><img src="" id="card11" width=80 height=122></td>
+             <td valign=top><img src="" id="card12" width=80 height=122></td>
+             <td valign=top><img src="" id="card13" width=80 height=122></td>
+             <td valign=top><img src="" id="card14" width=80 height=122></td>
+        </tr>
+        
+        <tr>
+             <td valign=top><img src="" id="card15" width=80 height=122></td>
+             <td valign=top><img src="" id="card16" width=80 height=122></td>
+             <td valign=top><img src="" id="card17" width=80 height=122></td>
+             <td valign=top><img src="" id="card18" width=80 height=122></td>
+             <td valign=top><img src="" id="card19" width=80 height=122></td>
+             <td valign=top><img src="" id="card20" width=80 height=122></td>
+             <td valign=top><img src="" id="card21" width=80 height=122></td>
+        </tr>
+        
+        <tr>
+             <td valign=top><img src="" id="card22" width=80 height=122></td>
+             <td valign=top><img src="" id="card23" width=80 height=122></td>
+             <td valign=top><img src="" id="card24" width=80 height=122></td>
+             <td valign=top><img src="" id="card25" width=80 height=122></td>
+             <td valign=top><img src="" id="card26" width=80 height=122></td>
+             <td valign=top><img src="" id="card27" width=80 height=122></td>
+             <td valign=top><img src="" id="card28" width=80 height=122></td>
+        </tr>
+	  </table> 		
+   </body>
+</html>

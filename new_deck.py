@@ -15,17 +15,10 @@ suits = ['S', 'C', 'H', 'D']
 
 
 # denominations
-#card_values = [str(s) for s in list(np.arange(2, 11))]
-#face_cards = ['J', 'Q', 'K', 'A']
-#card_values.extend(face_cards)
 card_values = [str(s) for s in list(np.arange(2, 10))]
 other_cards = ['T', 'J', 'Q', 'K', 'A']
 card_values.extend(other_cards)
 
-
-
-#deck = []
-        
 # now join them to make a deck of cards!
 def make_deck(shuffle = True):
     deck = []
