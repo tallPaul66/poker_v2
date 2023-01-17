@@ -385,3 +385,71 @@ function writeNumbers(x, currency_factor){
     if(txt.value==""){ txt.value = 0 + bet_amt;}
     else {txt.value = parseFloat(txt.value) + bet_amt;}
 }
+
+// this function handles where the took trick badge is shown in
+// smear, i.e., 
+// it determines  who took the last tricks and then places the took trick
+// badge image (currently "static/dealer_img2_small") under the
+// dealer's name
+function took_trick_badge_show(msg) {
+    const player_name = url_params.get('player');
+    took_trick = msg.player;
+    console.log('took_trick:', took_trick);
+    took_trick_img = "static/suits_smalll.jpg";
+    blank_img = "static/blank_img.png"
+    if ( took_trick == "player1"){
+        document.getElementById('player1_took_trick_img').src = took_trick_img;
+        document.getElementById('player1_took_trick_img').style.width="60px";
+        document.getElementById('player1_took_trick_img').style.height="60px"; 
+        // I want no image to appear where the dealer badge goes for
+        // players who aren't the dealer; this is the best way i could think of   
+        document.getElementById('player2_took_trick_img').src = blank_img;
+        document.getElementById('player2_took_trick_img').style.width="0px";
+        document.getElementById('player2_took_trick_img').style.height="0px";
+        document.getElementById('player3_took_trick_img').src = blank_img;
+        document.getElementById('player3_took_trick_img').style.width="0px";
+        document.getElementById('player3_took_trick_img').style.height="0px";
+        document.getElementById('player4_took_trick_img').src = blank_img;
+        document.getElementById('player4_took_trick_img').style.width="0px";
+        document.getElementById('player4_took_trick_img').style.height="0px";
+    } else if ( took_trick == "player2"){
+        document.getElementById('player2_took_trick_img').src = took_trick_img;
+        document.getElementById('player2_took_trick_img').style.width="60px";
+        document.getElementById('player2_took_trick_img').style.height="60px";
+        document.getElementById('player1_took_trick_img').src = blank_img;
+        document.getElementById('player1_took_trick_img').style.width="0px";
+        document.getElementById('player1_took_trick_img').style.height="0px";
+        document.getElementById('player3_took_trick_img').src = blank_img;
+        document.getElementById('player3_took_trick_img').style.width="0px";
+        document.getElementById('player3_took_trick_img').style.height="0px";
+        document.getElementById('player4_took_trick_img').src = blank_img;
+        document.getElementById('player4_took_trick_img').style.width="0px";
+        document.getElementById('player4_took_trick_img').style.height="0px";
+    } else if ( took_trick == "player3"){
+        document.getElementById('player3_took_trick_img').src = took_trick_img;
+        document.getElementById('player3_took_trick_img').style.width="60px";
+        document.getElementById('player3_took_trick_img').style.height="60px";
+        document.getElementById('player1_took_trick_img').src = blank_img;
+        document.getElementById('player1_took_trick_img').style.width="0px";
+        document.getElementById('player1_took_trick_img').style.height="0px";
+        document.getElementById('player2_took_trick_img').src = blank_img;
+        document.getElementById('player2_took_trick_img').style.width="0px";
+        document.getElementById('player2_took_trick_img').style.height="0px";
+        document.getElementById('player4_took_trick_img').src = blank_img;
+        document.getElementById('player4_took_trick_img').style.width="0px";
+        document.getElementById('player4_took_trick_img').style.height="0px";
+    } else if ( took_trick == "player4"){
+        document.getElementById('player4_took_trick_img').src = took_trick_img;
+        document.getElementById('player4_took_trick_img').style.width="60px";
+        document.getElementById('player4_took_trick_img').style.height="60px";
+        document.getElementById('player1_took_trick_img').src = blank_img;
+        document.getElementById('player1_took_trick_img').style.width="0px";
+        document.getElementById('player1_took_trick_img').style.height="0px";
+        document.getElementById('player2_took_trick_img').src = blank_img;
+        document.getElementById('player2_took_trick_img').style.width="0px";
+        document.getElementById('player2_took_trick_img').style.height="0px";
+        document.getElementById('player3_took_trick_img').src = blank_img;
+        document.getElementById('player3_took_trick_img').style.width="0px";
+        document.getElementById('player3_took_trick_img').style.height="0px";        
+    }
+}

@@ -464,8 +464,13 @@ def smear_play():
 
 @socketio.on('smear_play_card', namespace='/test')
 def smear_play_card(message):
+    global card_played_index # we need to keep track of this in case the player
+                             # takes back their card
+    global trump_suit
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
+    smear.who_just_played.pop()
+    smear.who_just_played.append(requesting_player)
     
     # grab the index of the card as it relates to the
     # player's six cards layed out left to right in
@@ -485,7 +490,6 @@ def smear_play_card(message):
     else:
         print('player number not recognized, i.e., not player1 - player4')
     
-    print(f'{requesting_player} played {card_played}')
     # if it's the first trick, record the trump suit
     if smear.trick_counter == 0 and smear.cards_played == {} :
         suit_abbrev = card_played[-5]
@@ -504,17 +508,74 @@ def smear_play_card(message):
     emit('get_played_cards', {'cards_played': smear.cards_played}, broadcast = True)
       
     # now we need to display a blank where the card the player just played was
-    cards_player1_pg[requesting_player][card_played_index] = smear.card_plc_holder_imgs[0]
-    cards_player2_pg[requesting_player][card_played_index] = smear.card_plc_holder_imgs[0]
-    cards_player3_pg[requesting_player][card_played_index] = smear.card_plc_holder_imgs[0]
-    cards_player4_pg[requesting_player][card_played_index] = smear.card_plc_holder_imgs[0]
+    cards_player1_pg[requesting_player][card_played_index] = smear.card_plc_holder_img
+    cards_player2_pg[requesting_player][card_played_index] = smear.card_plc_holder_img
+    cards_player3_pg[requesting_player][card_played_index] = smear.card_plc_holder_img
+    cards_player4_pg[requesting_player][card_played_index] = smear.card_plc_holder_img
         
     # Update players' cards to show the new blank in requesting player's hand:
     emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
     emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
     emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
     emit('get_cards', {'cards': cards_player4_pg}, room=room_map['player4'])
-  
+
+# Logic for a player taking back their most recent play
+
+
+@socketio.on('take_back_card', namespace='/test')
+def take_back_card():
+    http_ref = request.environ['HTTP_REFERER']
+    requesting_player = http_ref[http_ref.find('player=')+7:]
+    # defeat the ability to take a card back if it's 
+    # not the turn of the one who's trying to take back
+    print(f'\nsmear.who_just played is currently {smear.who_just_played}')
+    print(f'and requesting player is {requesting_player}')
+    if smear.who_just_played[0] != requesting_player:
+        emit('cant_take_back_alert', room = room_map[requesting_player])
+        return
+    card_to_take_back = smear.cards_played[requesting_player]
+    
+    
+    # if they're taking back the first trick in the game, reset trump_suit
+    if smear.trick_counter == 0 and len(smear.cards_played) == 1 :
+        trump_suit = ''
+        emit('clear_log',{}, broadcast = True)  # clear the msg area
+        emit('get_trump_suit',{'trump_suit': trump_suit}, broadcast=True)
+        smear.cards_played.clear()
+    else:
+        smear.cards_played[requesting_player] = smear.card_plc_holder_img
+
+    if requesting_player == 'player1':
+        cards_player1_pg[requesting_player][card_played_index] = card_to_take_back   
+        cards_player2_pg[requesting_player][card_played_index] = smear.card_back
+        cards_player3_pg[requesting_player][card_played_index] = smear.card_back
+        cards_player4_pg[requesting_player][card_played_index] = smear.card_back
+    elif requesting_player == 'player2':
+        cards_player1_pg[requesting_player][card_played_index] = smear.card_back
+        cards_player2_pg[requesting_player][card_played_index] = card_to_take_back
+        cards_player3_pg[requesting_player][card_played_index] = smear.card_back
+        cards_player4_pg[requesting_player][card_played_index] = smear.card_back
+    elif requesting_player == 'player3':
+        cards_player1_pg[requesting_player][card_played_index] = smear.card_back
+        cards_player2_pg[requesting_player][card_played_index] = smear.card_back
+        cards_player3_pg[requesting_player][card_played_index] = card_to_take_back
+        cards_player4_pg[requesting_player][card_played_index] = smear.card_back
+    elif requesting_player == 'player4':
+        cards_player1_pg[requesting_player][card_played_index] = smear.card_back
+        cards_player2_pg[requesting_player][card_played_index] = smear.card_back
+        cards_player3_pg[requesting_player][card_played_index] = smear.card_back
+        cards_player4_pg[requesting_player][card_played_index] = card_to_take_back
+   
+    print(f'\n{requesting_player} took back a card: {card_to_take_back}')
+    
+    emit('get_cards', {'cards': cards_player1_pg}, room=room_map['player1'])
+    emit('get_cards', {'cards': cards_player2_pg}, room=room_map['player2'])
+    emit('get_cards', {'cards': cards_player3_pg}, room=room_map['player3'])
+    emit('get_cards', {'cards': cards_player4_pg}, room=room_map['player4'])
+    
+    emit('get_played_cards', {'cards_played': smear.cards_played}, broadcast = True)
+    
+    
 @socketio.on('smear_claim_trick', namespace='/test')
 def smear_claim_trick(message):
     http_ref = request.environ['HTTP_REFERER']
@@ -525,15 +586,22 @@ def smear_claim_trick(message):
         cards_in_play.append(smear.cards_played[player])
     smear.tricks[requesting_player].extend(cards_in_play)
     
-    emit('trick_taken_by',{'player':  player_name_map[requesting_player]}, broadcast=True)
+    emit('trick_taken_by',{'player_actual_name':  player_name_map[requesting_player],
+                           'player': requesting_player}, broadcast=True)
     # put in logic here that credits the cards in the trick to the 
     # requesting player
     print(f'{requesting_player} claimed a trick')
+    # clears the cards_played dict
+    
     smear.cards_played.clear()
+    
+    # this resets everybody's played img to blank and 
+    for player in players_tonight:
+        smear.cards_played[player] = smear.card_plc_holder_img
     emit('get_played_cards', {'cards_played': smear.cards_played}, broadcast = True)
     
 @app.route('/show_trick_cards')
-def redirect_to_show_tricks():
+def redirect_to_show_tricks():    
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
     return redirect(url_for('show_tricks_page', player=requesting_player))
@@ -545,11 +613,20 @@ def show_tricks_page():
     #emit('show_trick_cards', {'cards': smear.tricks[requesting_player]})
     return render_template('smear_tricks_page.html', names = player_name_map,
                            currency_factor=currency_factor)
+
 @socketio.on('show_player_tricks', namespace='/test')
 def show_player_tricks():
     http_ref = request.environ['HTTP_REFERER']
     requesting_player = http_ref[http_ref.find('player=')+7:]
-    emit('get_player_tricks', {'cards': smear.tricks[requesting_player] }, room=room_map[requesting_player])
+    
+    # this is the place to calculate the trump suit high and low...
+    trump_hi_and_low = smear.get_trump_hi_and_low(trump_suit)
+    print('\nHere\'s the trump hi and low ', trump_hi_and_low)
+    emit('get_player_tricks', {'cards': smear.tricks[requesting_player], 
+                               'trump_suit': trump_suit,
+                               'trump_high': trump_hi_and_low['high'],
+                               'trump_low': trump_hi_and_low['low']}, 
+         room=room_map[requesting_player])
 # Need this?
 #@app.route('/link_to_smear')
 #def redirect_to_smear():
@@ -687,6 +764,7 @@ def deal_click():
         # in case there are any card pics remaining in them
         emit('get_played_cards', {'cards_played': smear.cards_played}, broadcast = True)
         emit('clear_log',{}, broadcast = True)  # clear the msg area
+        emit('get_trump_suit',{'trump_suit': ''}, broadcast=True) # clear trump suit image
         
         pg1_tmp = smear.get_display(hands, 'player1')
         pg2_tmp = smear.get_display(hands, 'player2')

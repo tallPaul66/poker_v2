@@ -67,11 +67,6 @@
                     cb();
             });
             
-            // function to reset the "reveal" button back to un-clicked state
-            socket.on('reset_reveal_button', function(msg, cb){
-                var rvl_button = document.getElementById('reveal');
-                rvl_button.setAttribute("class", "submit_btn1")
-            });
             
             // function to clear the log of messages on new game
             socket.on('clear_log', function(msg, cb) {                
@@ -82,47 +77,8 @@
             // function to clear bet_log of messages on new game
             socket.on('clear_bet_log', function(msg, cb) {   
                 $('#bet_log').text($('<div/>').text('').html());
-            });
-            
-            // print to browser the latest bet
-            socket.on('bet_msg', function(msg, cb) {
-                var player = msg.player
-                var amt = msg.amt
-                if(msg.fold=="no"){
-                    if(amt==0){
-                        $('#bet_log').append('<br>' + $('<div/>').text(player + " checks").html());
-                    } else {
-                        $('#bet_log').append('<br>' + $('<div/>').text(player + " bets " + amt).html());
-                    }
-                } else {
-                    $('#bet_log').append('<br>' + $('<div/>').text(player + " folds").html());
-                }                               
-            });
-            
-            // if all players but one have folded, print this message and main.py will
-            // push the pot amount to the winning player
-            socket.on('all_folded_msg', function(msg, cb) {
-                var winner = msg.winner
-                $('#bet_log').append('<br><br>' + $('<div/>').text("Everyone else folded. " + winner + " collects $" + pot_value + "!").html());                                               
-            });
-            
-            // global variable to keep track of amount in pot   
-            pot_value = 0
-            // print to browser the total pot
-            socket.on('pot_msg', function(msg, cb) {
-                $('#pot_total').text($('<div/>').text('$' + msg.amt).html());
-                $('#call_amt').text($('<div/>').text('call: ' + '$' + msg.call).html()); 
-                pot_value = msg.amt // global variable for use when user tries to click a link
-                console.log('pot_value', pot_value)                
+            });            
 
-            });
-
-            // print to browser the player's stash. This also loads a chip stash image,
-            // the file depending on how large each player's stash is.
-            socket.on('stash_msg', function(msg, cb){
-                chip_image_display(msg)  //this function is defined in an external .js file
-            });
-            
             dlr_is = "" // global variable to keep track of the current dealer
             // show in browser who the dealer is.
             socket.on('show_dealer', function(msg, cb){
@@ -130,34 +86,29 @@
                 dealer_badge_show(msg)  //this function is defined in an external .js file                   
             });
            
-            // alert message if money still in the pot and user tries to start a new game
-            socket.on('money_left_alert', function(msg, cb) {
-                window.alert("There's a non-0 amount in the pot. Someone must claim it before a new game can be started.");
-            });
-                         
-            socket.on('bets_needed_alert', function(msg,cb) {
-               negligent_bettor_alert(msg)  // this fn stored in external .js file           
-            }); 
-            
-            // print to browser player draw info
-             socket.on('who_drew_what', function(msg, cb) {
-                // the following two lines just get the plural right in the 
-                // msg displayed on the webpage
-                if(msg.data == 1) var_card = "card"
-                else var_card = "cards"
-                $('#log').append('<br>' + $('<div/>').text(msg.player + 
-                     + msg.data).html());               
-            });
-            
+             
             // display the trump suit in the general log            
             socket.on('get_trump_suit', function(msg, cb) {
-                $('#log').append($('<div/>').text(msg.trump_suit + ' is trump suit').html()); 
-                $('#log').append('<br>' + $('<div/>').text('').html()); // adds a spaced before next entry
+                //$('#log').append($('<div/>').text(msg.trump_suit + ' is trump suit').html()); 
+                //$('#log').append('<br>' + $('<div/>').text('').html()); // adds a spaced before next entry
+                if (msg.trump_suit == 'DIAMONDS') {
+                    display_trump_suit = "/static/diamond.jpg"
+                } else if (msg.trump_suit == 'HEARTS') {
+                    display_trump_suit = "/static/heart.jpg"
+                }
+                else if (msg.trump_suit == 'SPADES') {
+                    display_trump_suit = "/static/spade.jpg"
+                } else if (msg.trump_suit == 'CLUBS') {
+                    display_trump_suit = "/static/club.jpg"
+                } else {
+                    display_trump_suit = "/static/suits_small.jpg"
+                }
+                document.getElementById('trump_suit_img').src = display_trump_suit                
             });
             
             // display who took the last trick          
             socket.on('trick_taken_by', function(msg, cb) {
-                $('#log').append('<br>' + $('<div/>').text('Last trick taken by ' + msg.player).html());               
+                took_trick_badge_show(msg)              
             });
             
             trick_cards = []
@@ -168,14 +119,14 @@
                 document.getElementById('player3_play').src = cards_played.player3;
                 document.getElementById('player4_play').src = cards_played.player4;
                 trick_cards = [cards_played.player1, cards_played.player2, cards_played.player2, cards_played.player4]
+                console.log('cards_played', cards_played)
             });            
             
             socket.on('get_cards', function(msg, cb) {
                 players_cards = msg.cards
                 players = Object.keys(players_cards)
                 console.log('keys are', players)
-                console.log("player1's cards", players_cards.player1)
-                
+                console.log("player1's cards", players_cards.player1)                
                 
                     var player1_card1 = players_cards.player1[0];
                     var player1_card2 = players_cards.player1[1];
@@ -189,9 +140,7 @@
                     document.getElementById('player1_card3').src = player1_card3;
                     document.getElementById('player1_card4').src = player1_card4;
                     document.getElementById('player1_card5').src = player1_card5;
-                    document.getElementById('player1_card6').src = player1_card6;
-                
-                
+                    document.getElementById('player1_card6').src = player1_card6;                
                 
                     var player2_card1 = players_cards.player2[0];
                     var player2_card2 = players_cards.player2[1];
@@ -205,8 +154,7 @@
                     document.getElementById('player2_card3').src = player2_card3;
                     document.getElementById('player2_card4').src = player2_card4;
                     document.getElementById('player2_card5').src = player2_card5;
-                    document.getElementById('player2_card6').src = player2_card6;
-                
+                    document.getElementById('player2_card6').src = player2_card6;                
                 
                     var player3_card1 = players_cards.player3[0];
                     var player3_card2 = players_cards.player3[1];
@@ -220,9 +168,7 @@
                     document.getElementById('player3_card3').src = player3_card3;
                     document.getElementById('player3_card4').src = player3_card4;
                     document.getElementById('player3_card5').src = player3_card5;
-                    document.getElementById('player3_card6').src = player3_card6;
-                
-                
+                    document.getElementById('player3_card6').src = player3_card6;                
                 
                     var player4_card1 = players_cards.player4[0];
                     var player4_card2 = players_cards.player4[1];
@@ -241,6 +187,10 @@
                 // below is from Miguel Grinberg's original code; I don't know what it does
                 if (cb)
                     cb();
+            });
+            
+            socket.on('cant_take_back_alert', function(msg, cb) {
+                window.alert("You can't back your card at this point. Jeez");
             });
             
             // This function gets invoked whenever ANYONE clicks a game link. Upon clicking
@@ -270,18 +220,13 @@
             
             // Claim_trick form handler
             $('form#claim_trick').submit(function(event) {                       
-                console.log('SCOOP IT clicked');
+                console.log('Mine! got clicked');
                 socket.emit('smear_claim_trick', {});
                 return false;
             });
             
             $('form#deal').submit(function(event) {
                 socket.emit('deal'); 
-                return false;
-            });
-           
-            $('form#new_game').submit(function(event) {
-                socket.emit('new_game'); 
                 return false;
             });
          
@@ -309,15 +254,17 @@
             });
         });
         
-        function c() {
-            var txt = document.getElementById("bet_entered");
-            txt.value = 0;
-        }
-        
         function play_card_fn(card_played) {
             console.log('card_played', card_played) 
-            socket.emit('smear_play_card', {card: card_played})   
-                 
+            socket.emit('smear_play_card', {card: card_played})                    
+        }
+        
+        function take_back_card(player) {
+            if (player == player_name){ // keeps a player who is not this player from
+                                        // "taking back" this player's card                
+                socket.emit('take_back_card')
+            }
+            
         }
         
         // This function is for when the user tries to click a link to another game but
@@ -335,58 +282,33 @@
         //writeNumbers(x, currency_factor)      // fn defined in external .js file
     </script>
   </head>
-   <body onload="makeRadioButtons()">
+   <body>
      
     <!--#################################################################################-->
     <!--                                      DASHBOARD                                  -->
     <!--#################################################################################--> 
      
      <fieldset>
-      <div style="display:flex;  float:left; flex-direction: row; justify-content: left; align-items: center;">  
-        <form style="margin-right:3px; margin-top: 14px;" id= "new_game" class="form" method="POST" action='#'>     
-             <input  class = "new_game_btn" type="submit" name="btn" value="NEW GAME" >
-        </form>
+      <div style="display:flex;  float:center; flex-direction: row; justify-content: center; align-items: center;">  
         <form style= "margin-right:20px; margin-top: 14px;" id="deal" class="form" method="POST" action='#'>
              <input  class = "deal_btn" type="submit" name="btn" value="D E A L" > 
         </form>
-        <hr class="vertical" />
-        <hr class="vertical" />
-        <form style= "margin-left:20px; margin-right:3px; margin-top: 14px;" id= "fold" class = "form" method="POST" action='#'> 
-             <input class="submit_btn1" type="submit" name="btn" value="FOLD">
-        </form>
-        <form style= "margin-right:20px; margin-top: 14px;" id="reveal" class = "form" method="POST" action='#'> 
-	         <input class="submit_btn1" type="submit" name="btn" value="REVEAL">
-        </form>       
+     
+            <hr class="vertical" />      
+            <h3>Trump: </h3><br><br>
+    	    <img src="" id="trump_suit_img" width=50 height=50>
+    	    <hr class="vertical" />
         
-        <hr class="vertical" />
-        <hr class="vertical" />        
-        <input style= "margin-left:20px;" type="image" src="static/card_pics/white_chip_small.png" width=55 height=55 name="bet_1" id="bet_1" onclick="writeNumbers(1, {{currency_factor}}); return false;"/>
-        <input style= "margin-left:3px;" type="image" src="static/card_pics/red_chip_small.png" width=55 height=55  name="bet_2" id="bet_2" onclick="writeNumbers(2, {{currency_factor}}); return false;"/>
-        <input style= "margin-left:3px;" type="image" src="static/card_pics/blue_chip_small.png" width=55 height=55  name="bet_5" id="bet_5" onclick="writeNumbers(5, {{currency_factor}}); return false;"/>
-   		  
-   		<form style="margin-top: 14px; margin-left:20px; margin-right:20px;" id="bet" method="POST" action='#'>
-            <input id="bet_entered" type="text" name="bet_entered" style="vertical-align:middle; width: 50px; border: 2px outset; height: 52px; text-align:center; font-size:20px;" value=0>
-            <button style="margin-left:2px; margin-right:10px" id="clr_bet" class="button" type="button" onclick=c()>CLEAR</button>
-            <input syle= "margin-left:10px;" type="submit" class = "place_bet_btn" value="PLACE BET">
-        </form>        
-    <!-------------------    GAME LINKS   -------------------->
-	       <hr class="vertical" />
-           <hr class="vertical" />
-        </div>        
-        <div style="text-align: center; vertical-align:middle">
-      	    &nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_draw') }}" onclick="check_pot('draw'); return false;" style="color:red; font-size:20px;">Draw</a>
-    	    &nbsp&nbsp<a href="{{ url_for('redirect_to_omaha') }}" onclick="check_pot('omaha'); return false;" style="color:red; font-size:20px;">Omaha</a> 
-        	&nbsp&nbsp<a href="{{ url_for('redirect_to_five_card_stud') }}" onclick="check_pot('fcs'); return false;" style="color:red; font-size:20px;">5-Card Stud</a> 
-        	&nbsp&nbsp<a href="{{ url_for('redirect_to_spit') }}" onclick="check_pot('spit'); return false;" style="color:red; font-size:20px;">Spit</a> 
-            <br><br>
-    		&nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_monty') }}" onclick="check_pot('monty'); return false;" style="color:red; font-size:20px;">Monty</a> 
-    		&nbsp&nbsp<a href="{{ url_for('redirect_to_seven_card_stud') }}" onclick="check_pot('scs'); return false;" style="color:red; font-size:20px;">7-Card Stud</a>
-    		&nbsp&nbsp<a href="{{ url_for('redirect_to_holdem') }}" onclick="check_pot('holdem'); return false;" style="color:red; font-size:20px;">Hold Em</a> 
-    		&nbsp&nbsp<a href="{{ url_for('redirect_to_cross') }}" onclick="check_pot('cross'); return false;" style="color:red; font-size:20px;">Fiery Cross</a>
-    		&nbsp&nbsp<a href="{{ url_for('redirect_to_show_tricks') }}" target = "_blank" style="color:red; font-size:20px;">Show My Tricks</a>
+        
+        <!-------------------    GAME LINKS   -------------------->   
+        
+      	    &nbsp&nbsp<a href="{{ url_for('redirect_to_show_tricks') }}" target = "_blank" style="color:white; font-size:20px;">Show My Tricks </a>
+      	    <br><br>
+      	    &nbsp&nbsp&nbsp&nbsp<a href="{{ url_for('redirect_to_draw') }}" onclick="check_pot('draw'); return false;" style="color:red; font-size:20px;">Draw Poker</a>
         </div>    	 
 	 </fieldset>
 	 <br>
+	 <div style="color:#F0FFFF;" id="log"></div>
 	 <h1 style="color:#FFDF00; text-align: center;"> </h1>
      <br><br><br>
     <!--#################################################################################-->
@@ -395,51 +317,39 @@
     
     <br>	
 	  <table width="500px"  height="50%">
+	<!-- ################################# row 1 ########################################-->
         <tr>
           <td></td><td></td><td></td><td></td>
           <th valign=middle colspan = "2">                
               <h3 style="color:#FFDF00;">{{names["player1"]}}</h3>
-              <h1><div id="player1_stash"></div></h1>
               <img src="" id="player1_dlr_img">
-              <img src="" id="player1_stash_img" width=80 height=80>              
+              <img src="" id="player1_took_trick_img" width=80 height=80>              
           </th>
            
-              <td valign=top> <input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="play1_card1" id="player1_card1" onclick="play_card_fn('player1_card1'); return false;"/>
-              </td>
-         
-    		  <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="play1_card2" id="player1_card2" onclick="play_card_fn('player1_card2'); return false;"/>
+              <td valign=top> <input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player1_card1" id="player1_card1" onclick="play_card_fn('player1_card1'); return false;"/>
+              </td>         
+    		  <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player1_card2" id="player1_card2" onclick="play_card_fn('player1_card2'); return false;"/>
     		  </td>
-    		  <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="play1_card3" id="player1_card3" onclick="play_card_fn('player1_card3'); return false;"/>
+    		  <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player1_card3" id="player1_card3" onclick="play_card_fn('player1_card3'); return false;"/>
     		  </td>
-    		  <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="play1_card4" id="player1_card4" onclick="play_card_fn('player1_card4'); return false;"/>
+    		  <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player1_card4" id="player1_card4" onclick="play_card_fn('player1_card4'); return false;"/>
     		  </td>
-    		  <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="play1_card6" id="player1_card5" onclick="play_card_fn('player1_card5'); return false;"/>
+    		  <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player1_card6" id="player1_card5" onclick="play_card_fn('player1_card5'); return false;"/>
     		  </td>
-    		  <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="play1_card6" id="player1_card6" onclick="play_card_fn('player1_card6'); return false;"/>
+    		  <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player1_card6" id="player1_card6" onclick="play_card_fn('player1_card6'); return false;"/>
            
           <td></td><td></td><td></td><td></td>
           <td></td>
         </tr>
         
-        
+    <!-- ################################# row 2 ########################################-->
         <tr>
-          <th valign=bottom colspan = "2">
-              <h1><div id="player5_stash"></div></h1>
-              <h3 style="color:#FFDF00;">{{names["player5"]}}</h3>
-              <img src="" id="player5_dlr_img">
-              <img src="" id="player5_stash_img" width=80 height=80>              
-          </th>
-          <th colspan = "3" valign=top>
-    		  <div style="color:#F0FFFF;" id="log"></div>
-		  </th>
-          <td></td><td></td><td></td>
-    <!--####################################################################-->
-    <!--                                 BETTING                            -->
-    <!--####################################################################-->
-		  
-		  <th colspan="2" valign=top>
-             <img type="image" src="" name="player1_play" id="player1_play" width=80 height=122 >             
-		  </th>		  
+          <th valign=bottom colspan = "2">          
+          </th>         
+          <td></td><td></td><td></td><td></td><td></td><td></td>		  
+		  <td>
+             <input style= "margin-left:20px;" type="image" src="" name="player1_play" id="player1_play" width=80 height=122 onclick="take_back_card('player1'); return false;"/>             
+		  </td>	    	  
 		  <th colspan = "3" valign=top  align=right>
         		  <br>
         		  <div style="color:#F0FFFF;" id="bet_log"></div>
@@ -451,13 +361,12 @@
           
           <th valign=bottom colspan = "2">              
               <h3 style="color:#FFDF00;">{{names["player2"]}}</h3>
-              <h1><div id="player2_stash"></div></h1>
               <img src="" id="player2_dlr_img">
-              <img src="" id="player2_stash_img" width=80 height=80>              
+              <img src="" id="player2_took_trick_img" width=80 height=80>              
           </th>
          </tr>
-         <tr>        
-         
+    <!-- ################################# row 3 ########################################-->
+         <tr>                 
               <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player4_card1" id="player4_card1" onclick="play_card_fn('player4_card1'); return false;"/>
                   </td>
 		      <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player4_card2" id="player4_card2" onclick="play_card_fn('player4_card2'); return false;"/>
@@ -470,17 +379,23 @@
         		  </td>
 		      <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player4_card6" id="player4_card6" onclick="play_card_fn('player4_card6'); return false;"/>
     		      </td>
-		      <td>  <img type="image" src="" name="player4_play" id="player4_play" width=80 height=122 > 
-    		  </td>
-    		  <td></td>
-		     <td>
+		      <td></td>
+		      <td>  <input style= "margin-left:20px;" type="image" src="" name="player4_play" id="player4_play" width=80 height=122 onclick="take_back_card('player4'); return false;"/>
+    		  </td> 
+    <!--####################################################################-->
+    <!--                              TABLE CENTER                           -->
+    <!--####################################################################-->		     		  
+		      <td>
 		       <form style='float: center; padding: 5px;' id="claim_trick" class="form" method="POST" action='#'>     
-                     <input  class = "claim_btn" type="submit" name="claim_trick" value="SCOOP IT" >
+                     <input  class = "claim_btn" type="submit" name="claim_trick" value="MINE!" >
                </form> 
-             </td>		     
-		     <td> <img type="image" src="" name="player2_play" id="player2_play" width=80 height=122 > 
+              </td>		     
+    <!--####################################################################-->
+    <!--                                                                    -->
+    <!--####################################################################-->		  
+		     <td> <input style= "margin-left:20px;" type="image" src="" name="player2_play" id="player2_play" width=80 height=122 onclick="take_back_card('player2'); return false;"/>
 		     </td>
-		     <td></td>  
+		     <td></td>
              <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player2_card1" id="player2_card1" onclick="play_card_fn('player2_card1'); return false;"/>
              </td>
 		     <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player2_card2" id="player2_card2" onclick="play_card_fn('player2_card2'); return false;"/>
@@ -494,28 +409,21 @@
 		     <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player2_card6" id="player2_card6" onclick="play_card_fn('player2_card6'); return false;"/>
 		     </td>
         </tr>
+    <!-- ################################# row 4 ########################################-->
         <tr>
           <td></td>
           <th valign=bottom colspan = "2"> 
               <br><br>         
               <h3 style="color:#FFDF00;">{{names["player4"]}}</h3>
-              <h1><div id="player4_stash"></div></h1>
               <img src="" id="player4_dlr_img">
-              <img src="" id="player4_stash_img" width=80 height=80>              
+              <img src="" id="player4_took_trick_img" width=80 height=80>              
           </th>          
-          <td></td><td></td><td></td><td></td><td></td><td></td>
-          <td> <img type="image" src="" name="player3_play" id="player3_play" width=80 height=122 > 
-          </td><td></td>
-          <td></td>
-          <th valign=bottom align="right" colspan = "2"> 
-              <br><br>             
-              <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
-              <h1><div id="player3_stash"></div></h1>
-              <img src="" id="player3_dlr_img">
-              <img src="" id="player3_stash_img" width=80 height=80>              
-          </th>
-             <td></td><td></td>
+          <td></td><td></td><td></td><td></td><td></td>
+          <td> <input style= "margin-left:20px;" type="image" src="" name="player3_play" id="player3_play" width=80 height=122 onclick="take_back_card('player3'); return false;"/>
+          </td>
+          <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
         </tr>
+        
         <tr>
              <td></td><td></td><td></td><td></td>
              <th valign=middle colspan = "2">                
@@ -533,7 +441,11 @@
 		     </td>
 		     <td valign=top><input style= "margin-left:20px;" type="image" src="" width=80 height=122 name="player3_card6" id="player3_card6" onclick="play_card_fn('player3_card6'); return false;"/>
              </td>
-             <td></td><td></td><td></td><td></td><td></td>
+             <th valign=bottom align="right" colspan = "2">              
+              <h3 style="color:#FFDF00;">{{names["player3"]}}</h3>
+              <img src="" id="player3_dlr_img">
+              <img src="" id="player3_took_trick_img" width=80 height=80>              
+          </th><td></td><td></td><td></td>
         </tr>
 	  </table> 		
    </body>

@@ -50,17 +50,36 @@
                 // this doesnt append, just inserts a new msg, overwriting any previous text
                 //$('#log').text('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
                 // but this appends....
-                $('#log').append('<br>' + $('<div/>').text(msg.count + ' ' + msg.data).html());               
+                //$('#log').append('<br>' + $('<div/>').text(msg.count + ' ' + msg.data).html());               
                 if (cb)
                     cb();
-            });
-            
-             $('form#get_tricks').submit(function(event) {
-                socket.emit('show_player_tricks'); 
-                return false;
-            });
+            });             
             
              socket.on('get_player_tricks', function(msg,cb) {
+                
+                if (msg.trump_suit == 'DIAMONDS') {
+                    display_trump_suit = "/static/diamond.jpg"
+                } else if (msg.trump_suit == 'HEARTS') {
+                    display_trump_suit = "/static/heart.jpg"
+                }
+                else if (msg.trump_suit == 'SPADES') {
+                    display_trump_suit = "/static/spade.jpg"
+                } else if (msg.trump_suit == 'CLUBS') {
+                    display_trump_suit = "/static/club.jpg"
+                } else {                
+                    display_trump_suit = "/static/suits_small.jpg"
+                }
+                document.getElementById('trump_suit_img').src = display_trump_suit
+                trump_hi = msg.trump_high[0]
+                trump_low = msg.trump_low[0]
+                if (trump_hi == 'T') {
+                    trump_hi = '10'
+                }
+                if (trump_low == 'T') {
+                    trump_low = '10'
+                }
+                $('#log').append('<br>' + $('<div/>').text('High: ' + trump_hi).html())
+                $('#log').append('<br>' + $('<div/>').text('Low: ' + trump_low).html())
 
                 document.getElementById('card1').src = msg.cards[0];
                 document.getElementById('card2').src = msg.cards[1];
@@ -92,20 +111,12 @@
             
             socket.on('connect_msg', function(msg, cb) {                
                 // but this appends....
-                $('#log').append('<br>' + $('<div/>').text(msg.data + 
-                    ' player: ' + msg.player + ', sid: ' + msg.sid).html());               
+                //$('#log').append('<br>' + $('<div/>').text(msg.data + 
+                //    ' player: ' + msg.player + ', sid: ' + msg.sid).html());               
                 if (cb)
                     cb();
             });
                       
-            // function to clear the log of messages on new game
-            socket.on('clear_log', function(msg, cb) {                
-                $('#log').text($('<div/>').text('').html());
-                if (cb)
-                    cb();
-                                   
-           
-            });
             // This function gets invoked whenever ANYONE clicks a game link. Upon clicking
             // a game link, first check_pot(game) gets called in the javascript. That fn
             // emits the game to the server, which then broadcasts the game name to all
@@ -124,6 +135,10 @@
                 return false;
             });
            
+            $('form#get_tricks').submit(function(event) {
+                socket.emit('show_player_tricks'); 
+                return false;
+            });
          
             // Interval function that tests message latency by sending a "ping"
             // message. The server then responds with a "pong" message and the
@@ -164,10 +179,12 @@
       </div>  
        <form style= "margin-right:20px; margin-top: 14px;" id="get_tricks" class="form" method="POST" action='#'>
              <input  class = "deal_btn" type="submit" name="btn" value="See my Haul" > 
-        </form>      
+        </form>  
+     <img src="" id="trump_suit_img" width=50 height=50>
+     <h2><div style="color:#F0FFFF;" id="log"></div></h2>
 	 </fieldset>
 	 <br>
-	 <h1 style="color:#FFDF00; text-align: center;"> </h1>
+	 	 
      <br><br><br>
     <!--#################################################################################-->
     <!--                                 Card Display Area                               -->
@@ -175,7 +192,7 @@
     
     <br>	
 	  <table width="500px"  height="50%">
-        <tr>
+        <tr> <!--row 1#-->
              <td valign=top><img src="" id="card1" width=80 height=122></td>
              <td valign=top><img src="" id="card2" width=80 height=122></td>
              <td valign=top><img src="" id="card3" width=80 height=122></td>
